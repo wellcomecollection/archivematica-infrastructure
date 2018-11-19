@@ -1,0 +1,27 @@
+language: sh
+
+sudo: required
+
+services:
+  - docker
+
+dist: trusty
+
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - ~/.scripts
+
+jobs:
+  include:
+    - env: TASK=travis-format
+      stage: test
+
+script:
+  - make "$TASK"
+
+stages:
+  - test
