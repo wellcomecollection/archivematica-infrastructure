@@ -1,0 +1,25 @@
+[
+  {
+    "essential": true,
+    "memory": 512,
+    "name": "archivematica_django_app3",
+    "cpu": 256,
+    "image": "760097843905.dkr.ecr.eu-west-1.amazonaws.com/archivematica_django_app:1.13",
+    "workingDirectory": "/code",
+    "environment" : [
+        { "name" : "DJANGO_PORT", "value" : "8001" }
+    ],
+    "MountPoints": [
+      {
+        "ContainerPath": "/data/archivematica",
+        "SourceVolume": "archivematica-ebs-volume"
+      }
+    ],
+    "portMappings": [
+      {
+        "containerPort": 8001,
+        "hostPort": 8001
+      }
+    ]
+  }
+]
