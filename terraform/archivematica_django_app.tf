@@ -5,23 +5,16 @@ resource "aws_elb" "archivematica-elb" {
   name = "archivematica-elb"
 
   listener {
-    instance_port = 8000
-    instance_protocol = "http"
-    lb_port = 8000
-    lb_protocol = "http"
-  }
-
-  listener {
-    instance_port = 8001
-    instance_protocol = "http"
-    lb_port = 8001
-    lb_protocol = "http"
-  }
-
-  listener {
     instance_port = 8002
     instance_protocol = "http"
     lb_port = 8002
+    lb_protocol = "http"
+  }
+
+  listener {
+    instance_port = 8003
+    instance_protocol = "http"
+    lb_port = 8003
     lb_protocol = "http"
   }
 
@@ -63,6 +56,10 @@ resource "aws_ecr_repository" "archivematica-ecr-repository" {
 
 resource "aws_ecr_repository" "archivematica-ecr-dashboard-repository" {
   name = "archivematica_dashboard"
+}
+
+resource "aws_ecr_repository" "archivematica-ecr-storage-service-repository" {
+  name = "archivematica_storage_service"
 }
 
 variable "archivematica_ebs_host_path" {
@@ -141,31 +138,32 @@ resource "aws_autoscaling_group" "archivematica-ecs-autoscaling-group" {
 }
 
 
-resource "aws_ecs_task_definition" "archivematica-django-app-task-definition" {
-  container_definitions = "${file("tasks/ecs_task__django_app_volume_test.json")}"
-  family = "archivematica-django-app"
+//resource "aws_ecs_task_definition" "archivematica-django-app-task-definition" {
+//  container_definitions = "${file("tasks/ecs_task__django_app_volume_test.json")}"
+//  family = "archivematica-django-app"
+//
+//  # For now, using EBS/EFS means we need to be on EC2 instance.
+//  requires_compatibilities = ["EC2"]
+//
+//  volume {
+//    name      = "archivematica-ebs-volume-django-app"
+//    host_path = "${var.archivematica_ebs_host_path}/data_django_app"
+//  }
+//}
+//
+//resource "aws_ecs_task_definition" "archivematica-django-app-task-definition3" {
+//  container_definitions = "${file("tasks/ecs_task__django_app_volume_test3.json")}"
+//  family = "archivematica-django-app3"
+//
+//  # For now, using EBS/EFS means we need to be on EC2 instance.
+//  requires_compatibilities = ["EC2"]
+//
+//  volume {
+//    name      = "archivematica-ebs-volume-django-app3"
+//    host_path = "${var.archivematica_ebs_host_path}/data_django_app3"
+//  }
+//}
 
-  # For now, using EBS/EFS means we need to be on EC2 instance.
-  requires_compatibilities = ["EC2"]
-
-  volume {
-    name      = "archivematica-ebs-volume"
-    host_path = "${var.archivematica_ebs_host_path}"
-  }
-}
-
-resource "aws_ecs_task_definition" "archivematica-django-app-task-definition3" {
-  container_definitions = "${file("tasks/ecs_task__django_app_volume_test3.json")}"
-  family = "archivematica-django-app3"
-
-  # For now, using EBS/EFS means we need to be on EC2 instance.
-  requires_compatibilities = ["EC2"]
-
-  volume {
-    name      = "archivematica-ebs-volume"
-    host_path = "${var.archivematica_ebs_host_path}"
-  }
-}
 
 resource "aws_ecs_task_definition" "archivematica-dashboard" {
   container_definitions = "${file("tasks/archivematica_dashboard.json")}"
@@ -175,48 +173,45 @@ resource "aws_ecs_task_definition" "archivematica-dashboard" {
   requires_compatibilities = ["EC2"]
 
   volume {
-    name      = "archivematica-ebs-volume"
-    host_path = "${var.archivematica_ebs_host_path}"
+    name      = "archivematica-ebs-volume"  # todo: rename this to archivematica-ebs-volume-dataDir
+    host_path = "${var.archivematica_ebs_host_path}/data"
+  }
+
+  volume {
+    name = "archivematica-ebs-volume-pipeline-sharedDirectory"
+    host_path = "${var.archivematica_ebs_host_path}/sharedDirectory"
+  }
+
+}
+
+resource "aws_ecs_task_definition" "archivematica-storage-service" {
+  container_definitions = "${file("tasks/archivematica_storage_service.json")}"
+  family = "archivematica-storage-service"
+
+  # For now, using EBS/EFS means we need to be on EC2 instance.
+  requires_compatibilities = ["EC2"]
+
+  volume {
+    name = "archivematica-ebs-volume-pipeline-sharedDirectory"
+    host_path = "${var.archivematica_ebs_host_path}/sharedDirectory"
+  }
+
+  volume {
+    name = "archivematica-storage-service-staging-data"
+    host_path = "${var.archivematica_ebs_host_path}/archivematica_storage_service_staging_data"
+  }
+
+  volume {
+    name = "archivematica-storage-service-location-data"
+    host_path = "${var.archivematica_ebs_host_path}/archivematica_storage_service_location_data"
+  }
+
+  volume {
+    name = "archivematica-pipeline-data"
+    host_path = "${var.archivematica_ebs_host_path}/archivematica_pipeline_data"
   }
 }
 
-
-resource "aws_ecs_service" "archivematica-ecs-django-app-service" {
-  name = "archivematica-ecs-django-app-service"
-  cluster = "${aws_ecs_cluster.archivematica-ecs-cluster.id}"
-  #task_definition = "${aws_ecs_task_definition.archivematica-django-app-task-definition.arn}"
-  task_definition = "${aws_ecs_task_definition.archivematica-django-app-task-definition.arn}"
-  desired_count = 1
-  launch_type = "EC2"
-  iam_role = "${aws_iam_role.ecs-service-role.arn}" #"${aws_iam_role.archivematica-ecs-service-role.arn}"
-  # is this necessary? -> depends_on = ["aws_iam_role_policy_attachment.ecs-service-role-attachment"]
-
-  load_balancer {
-    elb_name = "${aws_elb.archivematica-elb.name}"
-    container_name = "archivematica_django_app"
-    container_port = 8000
-  }
-  lifecycle { ignore_changes = ["task_definition"]}
-  # todo: maybe add custom attribute to ec2 instance and reference in placement_constraints here
-}
-
-resource "aws_ecs_service" "archivematica-ecs-django-app-service3" {
-  name = "archivematica-ecs-django-app-service3"
-  cluster = "${aws_ecs_cluster.archivematica-ecs-cluster.id}"
-  #task_definition = "${aws_ecs_task_definition.archivematica-django-app-task-definition.arn}"
-  task_definition = "${aws_ecs_task_definition.archivematica-django-app-task-definition3.arn}"
-  desired_count = 1
-  launch_type = "EC2"
-  iam_role = "${aws_iam_role.ecs-service-role.arn}" #"${aws_iam_role.archivematica-ecs-service-role.arn}"
-  # is this necessary? -> depends_on = ["aws_iam_role_policy_attachment.ecs-service-role-attachment"]
-
-  load_balancer {
-    elb_name = "${aws_elb.archivematica-elb.name}"
-    container_name = "archivematica_django_app3"
-    container_port = 8001
-  }
-  lifecycle { ignore_changes = ["task_definition"]}
-}
 
 resource "aws_ecs_service" "archivematica-dashboard" {
   name = "archivematica-dashboard"
@@ -226,6 +221,7 @@ resource "aws_ecs_service" "archivematica-dashboard" {
   desired_count = 1
   launch_type = "EC2"
   iam_role = "${aws_iam_role.ecs-service-role.arn}" #"${aws_iam_role.archivematica-ecs-service-role.arn}"
+  #network_mode = "awsvpc"
   # is this necessary? -> depends_on = ["aws_iam_role_policy_attachment.ecs-service-role-attachment"]
 
   load_balancer {
@@ -234,4 +230,32 @@ resource "aws_ecs_service" "archivematica-dashboard" {
     container_port = 8002
   }
   lifecycle { ignore_changes = ["task_definition"]}
+}
+
+resource "aws_ecs_service" "archivematica-storage-service" {
+  name = "archivematica-storage-service"
+  cluster = "${aws_ecs_cluster.archivematica-ecs-cluster.id}"
+  #task_definition = "${aws_ecs_task_definition.archivematica-django-app-task-definition.arn}"
+  task_definition = "${aws_ecs_task_definition.archivematica-storage-service.arn}"
+  desired_count = 1
+  launch_type = "EC2"
+  iam_role = "${aws_iam_role.ecs-service-role.arn}" #"${aws_iam_role.archivematica-ecs-service-role.arn}"
+  #network_mode = "awsvpc"
+  # is this necessary? -> depends_on = ["aws_iam_role_policy_attachment.ecs-service-role-attachment"]
+
+  load_balancer {
+    elb_name = "${aws_elb.archivematica-elb.name}"
+    container_name = "archivematica_storage_service"
+    container_port = 8003
+  }
+  lifecycle { ignore_changes = ["task_definition"]}
+}
+
+
+output "archivematica-ecr-dashboard-repository-URL" {
+  value = "${aws_ecr_repository.archivematica-ecr-dashboard-repository.repository_url}"
+}
+
+output "archivematica-ecr-storage-service-repository-URL" {
+  value = "${aws_ecr_repository.archivematica-ecr-storage-service-repository.repository_url}"
 }
