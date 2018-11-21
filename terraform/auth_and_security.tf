@@ -58,6 +58,18 @@ resource "aws_security_group" "archivematica-ecs-securitygroup" {
       cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
+      from_port = 8002
+      to_port = 8002
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+      from_port = 8003
+      to_port = 8003
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
       from_port = 22
       to_port = 22
       protocol = "tcp"
