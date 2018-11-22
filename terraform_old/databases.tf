@@ -32,12 +32,12 @@ module "mysql_rds_db" {
 
   # enabled_cloudwatch_logs_exports = ["audit", "general"]
 
-  username = "archivematica_db_user"
-  password = "archivematica_password"
-  port     = "3306"
-  apply_immediately  = "true" # migrations get applied immediately
-  create_db_instance = "true"
-  multi_az           = "true"
+  username            = "archivematica_db_user"
+  password            = "archivematica_password"
+  port                = "3306"
+  apply_immediately   = "true"                   # migrations get applied immediately
+  create_db_instance  = "true"
+  multi_az            = "true"
   publicly_accessible = "false"
 
   #db_subnet_group_name = "archivematica-db-subnet_group"
@@ -73,12 +73,12 @@ module "archivematica_dashboard_db" {
 
   # enabled_cloudwatch_logs_exports = ["audit", "general"]
 
-  username = "archivematica_db_user"
-  password = "archivematica_password"
-  port     = "3306"
-  apply_immediately  = "true" # migrations get applied immediately
-  create_db_instance = "true"
-  multi_az           = "true"
+  username            = "archivematica_db_user"
+  password            = "archivematica_password"
+  port                = "3306"
+  apply_immediately   = "true"                   # migrations get applied immediately
+  create_db_instance  = "true"
+  multi_az            = "true"
   publicly_accessible = "false"
 
   #db_subnet_group_name = "archivematica-db-subnet_group"
@@ -114,12 +114,12 @@ module "archivematica_storage_service_db" {
 
   # enabled_cloudwatch_logs_exports = ["audit", "general"]
 
-  username = "archivematica_db_user"
-  password = "archivematica_password"
-  port     = "3306"
-  apply_immediately  = "true" # migrations get applied immediately
-  create_db_instance = "true"
-  multi_az           = "true"
+  username            = "archivematica_db_user"
+  password            = "archivematica_password"
+  port                = "3306"
+  apply_immediately   = "true"                   # migrations get applied immediately
+  create_db_instance  = "true"
+  multi_az            = "true"
   publicly_accessible = "false"
 
   #db_subnet_group_name = "archivematica-db-subnet_group"
