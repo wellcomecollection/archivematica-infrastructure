@@ -1,40 +1,40 @@
-
 #https://eu-west-1.console.aws.amazon.com/ec2/v2/home?region=eu-west-1#LoadBalancers:search=archivematica-elb;sort=loadBalancerName
 
 resource "aws_elb" "archivematica-elb" {
   name = "archivematica-elb"
 
   listener {
-    instance_port = 8002
+    instance_port     = 8002
     instance_protocol = "http"
-    lb_port = 8002
-    lb_protocol = "http"
+    lb_port           = 8002
+    lb_protocol       = "http"
   }
 
   listener {
-    instance_port = 8003
+    instance_port     = 8003
     instance_protocol = "http"
-    lb_port = 8003
-    lb_protocol = "http"
+    lb_port           = 8003
+    lb_protocol       = "http"
   }
 
   health_check {
-    healthy_threshold = 2
+    healthy_threshold   = 2
     unhealthy_threshold = 2
-    timeout = 15
-    target = "HTTP:8000/"
-    interval = 60
+    timeout             = 15
+    target              = "HTTP:8000/"
+    interval            = 60
   }
 
-  cross_zone_load_balancing = true
-  idle_timeout = 400
-  connection_draining = true
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
   connection_draining_timeout = 400
 
   subnets = [
     "${aws_subnet.archivematica-subnet-public1.id}",
-    "${aws_subnet.archivematica-subnet-public2.id}"
+    "${aws_subnet.archivematica-subnet-public2.id}",
   ]
+
   security_groups = ["${aws_security_group.archivematica-ecs-securitygroup.id}"]
 
   tags {
@@ -79,9 +79,8 @@ variable "archivematica_ebs_volume_id" {
 }
 
 variable "archivematica_ebs_volume_size" {
-  default = "16"  # GB
+  default = "16" # GB
 }
-
 
 data "template_file" "archivematica-userdata" {
   template = "${file("ecs_task__django_app_volume_test__user_data.tpl")}"
@@ -94,35 +93,41 @@ data "template_file" "archivematica-userdata" {
 }
 
 resource "aws_launch_configuration" "archivematica-ecs-launchconfig" {
-  name_prefix = "archivematica-launchconfig"
-  image_id = "ami-0627e141ce928067c" #"ami-066826c6a40879d75"
-  instance_type = "${var.ECS_INSTANCE_TYPE}"
-  key_name = "${aws_key_pair.archivematica-sshkey.key_name}"
-  iam_instance_profile = "${aws_iam_instance_profile.ecs-instance-profile.id}"  #"${aws_iam_instance_profile.archivematica-ecs-iam-instance-profile.id}"
-  security_groups = ["${aws_security_group.archivematica-ecs-securitygroup.id}"]
+  name_prefix          = "archivematica-launchconfig"
+  image_id             = "ami-0627e141ce928067c"                                      #"ami-066826c6a40879d75"
+  instance_type        = "${var.ECS_INSTANCE_TYPE}"
+  key_name             = "${aws_key_pair.archivematica-sshkey.key_name}"
+  iam_instance_profile = "${aws_iam_instance_profile.ecs-instance-profile.id}"        #"${aws_iam_instance_profile.archivematica-ecs-iam-instance-profile.id}"
+  security_groups      = ["${aws_security_group.archivematica-ecs-securitygroup.id}"]
+
   #user_data = "#!/bin/bash \necho 'ECS_CLUSTER=archivematica-ecs-cluster' > /etc/ecs/ecs.config \nstart ecs"
   #user_data = "#!/bin/bash\necho 'ECS_CLUSTER=archivematica-ecs-cluster' > /etc/ecs/ecs.config\nstart ecs"
   #user_data = "${file("aws_launch_configuration_user_data.txt")}"
-  user_data   = "${data.template_file.archivematica-userdata.rendered}"
-  lifecycle { create_before_destroy = true }
+  user_data = "${data.template_file.archivematica-userdata.rendered}"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   ebs_block_device {
-    volume_size = "${var.archivematica_ebs_volume_size}"
-    device_name = "${var.archivematica_ebs_device_name}"
-    volume_type = "${var.archivematica_ebs_volume_type}"
+    volume_size           = "${var.archivematica_ebs_volume_size}"
+    device_name           = "${var.archivematica_ebs_device_name}"
+    volume_type           = "${var.archivematica_ebs_volume_type}"
     delete_on_termination = "true"
   }
 }
 
 resource "aws_autoscaling_group" "archivematica-ecs-autoscaling-group" {
   name = "archivematica-ecs-autoscaling-group"
+
   vpc_zone_identifier = [
     "${aws_subnet.archivematica-subnet-public1.id}",
-    "${aws_subnet.archivematica-subnet-public2.id}"
+    "${aws_subnet.archivematica-subnet-public2.id}",
   ]
+
   launch_configuration = "${aws_launch_configuration.archivematica-ecs-launchconfig.name}"
-  min_size = 1
-  max_size = 1
+  min_size             = 1
+  max_size             = 1
 
   #health_check_grace_period = 150  # needs to be greater than installation time of services
   #health_check_type = "ELB"
@@ -130,13 +135,13 @@ resource "aws_autoscaling_group" "archivematica-ecs-autoscaling-group" {
   force_delete = true
 
   tag {
-    key = "Name"
-    value = "archivematica-ecs-container"
+    key                 = "Name"
+    value               = "archivematica-ecs-container"
     propagate_at_launch = true
   }
+
   # we can also add load balancers (load_balancers for ELBs, target_group_arns for ALBs)
 }
-
 
 //resource "aws_ecs_task_definition" "archivematica-django-app-task-definition" {
 //  container_definitions = "${file("tasks/ecs_task__django_app_volume_test.json")}"
@@ -164,93 +169,97 @@ resource "aws_autoscaling_group" "archivematica-ecs-autoscaling-group" {
 //  }
 //}
 
-
 resource "aws_ecs_task_definition" "archivematica-dashboard" {
   container_definitions = "${file("tasks/archivematica_dashboard.json")}"
-  family = "archivematica-dashboard"
+  family                = "archivematica-dashboard"
 
   # For now, using EBS/EFS means we need to be on EC2 instance.
   requires_compatibilities = ["EC2"]
 
   volume {
-    name      = "archivematica-ebs-volume"  # todo: rename this to archivematica-ebs-volume-dataDir
+    name      = "archivematica-ebs-volume"                # todo: rename this to archivematica-ebs-volume-dataDir
     host_path = "${var.archivematica_ebs_host_path}/data"
   }
 
   volume {
-    name = "archivematica-ebs-volume-pipeline-sharedDirectory"
+    name      = "archivematica-ebs-volume-pipeline-sharedDirectory"
     host_path = "${var.archivematica_ebs_host_path}/sharedDirectory"
   }
-
 }
 
 resource "aws_ecs_task_definition" "archivematica-storage-service" {
   container_definitions = "${file("tasks/archivematica_storage_service.json")}"
-  family = "archivematica-storage-service"
+  family                = "archivematica-storage-service"
 
   # For now, using EBS/EFS means we need to be on EC2 instance.
   requires_compatibilities = ["EC2"]
 
   volume {
-    name = "archivematica-ebs-volume-pipeline-sharedDirectory"
+    name      = "archivematica-ebs-volume-pipeline-sharedDirectory"
     host_path = "${var.archivematica_ebs_host_path}/sharedDirectory"
   }
 
   volume {
-    name = "archivematica-storage-service-staging-data"
+    name      = "archivematica-storage-service-staging-data"
     host_path = "${var.archivematica_ebs_host_path}/archivematica_storage_service_staging_data"
   }
 
   volume {
-    name = "archivematica-storage-service-location-data"
+    name      = "archivematica-storage-service-location-data"
     host_path = "${var.archivematica_ebs_host_path}/archivematica_storage_service_location_data"
   }
 
   volume {
-    name = "archivematica-pipeline-data"
+    name      = "archivematica-pipeline-data"
     host_path = "${var.archivematica_ebs_host_path}/archivematica_pipeline_data"
   }
 }
 
-
 resource "aws_ecs_service" "archivematica-dashboard" {
-  name = "archivematica-dashboard"
+  name    = "archivematica-dashboard"
   cluster = "${aws_ecs_cluster.archivematica-ecs-cluster.id}"
+
   #task_definition = "${aws_ecs_task_definition.archivematica-django-app-task-definition.arn}"
   task_definition = "${aws_ecs_task_definition.archivematica-dashboard.arn}"
-  desired_count = 1
-  launch_type = "EC2"
-  iam_role = "${aws_iam_role.ecs-service-role.arn}" #"${aws_iam_role.archivematica-ecs-service-role.arn}"
+  desired_count   = 1
+  launch_type     = "EC2"
+  iam_role        = "${aws_iam_role.ecs-service-role.arn}"                   #"${aws_iam_role.archivematica-ecs-service-role.arn}"
+
   #network_mode = "awsvpc"
   # is this necessary? -> depends_on = ["aws_iam_role_policy_attachment.ecs-service-role-attachment"]
 
   load_balancer {
-    elb_name = "${aws_elb.archivematica-elb.name}"
+    elb_name       = "${aws_elb.archivematica-elb.name}"
     container_name = "archivematica_dashboard"
     container_port = 8002
   }
-  lifecycle { ignore_changes = ["task_definition"]}
+  lifecycle {
+    ignore_changes = ["task_definition"]
+  }
 }
 
 resource "aws_ecs_service" "archivematica-storage-service" {
-  name = "archivematica-storage-service"
+  name    = "archivematica-storage-service"
   cluster = "${aws_ecs_cluster.archivematica-ecs-cluster.id}"
+
   #task_definition = "${aws_ecs_task_definition.archivematica-django-app-task-definition.arn}"
   task_definition = "${aws_ecs_task_definition.archivematica-storage-service.arn}"
-  desired_count = 1
-  launch_type = "EC2"
-  iam_role = "${aws_iam_role.ecs-service-role.arn}" #"${aws_iam_role.archivematica-ecs-service-role.arn}"
+  desired_count   = 1
+  launch_type     = "EC2"
+  iam_role        = "${aws_iam_role.ecs-service-role.arn}"                         #"${aws_iam_role.archivematica-ecs-service-role.arn}"
+
   #network_mode = "awsvpc"
   # is this necessary? -> depends_on = ["aws_iam_role_policy_attachment.ecs-service-role-attachment"]
 
   load_balancer {
-    elb_name = "${aws_elb.archivematica-elb.name}"
+    elb_name       = "${aws_elb.archivematica-elb.name}"
     container_name = "archivematica_storage_service"
     container_port = 8003
   }
-  lifecycle { ignore_changes = ["task_definition"]}
+  lifecycle {
+    ignore_changes = ["task_definition"]
+  }
 }
-
 
 output "archivematica-ecr-dashboard-repository-URL" {
   value = "${aws_ecr_repository.archivematica-ecr-dashboard-repository.repository_url}"

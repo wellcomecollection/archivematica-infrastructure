@@ -1,4 +1,3 @@
-
 resource "aws_subnet" "archivematica-redis-subnet" {
   vpc_id            = "${aws_vpc.archivematica-vpc3.id}"
   cidr_block        = "10.0.127.0/24"
