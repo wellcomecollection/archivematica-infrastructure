@@ -1,19 +1,45 @@
-variable "AWS_REGION" {
+variable "region" {
   default = "eu-west-1"
 }
 
-# locally run: ssh-keygen -f archivematica-sshkey and add .pem extension to private key
-variable "PATH_TO_PRIVATE_KEY" {
-  default = "archivematica-sshkey2.pem"
-}
-variable "PATH_TO_PUBLIC_KEY" {
-  default = "archivematica-sshkey2.pub"
+variable "profile" {
+  default = "wellcomedigitalplatform"
 }
 
-variable archivematica_vpc_ip_cidr_range {
-  default = "10.0.0.0/16"
+variable "name" {
+  default = "archivematica"
 }
 
-variable "ECS_INSTANCE_TYPE" {
+variable "key_name" {
+  default = "wellcomedigitalplatform"
+}
+
+variable "controlled_access_cidr_ingress" {
+  default = "195.143.129.128/25"
+}
+
+variable "asg_min" {
+  default = "1"
+}
+
+variable "asg_desired" {
+  default = "1"
+}
+
+variable "asg_max" {
+  default = "1"
+}
+
+variable "instance_type" {
   default = "t2.medium"
 }
+
+variable "listener_port" {
+  default = "443"
+}
+
+variable "aws_region" {
+  default = "eu-west-1"
+}
+
+variable "certificate_domain" {}
