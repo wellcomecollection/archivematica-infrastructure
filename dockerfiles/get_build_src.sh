@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cd .buildsrc/
+mkdir -p .build_src/
+cd .build_src/
 rm -rf *
 
 wget https://github.com/artefactual/archivematica-storage-service/archive/v0.12.0.zip
