@@ -1,13 +1,13 @@
-resource "aws_alb" "loris" {
+resource "aws_alb" "archivematica" {
   # This name can only contain alphanumerics and hyphens
-  name = "${replace("${var.namespace}", "_", "-")}"
+  name = "${replace("${var.name}", "_", "-")}"
 
   subnets         = ["${module.archivematica_vpc.public_subnets}"]
   security_groups = ["${aws_security_group.service_lb_security_group.id}", "${aws_security_group.external_lb_security_group.id}"]
 }
 
 resource "aws_alb_listener" "https" {
-  load_balancer_arn = "${aws_alb.loris.id}"
+  load_balancer_arn = "${aws_alb.archivematica.id}"
   port              = "${var.listener_port}"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2015-05"
