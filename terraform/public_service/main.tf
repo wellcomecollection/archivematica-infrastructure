@@ -16,12 +16,16 @@ module "task" {
   app_memory   = "${var.app_memory}"
   app_env_vars = "${var.app_env_vars}"
 
+  app_env_vars_length = "${var.app_env_vars_length}"
+
   sidecar_container_image = "${var.sidecar_container_image}"
   sidecar_container_port  = "${var.sidecar_container_port}"
 
   sidecar_cpu      = "${var.sidecar_cpu}"
   sidecar_memory   = "${var.sidecar_memory}"
   sidecar_env_vars = "${var.sidecar_env_vars}"
+
+  sidecar_env_vars_length = "${var.sidecar_env_vars_length}"
 
   ebs_host_path      = "${var.ebs_host_path}"
   ebs_container_path = "${var.ebs_container_path}"

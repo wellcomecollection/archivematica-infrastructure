@@ -71,3 +71,20 @@ resource "aws_security_group" "service_egress_security_group" {
     Name = "${var.name}-egress"
   }
 }
+
+resource "aws_security_group" "interservice_security_group" {
+  name        = "${var.name}_interservice_security_group"
+  description = "Allow traffic between services"
+  vpc_id      = "${module.archivematica_vpc.vpc_id}"
+
+  ingress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
+  }
+
+  tags {
+    Name = "${var.name}-interservice"
+  }
+}

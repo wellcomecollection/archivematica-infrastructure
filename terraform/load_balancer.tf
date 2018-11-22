@@ -7,20 +7,15 @@ resource "aws_alb" "loris" {
 }
 
 resource "aws_alb_listener" "https" {
-  load_balancer_arn = "${aws_alb.loris.id}"
-  port              = "${var.listener_port}"
+  load_balancer_arn = "${aws_alb.loris.arn}"
+  port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2015-05"
   certificate_arn   = "${data.aws_acm_certificate.certificate.arn}"
 
   default_action {
-    type = "redirect"
-
-    redirect {
-      host        = "developers.wellcomecollection.org"
-      path        = "/iiif"
-      status_code = "HTTP_301"
-    }
+    target_group_arn = "${module.dashboard.target_group_arn}"
+    type             = "forward"
   }
 }
 

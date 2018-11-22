@@ -42,3 +42,6 @@ variable "cluster_id" {}
 variable "security_group_ids" {
   type = "list"
 }
+
+variable "app_env_vars_length" {}
+variable "sidecar_env_vars_length" {}
