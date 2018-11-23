@@ -31,12 +31,12 @@ ENV SS_DB_URL sqlite:storage_service.db
 ENV DJANGO_SECRET_KEY 12345
 ENV DJANGO_ALLOWED_HOSTS *
 
-ADD ./archivematica-storage-service/requirements/ /src/requirements/
+ADD .build_src/archivematica-storage-service/requirements/ /src/requirements/
 RUN pip install -q -r /src/requirements/production.txt -r /src/requirements/test.txt
-ADD ./archivematica-storage-service/ /src/
-ADD ./archivematica-storage-service/install/storage-service.gunicorn-config.py /etc/archivematica/storage-service.gunicorn-config.py
+ADD .build_src/archivematica-storage-service/ /src/
+ADD .build_src/archivematica-storage-service/install/storage-service.gunicorn-config.py /etc/archivematica/storage-service.gunicorn-config.py
 
-COPY ./archivematica-sampledata/ /src/archivematica-sampledata/
+COPY .build_src/archivematica-sampledata/ /src/archivematica-sampledata/
 
 
 RUN set -ex \
@@ -53,7 +53,7 @@ RUN set -ex \
 	&& mkdir -p $internalDirs \
 	&& chown -R archivematica:archivematica $internalDirs
 
-COPY ./storage_service/cmd.sh /src/cmd.sh
+COPY storage_service/cmd.sh /src/cmd.sh
 RUN chmod +x /src/cmd.sh
 
 # USER archivematica
