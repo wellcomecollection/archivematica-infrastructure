@@ -1,7 +1,7 @@
 FROM python:2.7-jessie
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV DJANGO_SETTINGS_MODULE settings.production
+ENV DJANGO_SETTINGS_MODULE settings.production_wellcome
 ENV PYTHONPATH /src/dashboard/src/:/src/archivematicaCommon/lib/
 ENV PYTHONUNBUFFERED 1
 ENV AM_GUNICORN_BIND 0.0.0.0:8000
@@ -9,7 +9,7 @@ ENV AM_GUNICORN_CHDIR /src/dashboard/src
 ENV FORWARDED_ALLOW_IPS *
 ENV DJANGO_PORT 8002
 ENV DJANGO_STATIC_ROOT /src/dashboard/src/static
-ENV SS_DB_URL sqlite:dashboard.db
+ENV ARCHIVEMATICA_DASHBOARD_DB_URL sqlite:////src/dashboard.db
 
 RUN set -ex \
 	&& curl -sL https://deb.nodesource.com/setup_8.x | bash - \
