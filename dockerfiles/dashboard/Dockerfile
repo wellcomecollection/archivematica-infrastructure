@@ -1,5 +1,7 @@
 FROM python:2.7-jessie
 
+ARG DB_PATH=/var/archivematica/sharedDirectory/dashboard.db
+
 ENV DEBIAN_FRONTEND noninteractive
 ENV DJANGO_SETTINGS_MODULE settings.production_wellcome
 ENV PYTHONPATH /src/dashboard/src/:/src/archivematicaCommon/lib/
@@ -9,7 +11,7 @@ ENV AM_GUNICORN_CHDIR /src/dashboard/src
 ENV FORWARDED_ALLOW_IPS *
 ENV DJANGO_PORT 8002
 ENV DJANGO_STATIC_ROOT /src/dashboard/src/static
-ENV ARCHIVEMATICA_DASHBOARD_DB_URL sqlite:////src/dashboard.db
+ENV ARCHIVEMATICA_DASHBOARD_DB_URL sqlite:///$DB_PATH
 
 RUN set -ex \
 	&& curl -sL https://deb.nodesource.com/setup_8.x | bash - \
@@ -60,12 +62,12 @@ COPY .build_src/archivematica-fork/src/dashboard/install/dashboard.gunicorn-conf
 # ENTRYPOINT ["/usr/local/bin/gunicorn", "--config=/etc/archivematica/dashboard.gunicorn-config.py", "wsgi:application"]
 
 
-COPY ./dashboard/cmd.sh /src/cmd.sh
-RUN chmod +x /src/cmd.sh
+COPY ./dashboard/entrypoint.sh /src/entrypoint.sh
+RUN chmod +x /src/entrypoint.sh
 
 # USER archivematica
 # RUN env DJANGO_SETTINGS_MODULE=settings.local /src/dashboard/src/manage.py collectstatic --noinput --clear
 EXPOSE 8002
 
 # ENTRYPOINT ["sleep", "infinity"]
-CMD ["/src/cmd.sh"]
+CMD ["/src/entrypoint.sh"]

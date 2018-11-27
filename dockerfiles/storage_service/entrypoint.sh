@@ -5,5 +5,5 @@ if [ ! -d "/home/archivematica/archivematica-sampledata" ]; then
 fi
 
 su archivematica
-#sleep infinity
-/src/dashboard/src/manage.py runserver 0.0.0.0:$DJANGO_PORT
+/src/storage_service/manage.py migrate
+/src/storage_service/manage.py runserver 0.0.0.0:$DJANGO_PORT

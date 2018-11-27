@@ -1,7 +1,6 @@
 FROM python:2.7-jessie
 
 ARG ARCHIVEMATICA_SRC=.build_src/archivematica-fork/src
-#ARG DB_PATH=/src/MCPServer.db
 ARG DB_PATH=/var/archivematica/sharedDirectory/MCPServer.db
 
 ENV DEBIAN_FRONTEND noninteractive
