@@ -14,8 +14,8 @@ unzip b7cfd5328501a64181b349eeb4e657cbf73e45ee.zip
 rm b7cfd5328501a64181b349eeb4e657cbf73e45ee.zip
 mv archivematica-sampledata-b7cfd5328501a64181b349eeb4e657cbf73e45ee archivematica-sampledata
 
-wget https://github.com/wellcometrust/archivematica-fork/archive/fb75e5c7092b986bb024c9cea336ec072a9a1fa7.zip
-unzip fb75e5c7092b986bb024c9cea336ec072a9a1fa7.zip
-rm fb75e5c7092b986bb024c9cea336ec072a9a1fa7.zip
-mv archivematica-fork-fb75e5c7092b986bb024c9cea336ec072a9a1fa7 archivematica-fork
+wget https://github.com/wellcometrust/archivematica-fork/archive/080aecd6f4ccf87f87c129a073add0dd62f10fce.zip
+unzip 080aecd6f4ccf87f87c129a073add0dd62f10fce.zip
+rm 080aecd6f4ccf87f87c129a073add0dd62f10fce.zip
+mv archivematica-fork-080aecd6f4ccf87f87c129a073add0dd62f10fce archivematica-fork
 
