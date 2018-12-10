@@ -1,4 +1,4 @@
-resource "aws_alb" "loris" {
+resource "aws_alb" "archivematica" {
   # This name can only contain alphanumerics and hyphens
   name = "${replace("${var.name}", "_", "-")}"
 
@@ -6,8 +6,8 @@ resource "aws_alb" "loris" {
   security_groups = ["${aws_security_group.service_lb_security_group.id}", "${aws_security_group.external_lb_security_group.id}"]
 }
 
-resource "aws_alb_listener" "https" {
-  load_balancer_arn = "${aws_alb.loris.arn}"
+resource "aws_alb_listener" "archivematica" {
+  load_balancer_arn = "${aws_alb.archivematica.arn}"
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2015-05"

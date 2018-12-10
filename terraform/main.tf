@@ -65,7 +65,7 @@ module "dashboard" {
   namespace_id     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   log_group_prefix = "am"
 
-  lb_arn = "${aws_alb.loris.arn}"
+  lb_arn = "${aws_alb.archivematica.arn}"
 
   private_subnets = "${module.archivematica_vpc.private_subnets}"
 
@@ -104,7 +104,7 @@ module "storage" {
   namespace_id     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   log_group_prefix = "am"
 
-  lb_arn = "${aws_alb.loris.arn}"
+  lb_arn = "${aws_alb.archivematica.arn}"
 
   private_subnets = "${module.archivematica_vpc.private_subnets}"
 
