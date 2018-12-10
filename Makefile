@@ -1,8 +1,10 @@
 include functions.Makefile
 include formatting.Makefile
 
+export AWS_PROFILE = wellcomedigitalworkflow
+
 tf-plan:
-	$(call terraform_plan,$(ROOT)/terraform,false)
+	$(call terraform_plan,terraform,false)
 
 tf-apply:
-	$(call terraform_apply,$(ROOT)/terraform)
+	$(call terraform_apply,terraform)
