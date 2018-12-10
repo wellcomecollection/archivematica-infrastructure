@@ -34,7 +34,7 @@ module "task" {
 }
 
 module "service" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/load_balanced?ref=v16.1.6"
+  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/rest/tcp?ref=v17.1.0"
 
   service_name       = "${var.name}"
   task_desired_count = "${var.task_desired_count}"
@@ -59,9 +59,6 @@ module "service" {
 
   task_definition_arn = "${module.task.task_definition_arn}"
 
-  healthcheck_path = "${var.healthcheck_path}"
-
-  target_group_protocol = "HTTP"
   listener_port         = "80"
   lb_arn                = "${var.lb_arn}"
 
