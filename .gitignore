@@ -1,6 +1,8 @@
 *.plan
 *.tfvars
 .DS_Store
+.releases
+
 
 # Created by https://www.gitignore.io/api/python,terraform
 # Edit at https://www.gitignore.io/?templates=python,terraform
