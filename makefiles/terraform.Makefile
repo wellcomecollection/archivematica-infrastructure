@@ -9,6 +9,14 @@
 
 TERRAFORM_WRAPPER_IMAGE = wellcome/terraform_wrapper:13
 
+
+# This one liner gives us the version of terraform running in our
+# terraform_wrapper container.
+ifndef TF_VERSION
+TF_VERSION = $(shell docker inspect wellcome/terraform_wrapper:13 | grep 'com.hashicorp.terraform.version' | head -n 1 | tr '"' ' ' | awk '{print $$3}')
+endif
+
+
 ifndef UPTODATE_GIT_DEFINED
 
 # This target checks if you're up-to-date with the current master.
@@ -77,4 +85,56 @@ define terraform_apply
 		--env BUCKET_NAME=$(TFPLAN_BUCKET) \
 		--env OP=apply \
 		$(TERRAFORM_WRAPPER_IMAGE)
+endef
+
+
+# These are a pair of dodgy hacks to allow us to run something like:
+#
+#	$ make stack-terraform-import aws_s3_bucket.bucket my-bucket-name
+#
+#	$ make stack-terraform-state-rm aws_s3_bucket.bucket
+#
+# In practice it slightly breaks the conventions of Make (you're not meant to
+# read command-line arguments), but since this is only for one-offs I think
+# it's okay.
+#
+# This is slightly easier than using terraform on the command line, as paths
+# are different in/outside Docker, so you have to reload all your modules,
+# which is slow and boring.
+#
+define terraform_import
+	$(ROOT)/docker_run.py --aws -- \
+		--volume $(ROOT):$(ROOT) \
+		--workdir $(ROOT)/$(2) \
+		hashicorp/terraform:$(TF_VERSION) import $(filter-out $(1)-terraform-import,$(MAKECMDGOALS))
+endef
+
+
+define terraform_state_rm
+	$(ROOT)/docker_run.py --aws -- \
+		--volume $(ROOT):$(ROOT) \
+		--workdir $(ROOT)/$(2) \
+		hashicorp/terraform:$(TF_VERSION) state rm $(filter-out $(1)-terraform-state-rm,$(MAKECMDGOALS))
+endef
+
+
+# Define a series of Make tasks (plan, apply) for a Terraform stack.
+#
+# Args:
+#	$1 - Name of the stack.
+#	$2 - Root to the Terraform directory.
+#	$3 - Is this a public-facing stack?  (true/false)
+#
+define terraform_target_template
+$(1)-terraform-plan:
+	$(call terraform_plan,$(2),$(3))
+
+$(1)-terraform-apply:
+	$(call terraform_apply,$(2))
+
+$(1)-terraform-import:
+	$(call terraform_import,$(1),$(2))
+
+$(1)-terraform-state-rm:
+	$(call terraform_state_rm,$(1),$(2))
 endef
