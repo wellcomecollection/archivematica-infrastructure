@@ -3,7 +3,7 @@ module "archivematica_dashboard_db" {
   version = "1.22.0"
 
   name       = "${local.dashboard_db_name}"
-  identifier = "${local.storage_db_name}"
+  identifier = "${local.dashboard_db_name}"
 
   allocated_storage = 10
 
