@@ -10,4 +10,5 @@ apt-get update
 # for mail configuration.
 DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-mcp-client
 
+apt autoremove --yes
 apt-get clean

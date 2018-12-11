@@ -10,4 +10,5 @@ apt-get update
 apt-get install --yes libmysqlclient-dev
 DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-dashboard
 
+apt autoremove --yes
 apt-get clean

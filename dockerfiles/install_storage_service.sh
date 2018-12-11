@@ -16,3 +16,4 @@ rm -f /etc/nginx/sites-enabled/default
 ln -s /etc/nginx/sites-available/storage /etc/nginx/sites-enabled/storage
 
 apt-get clean
+apt autoremove

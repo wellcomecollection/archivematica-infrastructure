@@ -13,15 +13,7 @@ set -o verbose
 #    a base Ubuntu 18.04 Docker image.
 #
 apt-get update
-apt-get install --yes curl git gnupg python
-
-# You also need this package, or you get the following error when running
-# 'apt-get update' against the Archivematica package repos:
-#
-#     The method driver /usr/lib/apt/methods/https could not be found
-#
-# See https://askubuntu.com/q/104160/265738
-apt-get install --yes apt-transport-https
+apt-get install --yes curl gnupg python
 
 
 # 1. Add Archivematica package sources.
@@ -37,4 +29,6 @@ curl -Ls https://bootstrap.pypa.io/get-pip.py | python -
 # The remaining steps are specific to particular services -- for example, the dashboard
 # or the client, so we'll run them in other Docker images.  We clear out the
 # package cache to keep the build size down, but that's it.
+apt-get remove --yes curl gnupg
+apt autoremove --yes
 apt-get clean
