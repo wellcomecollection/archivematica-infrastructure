@@ -6,9 +6,7 @@ variable "name" {
   default = "archivematica"
 }
 
-variable "key_name" {
-  default = "wellcomedigitalplatform"
-}
+variable "key_name" {}
 
 variable "controlled_access_cidr_ingress" {
   default = "195.143.129.128/25"
