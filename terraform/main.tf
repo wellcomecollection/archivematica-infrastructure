@@ -41,7 +41,7 @@ module "dashboard" {
 
   app_env_vars_length = "2"
 
-  app_container_image = "${var.dashboard_container_image_base}:1.15"
+  app_container_image = "${aws_ecr_repository.archivematica-ecr-dashboard-repository.repository_url}:${var.release_ids["archivematica_dashboard"]}"
   app_container_port  = "80"
 
   sidecar_cpu    = "512"
@@ -93,7 +93,7 @@ module "storage" {
 
   env_vars_length = "1"
 
-  container_image = "${var.storage_container_image_base}:1.07"
+  container_image = "${aws_ecr_repository.archivematica-ecr-storage-service-repository.repository_url}:1.07"
   container_port  = "8003"
 
   name       = "${var.name}-storage"
