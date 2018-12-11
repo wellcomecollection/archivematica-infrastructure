@@ -1,0 +1,32 @@
+# 3. Update your system.
+#    Although we ran 'update' once in step 0, we need to run it again here to
+#    pick up the new package sources.
+apt-get update
+
+
+# 4. Install Elasticsearch.   See step 2.
+
+
+# 5. Install the storage service package.
+#    The DEBIAN_FRONTEND variable tells 'apt-get' that we're can't give input;
+#    otherwise it tries to ask the user for a MySQL root password.
+#
+DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-storage-service
+
+
+# 6. Configure the storage service.
+rm -f /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/storage /etc/nginx/sites-enabled/storage
+
+
+# 8. Install the Archivematica packages.
+#    We set DEBIAN_FRONTEND so we don't get asked for a MySQL root password when
+#    installing MCP server, and mail configuratin in MCP client.  (See also: step 5.)
+#
+DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-mcp-server
+apt-get install --yes archivematica-dashboard
+DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-mcp-client
+
+
+# 10. Configure the dashboard.
+ln -s /etc/nginx/sites-available/dashboard.conf /etc/nginx/sites-enabled/dashboard.conf
