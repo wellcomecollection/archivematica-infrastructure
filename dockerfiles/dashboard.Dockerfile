@@ -28,4 +28,4 @@ ENV ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD=
 
 ENV REQUEST_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
-CMD ["/usr/share/archivematica/virtualenvs/archivematica-dashboard/bin/gunicorn", "--config", "/etc/archivematica/dashboard.gunicorn-config.py wsgi:application"]
+CMD ["/usr/share/archivematica/virtualenvs/archivematica-dashboard/bin/gunicorn", "--config", "/etc/archivematica/dashboard.gunicorn-config.py", "wsgi:application"]
