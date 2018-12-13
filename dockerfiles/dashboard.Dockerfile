@@ -26,7 +26,7 @@ WORKDIR /usr/share/archivematica/dashboard/
 
 ENV PYTHONPATH=/usr/lib/archivematica/archivematicaCommon:/usr/share/archivematica/dashboard
 
-ENV AM_GUNICORN_BIND=127.0.0.1:8002
+ENV AM_GUNICORN_BIND=0.0.0.0:8000
 ENV ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER=127.0.0.1:9200
 ENV DJANGO_SETTINGS_MODULE=settings.production
 ENV ARCHIVEMATICA_DASHBOARD_DASHBOARD_DJANGO_ALLOWED_HOSTS=*
@@ -40,4 +40,5 @@ ENV REQUEST_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 RUN chown -R archivematica:archivematica /var/log/archivematica
 
-CMD ["/usr/share/archivematica/virtualenvs/archivematica-dashboard/bin/gunicorn", "--config", "/etc/archivematica/dashboard.gunicorn-config.py", "wsgi:application"]
+COPY /run_dashboard.sh /
+CMD ["/run_dashboard.sh"]

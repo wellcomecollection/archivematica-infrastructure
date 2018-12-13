@@ -23,4 +23,7 @@ ENV ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD=1O5N5UCiFoQP
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y archivematica-storage-service
 
-CMD ["/usr/share/archivematica/virtualenvs/archivematica-mcp-server/bin/python", "/usr/lib/archivematica/MCPServer/archivematicaMCP.py"]
+RUN apt-get install -y curl
+
+COPY run_mcp_server.sh /
+CMD ["/run_mcp_server.sh"]
