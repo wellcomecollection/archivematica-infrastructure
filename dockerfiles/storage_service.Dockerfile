@@ -32,4 +32,5 @@ ENV REQUEST_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 # else ImproperlyConfigured: Error loading MySQLdb module: libmysqlclient.so.20: cannot open shared object file: No such file or directory
 RUN apt-get install --yes libmysqlclient20
 
-CMD ["/usr/share/archivematica/virtualenvs/archivematica-storage-service/bin/gunicorn", "--config", "/etc/archivematica/storage-service.gunicorn-config.py", "storage_service.wsgi:application"]
+COPY run_storage_service.sh /
+CMD ["/run_storage_service.sh"]

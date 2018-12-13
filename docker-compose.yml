@@ -166,3 +166,16 @@ services:
       - "8000"
     links:
       - "mysql"
+
+  nginx:
+    image: "nginx:stable-alpine"
+    volumes:
+      - "./nginx/nginx.conf:/etc/nginx/nginx.conf"
+      - "./nginx/conf.d/archivematica.conf:/etc/nginx/conf.d/archivematica.conf"
+      - "./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf"
+    expose:
+      - "80"
+      - "8000"
+    ports:
+      - "62080:80"
+      - "62081:8000"
