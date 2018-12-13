@@ -28,4 +28,15 @@ ENV ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD=
 
 ENV REQUEST_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
+# Install the storage service package.
+# The DEBIAN_FRONTEND variable tells 'apt-get' that we're can't give input;
+# otherwise it tries to ask the user for a MySQL root password.
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-storage-service
+
+# Install the mcp server packages.  We set DEBIAN_FRONTEND so we don't get asked
+# for a MySQL root password.
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-mcp-server
+
+RUN chown -R archivematica:archivematica /var/log/archivematica
+
 CMD ["/usr/share/archivematica/virtualenvs/archivematica-dashboard/bin/gunicorn", "--config", "/etc/archivematica/dashboard.gunicorn-config.py", "wsgi:application"]
