@@ -1,17 +1,11 @@
-FROM wellcome/archivematica_base
+FROM archivematica_base
 
-COPY install_dashboard.sh /
-RUN /install_dashboard.sh
+ENV APT_INSTALL_DASHBOARD=yes
+ENV APT_INSTALL_MCP_SERVER=no
+ENV APT_INSTALL_MCP_CLIENT=yes
+ENV APT_INSTALL_STORAGE_SERVICE=no
 
-# Install the storage service package.
-# The DEBIAN_FRONTEND variable tells 'apt-get' that we're can't give input;
-# otherwise it tries to ask the user for a MySQL root password.
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-storage-service
-
-# Install the mcp server packages.  We set DEBIAN_FRONTEND so we don't get asked
-# for a MySQL root password.
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-mcp-server
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-mcp-client
+RUN /install_apt_packages.sh
 
 # The installation instructions tell you to run
 #

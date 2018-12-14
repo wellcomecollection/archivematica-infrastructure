@@ -1,7 +1,18 @@
-FROM wellcome/archivematica_base
+FROM archivematica_base
 
-COPY install_storage_service.sh /
-RUN /install_storage_service.sh
+ENV APT_INSTALL_DASHBOARD=no
+ENV APT_INSTALL_MCP_SERVER=no
+ENV APT_INSTALL_MCP_CLIENT=no
+ENV APT_INSTALL_STORAGE_SERVICE=yes
+
+RUN /install_apt_packages.sh
+
+# We also need this package, or we get an error on startup:
+#
+#     ImproperlyConfigured: Error loading MySQLdb module: libmysqlclient.so.20:
+#     cannot open shared object file: No such file or directory
+#
+RUN apt-get install --yes libmysqlclient20
 
 # The installation instructions tell you to run
 #
@@ -28,9 +39,6 @@ ENV DJANGO_SECRET_KEY="7290fac28a8b30d0017f2bfbcd299d24d2fb5358"
 ENV SS_GUNICORN_BIND=0.0.0.0:8000
 
 ENV REQUEST_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-
-# else ImproperlyConfigured: Error loading MySQLdb module: libmysqlclient.so.20: cannot open shared object file: No such file or directory
-RUN apt-get install --yes libmysqlclient20
 
 COPY run_storage_service.sh /
 CMD ["/run_storage_service.sh"]

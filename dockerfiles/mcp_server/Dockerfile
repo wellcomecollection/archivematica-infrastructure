@@ -1,7 +1,11 @@
-FROM wellcome/archivematica_base
+FROM archivematica_base
 
-COPY install_mcp_server.sh /
-RUN /install_mcp_server.sh
+ENV APT_INSTALL_DASHBOARD=yes
+ENV APT_INSTALL_MCP_SERVER=yes
+ENV APT_INSTALL_MCP_CLIENT=no
+ENV APT_INSTALL_STORAGE_SERVICE=no
+
+RUN /install_apt_packages.sh
 
 # The installation instructions tell you to run
 #
