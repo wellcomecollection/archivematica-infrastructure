@@ -1,0 +1,46 @@
+[
+  {
+    "name": "gearmand",
+    "image": "artefactual/gearmand:1.1.17-alpine",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "gearmand",
+    "command": [
+      "--queue-type=redis", "--redis-server=139.162.244.147", "--redis-port=6379"
+    ]
+  },
+  {
+    "name": "fits",
+    "image": "artefactual/fits-ngserver:0.8.4",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "mountPoints": [
+      {
+        "sourceVolume": "pipeline-data",
+        "containerPath": "/var/archivematica/sharedDirectory"
+      }
+    ]
+  },
+  {
+    "name": "clamavd",
+    "image": "artefactual/clamav:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "mountPoints": [
+      {
+        "sourceVolume": "pipeline-data",
+        "containerPath": "/var/archivematica/sharedDirectory"
+      }
+    ]
+  },
+  {
+    "name": "nginx",
+    "image": "nginx:stable-alpine",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true
+  }
+]
