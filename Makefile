@@ -8,3 +8,5 @@ tf-plan:
 
 tf-apply:
 	$(call terraform_apply,terraform)
+
+include dockerfiles/Makefile
