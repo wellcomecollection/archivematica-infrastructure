@@ -110,6 +110,7 @@ services:
 
       # Relies on storage service DB migrations
       - "archivematica-storage-service"
+      - "archivematica-dashboard"
 
   archivematica-mcp-client:
     image: "mcp_client"
@@ -184,7 +185,7 @@ services:
     links:
       - "mysql"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
       interval: "10s"
       timeout: "5s"
       retries: 6

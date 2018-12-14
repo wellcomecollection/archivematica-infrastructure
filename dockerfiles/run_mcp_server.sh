@@ -2,6 +2,7 @@
 
 set -o errexit
 set -o nounset
+set -o verbose
 
 # This is a proxy for whether the storage service has started yet (and applied
 # the database migrations that the MCP server requires).
