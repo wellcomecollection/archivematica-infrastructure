@@ -17,3 +17,7 @@ mcp_server-build: archivematica_base-build
 
 storage_service-build: archivematica_base-build
 	$(call build_image,archivematica_storage_service,dockerfiles/storage_service/Dockerfile)
+
+
+dashboard-publish: dashboard-build
+	$(call publish_service,archivematica_dashboard)
