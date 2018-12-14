@@ -32,5 +32,18 @@ then
   DEBIAN_FRONTEND=noninteractive apt-get install --yes archivematica-storage-service
 fi
 
+# This installs a virtualenv for every service, but we only need the one for
+# this application.  This saves us several hundred MB in the final image.
+if [[ ! -z "$APT_KEEP_VIRTUALENV" ]]
+then
+  for venv_name in dashboard mcp-client mcp-server storage-service
+  do
+    if [[ "$APT_KEEP_VIRTUALENV" != "$venv_name" ]]
+    then
+      rm -rf "/usr/share/archivematica/virtualenvs/archivematica-$venv_name"
+    fi
+  done
+fi
+
 apt autoremove --yes
 apt-get clean
