@@ -2,7 +2,8 @@ data "template_file" "container_definitions" {
   template = "${file("container_definitions.json")}"
 
   vars {
-    dashboard_image = "${module.ecr_dashboard.repository_url}:${var.release_ids["archivematica_dashboard"]}"
+    dashboard_image       = "${module.ecr_dashboard.repository_url}:${var.release_ids["archivematica_dashboard"]}",
+    storage_service_image = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
   }
 }
 
@@ -20,7 +21,11 @@ resource "aws_ecs_task_definition" "archivematica" {
     host_path = "/ecs/location-data"
   }
 
+  volume {
+    name      = "staging-data"
+    host_path = "/ecs/staging-data"
+  }
+
   cpu    = 2048
   memory = 4096
-
 }

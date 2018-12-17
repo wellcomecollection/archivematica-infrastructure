@@ -5,6 +5,8 @@ ENV APT_INSTALL_MCP_SERVER=no
 ENV APT_INSTALL_MCP_CLIENT=no
 ENV APT_INSTALL_STORAGE_SERVICE=yes
 
+ENV APT_KEEP_VIRTUALENV=storage_service
+
 RUN /install_apt_packages.sh
 
 # We also need this package, or we get an error on startup:
