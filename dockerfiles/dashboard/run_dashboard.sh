@@ -4,8 +4,6 @@ set -o errexit
 set -o nounset
 set -o verbose
 
-find / -name manage.py
-
 /usr/share/archivematica/virtualenvs/archivematica-dashboard/bin/python \
   /usr/share/archivematica/dashboard/manage.py \
     migrate --noinput
