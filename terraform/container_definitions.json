@@ -107,6 +107,77 @@
     ]
   },
   {
+    "name": "mcp-client",
+    "image": "${mcp_client_image}",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "mountPoints": [
+      {
+        "sourceVolume": "pipeline-data",
+        "containerPath": "/var/archivematica/sharedDirectory"
+      }
+    ],
+    "environment": [
+      {
+        "name": "DJANGO_SECRET_KEY",
+        "value": "12345"
+      },
+      {
+        "name": "DJANGO_SETTINGS_MODULE",
+        "value": "settings.local"
+      },
+      {
+        "name": "MAILGUN_SERVER",
+        "value": "fits"
+      },
+      {
+        "name": "MAILGUN_PORT",
+        "value": "2113"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_CLIENT_USER",
+        "value": "archivematica"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD",
+        "value": "demo"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST",
+        "value": "139.162.244.147"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE",
+        "value": "MCP"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER",
+        "value": "elastic@changeme:139.162.244.147:9200"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER",
+        "value": "gearmand:4730"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED",
+        "value": "true"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT",
+        "value": "true"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER",
+        "value": "clamavd:3310"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND",
+        "value": "clamdscanner"
+      }
+    ]
+  },
+  {
     "name": "mcp-server",
     "image": "${mcp_server_image}",
     "cpu": 256,

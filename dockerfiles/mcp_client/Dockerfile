@@ -5,6 +5,8 @@ ENV APT_INSTALL_MCP_SERVER=no
 ENV APT_INSTALL_MCP_CLIENT=yes
 ENV APT_INSTALL_STORAGE_SERVICE=no
 
+ENV APT_KEEP_VIRTUALENV=mcp-client
+
 RUN /install_apt_packages.sh
 
 # The installation instructions tell you to run
