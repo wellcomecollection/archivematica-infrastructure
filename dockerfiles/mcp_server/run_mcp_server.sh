@@ -8,7 +8,7 @@ set -o verbose
 # the database migrations that the MCP server requires).
 for i in 1 2 3 4 5
 do
-  if curl http://archivematica-dashboard:8000/
+  if curl "http://dashboard:8000/"
   then
     echo "Dashboard is up!  Starting"
     break
