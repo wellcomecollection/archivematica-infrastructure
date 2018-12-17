@@ -22,5 +22,8 @@ storage_service-build: archivematica_base-build
 dashboard-publish: dashboard-build
 	$(call publish_service,archivematica_dashboard)
 
+mcp_server-publish: mcp_server-build
+	$(call publish_service,archivematica_mcp_server)
+
 storage_service-publish: mcp_server-build
 	$(call publish_service,archivematica_storage_service)
