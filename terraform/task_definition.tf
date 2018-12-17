@@ -50,5 +50,5 @@ resource "aws_ecs_task_definition" "archivematica" {
   network_mode             = "awsvpc"
 
   cpu    = 2048
-  memory = 4096
+  memory = 5120
 }

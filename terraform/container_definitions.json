@@ -43,7 +43,7 @@
     "name": "clamavd",
     "image": "artefactual/clamav:latest",
     "cpu": 256,
-    "memory": 512,
+    "memory": 1024,
     "essential": true,
     "mountPoints": [
       {
