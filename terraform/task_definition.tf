@@ -9,24 +9,35 @@ data "template_file" "container_definitions" {
   }
 }
 
+resource "aws_ecs_cluster" "archivematica" {
+  name = "archivematica"
+}
+
+module "iam_roles" {
+  source = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=v17.1.0"
+
+  task_name = "archivematica"
+}
+
 resource "aws_ecs_task_definition" "archivematica" {
   family                = "archivematica"
   container_definitions = "${data.template_file.container_definitions.rendered}"
+  execution_role_arn    = "${module.iam_roles.task_execution_role_arn}"
 
   volume {
-    name      = "pipeline-data"
-    host_path = "/ecs/pipeline-data"
+    name = "pipeline-data"
   }
 
   volume {
-    name      = "location-data"
-    host_path = "/ecs/location-data"
+    name = "location-data"
   }
 
   volume {
-    name      = "staging-data"
-    host_path = "/ecs/staging-data"
+    name = "staging-data"
   }
+
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
 
   cpu    = 2048
   memory = 4096
