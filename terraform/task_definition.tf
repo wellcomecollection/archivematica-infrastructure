@@ -1,3 +1,9 @@
+module "log_group" {
+  source = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/log_group?ref=v17.1.0"
+
+  task_name = "archivematica"
+}
+
 data "template_file" "container_definitions" {
   template = "${file("container_definitions.json")}"
 
@@ -6,6 +12,10 @@ data "template_file" "container_definitions" {
     mcp_client_image      = "${module.ecr_mcp_client.repository_url}:${var.release_ids["archivematica_mcp_client"]}"
     mcp_server_image      = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
     storage_service_image = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
+
+    log_group_region = "${var.region}"
+    log_group_name   = "${module.log_group.name}"
+    log_group_prefix = "archivematica"
   }
 }
 

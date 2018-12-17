@@ -8,7 +8,15 @@
     "user": "gearmand",
     "command": [
       "--queue-type=redis", "--redis-server=139.162.244.147", "--redis-port=6379"
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${log_group_name}",
+          "awslogs-region": "${log_group_region}",
+          "awslogs-stream-prefix": "${log_group_prefix}"
+        }
+    }
   },
   {
     "name": "fits",
@@ -21,7 +29,15 @@
         "sourceVolume": "pipeline-data",
         "containerPath": "/var/archivematica/sharedDirectory"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${log_group_name}",
+          "awslogs-region": "${log_group_region}",
+          "awslogs-stream-prefix": "${log_group_prefix}"
+        }
+    }
   },
   {
     "name": "clamavd",
@@ -34,7 +50,15 @@
         "sourceVolume": "pipeline-data",
         "containerPath": "/var/archivematica/sharedDirectory"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${log_group_name}",
+          "awslogs-region": "${log_group_region}",
+          "awslogs-stream-prefix": "${log_group_prefix}"
+        }
+    }
   },
   {
     "name": "nginx",
@@ -104,7 +128,15 @@
         "name": "ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED",
         "value": "true"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${log_group_name}",
+          "awslogs-region": "${log_group_region}",
+          "awslogs-stream-prefix": "${log_group_prefix}"
+        }
+    }
   },
   {
     "name": "mcp-client",
@@ -175,7 +207,15 @@
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND",
         "value": "clamdscanner"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${log_group_name}",
+          "awslogs-region": "${log_group_region}",
+          "awslogs-stream-prefix": "${log_group_prefix}"
+        }
+    }
   },
   {
     "name": "mcp-server",
@@ -222,7 +262,15 @@
         "name": "ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED",
         "value": "true"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${log_group_name}",
+          "awslogs-region": "${log_group_region}",
+          "awslogs-stream-prefix": "${log_group_prefix}"
+        }
+    }
   },
   {
     "name": "storage-service",
@@ -273,6 +321,14 @@
         "name": "SS_GNPUG_HOME_PATH",
         "value": "/var/archivematica/storage_service/.gnupg"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${log_group_name}",
+          "awslogs-region": "${log_group_region}",
+          "awslogs-stream-prefix": "${log_group_prefix}"
+        }
+    }
   }
 ]
