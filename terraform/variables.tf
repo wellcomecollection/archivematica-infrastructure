@@ -1,6 +1,10 @@
 variable "region" {
   default = "eu-west-1"
 }
+
+variable "release_ids" {
+ type = "map"
+}
 #
 # variable "name" {
 #   default = "archivematica"
@@ -52,6 +56,4 @@ variable "region" {
 #   default = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/archivematica_storage_service"
 # }
 #
-# variable "release_ids" {
-#   type = "map"
-# }
+
