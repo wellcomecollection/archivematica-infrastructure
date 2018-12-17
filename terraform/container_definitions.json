@@ -157,7 +157,7 @@
       },
       {
         "name": "DJANGO_SETTINGS_MODULE",
-        "value": "settings.local"
+        "value": "settings.common"
       },
       {
         "name": "MAILGUN_SERVER",
