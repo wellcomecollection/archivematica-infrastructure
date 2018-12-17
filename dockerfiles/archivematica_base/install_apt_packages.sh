@@ -40,6 +40,7 @@ then
   do
     if [[ "$APT_KEEP_VIRTUALENV" != "$venv_name" ]]
     then
+      echo "We don't need venv $venv_name, so deleting..."
       rm -rf "/usr/share/archivematica/virtualenvs/archivematica-$venv_name"
     fi
   done
