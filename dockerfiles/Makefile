@@ -30,3 +30,6 @@ mcp_server-publish: mcp_server-build
 
 storage_service-publish: storage_service-build
 	$(call publish_service,archivematica_storage_service)
+
+
+publish-all: dashboard-publish mcp_client-publish mcp_server-publish storage_service-publish

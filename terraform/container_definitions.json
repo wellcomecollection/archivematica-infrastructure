@@ -102,11 +102,11 @@
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER",
-        "value": "gearmand:4730"
+        "value": "localhost:4730"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER",
-        "value": "elastic@changeme:139.162.244.147:9200"
+        "value": "elastic:changeme@139.162.244.147:9200"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_CLIENT_USER",
@@ -127,6 +127,10 @@
       {
         "name": "ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED",
         "value": "true"
+      },
+      {
+        "name": "AM_GUNICORN_BIND",
+        "value": "0.0.0.0:9000"
       }
     ],
     "logConfiguration": {
@@ -161,7 +165,7 @@
       },
       {
         "name": "MAILGUN_SERVER",
-        "value": "fits"
+        "value": "localhost"
       },
       {
         "name": "MAILGUN_PORT",
@@ -201,7 +205,7 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER",
-        "value": "clamavd:3310"
+        "value": "localhost:3310"
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND",
@@ -256,7 +260,7 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_MCPSERVER_MCPARCHIVEMATICA_SERVER",
-        "value": "gearmand:4730"
+        "value": "localhost:4730"
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED",
