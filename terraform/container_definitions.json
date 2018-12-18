@@ -118,7 +118,7 @@
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_CLIENT_HOST",
-        "value": "mysql"
+        "value": "139.162.244.147"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE",
@@ -315,7 +315,7 @@
       },
       {
         "name": "SS_DBURL",
-        "value": "mysql://archivem,atica:demo@139.162.244.147:3306/SS"
+        "value": "mysql://archivematica:demo@139.162.244.147:3306/SS"
       },
       {
         "name": "SS_GNPUG_HOME_PATH",
