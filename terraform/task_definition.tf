@@ -46,8 +46,8 @@ resource "aws_ecs_task_definition" "archivematica" {
     name = "staging-data"
   }
 
-  requires_compatibilities = ["FARGATE"]
-  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+  network_mode             = "bridge"
 
   cpu    = 2048
   memory = 5120

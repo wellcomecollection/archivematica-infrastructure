@@ -65,7 +65,19 @@
     "image": "nginx:stable-alpine",
     "cpu": 256,
     "memory": 512,
-    "essential": true
+    "essential": true,
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group_name}",
+        "awslogs-region": "${log_group_region}",
+        "awslogs-stream-prefix": "${log_group_prefix}"
+      }
+    },
+    "links": [
+      "dashboard",
+      "storage-service"
+    ]
   },
   {
     "name": "dashboard",
@@ -102,7 +114,7 @@
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER",
-        "value": "localhost:4730"
+        "value": "gearmand:4730"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER",
@@ -135,12 +147,22 @@
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "${log_group_name}",
-          "awslogs-region": "${log_group_region}",
-          "awslogs-stream-prefix": "${log_group_prefix}"
-        }
-    }
+      "options": {
+        "awslogs-group": "${log_group_name}",
+        "awslogs-region": "${log_group_region}",
+        "awslogs-stream-prefix": "${log_group_prefix}"
+      }
+    },
+    "portMappings": [
+      {
+        "containerPort": 9000,
+        "hostPort": 9000
+      }
+    ],
+    "links": [
+      "gearmand",
+      "storage-service"
+    ]
   },
   {
     "name": "mcp-client",
@@ -165,7 +187,7 @@
       },
       {
         "name": "MAILGUN_SERVER",
-        "value": "localhost"
+        "value": "fits"
       },
       {
         "name": "MAILGUN_PORT",
@@ -205,7 +227,7 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER",
-        "value": "localhost:3310"
+        "value": "clamavd:3310"
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND",
@@ -214,12 +236,18 @@
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "${log_group_name}",
-          "awslogs-region": "${log_group_region}",
-          "awslogs-stream-prefix": "${log_group_prefix}"
-        }
-    }
+      "options": {
+        "awslogs-group": "${log_group_name}",
+        "awslogs-region": "${log_group_region}",
+        "awslogs-stream-prefix": "${log_group_prefix}"
+      }
+    },
+    "links": [
+      "fits",
+      "clamavd",
+      "gearmand",
+      "storage-service"
+    ]
   },
   {
     "name": "mcp-server",
@@ -260,7 +288,7 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_MCPSERVER_MCPARCHIVEMATICA_SERVER",
-        "value": "localhost:4730"
+        "value": "gearmand:4730"
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED",
@@ -274,7 +302,10 @@
           "awslogs-region": "${log_group_region}",
           "awslogs-stream-prefix": "${log_group_prefix}"
         }
-    }
+    },
+    "links": [
+      "gearmand"
+    ]
   },
   {
     "name": "storage-service",
@@ -328,11 +359,17 @@
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "${log_group_name}",
-          "awslogs-region": "${log_group_region}",
-          "awslogs-stream-prefix": "${log_group_prefix}"
-        }
-    }
+      "options": {
+        "awslogs-group": "${log_group_name}",
+        "awslogs-region": "${log_group_region}",
+        "awslogs-stream-prefix": "${log_group_prefix}"
+      }
+    },
+    "portMappings": [
+      {
+        "containerPort": 8000,
+        "hostPort": 8000
+      }
+    ]
   }
 ]
