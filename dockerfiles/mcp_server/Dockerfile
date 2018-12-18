@@ -31,12 +31,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y archivematica-storage-serv
 
 RUN apt-get install -y curl
 
-RUN set -ex \
-	&& mkdir -p /var/archivematica/sharedDirectory \
-	&& chown -R archivematica:archivematica /var/archivematica \
-  && chown -R archivematica:archivematica /var/log/archivematica
-
-USER archivematica
-
 COPY run_mcp_server.sh /
 CMD ["/run_mcp_server.sh"]
