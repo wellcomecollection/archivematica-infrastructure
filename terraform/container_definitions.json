@@ -62,7 +62,7 @@
   },
   {
     "name": "nginx",
-    "image": "nginx:stable-alpine",
+    "image": "${nginx_image}",
     "cpu": 256,
     "memory": 512,
     "essential": true,
