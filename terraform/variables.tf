@@ -12,9 +12,9 @@ variable "release_ids" {
 #
 # variable "key_name" {}
 #
-# variable "controlled_access_cidr_ingress" {
-#   default = "195.143.129.128/25"
-# }
+variable "controlled_access_cidr_ingress" {
+  default = "195.143.129.128/25"
+}
 #
 # variable "asg_min" {
 #   default = "1"
