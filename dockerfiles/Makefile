@@ -18,6 +18,9 @@ mcp_server-build: archivematica_base-build
 storage_service-build: archivematica_base-build
 	$(call build_image,archivematica_storage_service,dockerfiles/storage_service/Dockerfile)
 
+nginx-build:
+	$(call build_image,archivematica_nginx,dockerfiles/nginx/Dockerfile)
+
 
 dashboard-publish: dashboard-build
 	$(call publish_service,archivematica_dashboard)
@@ -31,5 +34,8 @@ mcp_server-publish: mcp_server-build
 storage_service-publish: storage_service-build
 	$(call publish_service,archivematica_storage_service)
 
+nginx-publish: nginx-build
+	$(call publish_service,archivematica_nginx)
 
-publish-all: dashboard-publish mcp_client-publish mcp_server-publish storage_service-publish
+
+publish-all: dashboard-publish mcp_client-publish mcp_server-publish storage_service-publish nginx-publish
