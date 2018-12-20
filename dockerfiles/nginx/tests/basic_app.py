@@ -3,7 +3,7 @@
 
 import os
 
-from flask import Flask, jsonify, redirect
+from flask import Flask, jsonify, redirect, request
 
 app = Flask(__name__)
 
@@ -17,8 +17,8 @@ def index():
 
 
 @app.route("/foo")
-def redirect():
-    return flask.redirect("/bar", code=302)
+def redirect_route():
+    return redirect("/bar", code=302)
 
 
 @app.route("/bar")
