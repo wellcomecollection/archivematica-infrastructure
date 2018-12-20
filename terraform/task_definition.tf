@@ -75,7 +75,7 @@ resource "aws_alb_listener_rule" "https" {
 
   condition {
     field  = "path-pattern"
-    values = ["/archivematica/"]
+    values = ["/archivematica/*"]
   }
 }
 
