@@ -1,0 +1,28 @@
+version: "2.1"
+
+services:
+  nginx:
+    build:
+      context: ".."
+      dockerfile: "Dockerfile"
+    links:
+      - "dashboard"
+      - "storage-service"
+    ports:
+      - "8080:8080"
+
+  storage-service:
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+    environment:
+      NAME: "storage-service"
+      PORT: 8000
+
+  dashboard:
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+    environment:
+      NAME: "dashboard"
+      PORT: 9000
