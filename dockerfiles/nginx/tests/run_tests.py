@@ -33,7 +33,6 @@ class TestDashboardEndpoint:
 
     def test_get_redirect_endpoint_is_200(self, container_url):
         r = requests.get(container_url + "/archivematica/dashboard/foo")
-        print(r.text)
         assert r.status_code == 200
         assert r.json() == {
             "name": "dashboard",
@@ -47,4 +46,59 @@ class TestDashboardEndpoint:
         assert (
             r.headers["Location"] ==
             "http://localhost:8080/archivematica/dashboard/bar"
+        )
+
+
+class TestStorageEndpoint:
+
+    def test_endpoint_is_200(self, container_url):
+        r = requests.get(container_url + "/archivematica/storage-service/")
+        assert r.status_code == 200
+        assert r.json() == {
+            "name": "storage-service",
+            "path": "/",
+        }
+
+    def test_get_redirect_endpoint_is_200(self, container_url):
+        r = requests.get(container_url + "/archivematica/storage-service/foo")
+        assert r.status_code == 200
+        assert r.json() == {
+            "name": "storage-service",
+            "path": "/bar",
+            "from_redirect": True,
+        }
+
+    def test_head_redirect_endpoint_is_302(self, container_url):
+        r = requests.head(container_url + "/archivematica/storage-service/foo")
+        assert r.status_code == 302
+        assert (
+            r.headers["Location"] ==
+            "http://localhost:8080/archivematica/storage-service/bar"
+        )
+
+
+class TestRootEndpoint:
+
+    def test_root_is_200_dashboard(self, container_url):
+        r = requests.get(container_url + "/archivematica/")
+        assert r.status_code == 200
+        assert r.json() == {
+            "name": "dashboard",
+            "path": "/",
+        }
+
+    def test_head_root_is_302(self, container_url):
+        r = requests.head(container_url + "/archivematica/")
+        assert r.status_code == 302
+        assert (
+            r.headers["Location"] ==
+            "http://localhost:8080/archivematica/dashboard/"
+        )
+
+    def test_head_root_is_302(self, container_url):
+        r = requests.head(container_url + "/archivematica/")
+        assert r.status_code == 302
+        assert (
+            r.headers["Location"] ==
+            "http://localhost:8080/archivematica/dashboard/"
         )
