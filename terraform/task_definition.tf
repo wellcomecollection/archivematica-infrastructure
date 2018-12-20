@@ -35,6 +35,8 @@ resource "aws_ecs_task_definition" "archivematica" {
   container_definitions = "${data.template_file.container_definitions.rendered}"
   execution_role_arn    = "${module.iam_roles.task_execution_role_arn}"
 
+  network_mode = "awsvpc"
+
   volume {
     name = "pipeline-data"
   }
@@ -48,8 +50,63 @@ resource "aws_ecs_task_definition" "archivematica" {
   }
 
   requires_compatibilities = ["EC2"]
-  network_mode             = "bridge"
 
   cpu    = 2048
   memory = 5120
+}
+
+resource "aws_service_discovery_private_dns_namespace" "archivematica" {
+  name = "archivematica"
+  vpc  = "${local.vpc_id}"
+}
+
+resource "aws_alb_listener_rule" "https" {
+  listener_arn = "${local.load_balancer_https_listener_arn}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${module.service.target_group_arn}"
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["workflow.wellcomecollection.org"]
+  }
+
+  condition {
+    field  = "path-pattern"
+    values = ["/archivematica/"]
+  }
+}
+
+module "service" {
+  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/load_balanced?ref=v11.3.1"
+
+  service_name       = "archivematica"
+  task_desired_count = 1
+
+  healthcheck_path = "/archivematica/"
+
+  task_definition_arn = "${aws_ecs_task_definition.archivematica.arn}"
+
+  security_group_ids = [
+    "${local.interservice_security_group_id}",
+    "${local.service_egress_security_group_id}",
+    "${local.service_lb_security_group_id}",
+  ]
+
+  container_name = "nginx"
+  container_port = 8080
+
+  ecs_cluster_id = "${aws_ecs_cluster.archivematica.id}"
+
+  vpc_id  = "${local.vpc_id}"
+  subnets = "${local.network_private_subnets}"
+
+  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
+
+  launch_type = "EC2"
+
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 200
 }

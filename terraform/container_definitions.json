@@ -74,14 +74,10 @@
         "awslogs-stream-prefix": "${log_group_prefix}"
       }
     },
-    "links": [
-      "dashboard",
-      "storage-service"
-    ],
     "portMappings": [
       {
-        "containerPort": 8000,
-        "hostPort": 8000
+        "containerPort": 8080,
+        "hostPort": 8080
       }
     ]
   },
@@ -120,7 +116,7 @@
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER",
-        "value": "gearmand:4730"
+        "value": "localhost:4730"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER",
@@ -158,11 +154,7 @@
         "awslogs-region": "${log_group_region}",
         "awslogs-stream-prefix": "${log_group_prefix}"
       }
-    },
-    "links": [
-      "gearmand",
-      "storage-service"
-    ]
+    }
   },
   {
     "name": "mcp-client",
@@ -187,7 +179,7 @@
       },
       {
         "name": "MAILGUN_SERVER",
-        "value": "fits"
+        "value": "localhost"
       },
       {
         "name": "MAILGUN_PORT",
@@ -215,7 +207,7 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER",
-        "value": "gearmand:4730"
+        "value": "localhost:4730"
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED",
@@ -241,13 +233,7 @@
         "awslogs-region": "${log_group_region}",
         "awslogs-stream-prefix": "${log_group_prefix}"
       }
-    },
-    "links": [
-      "fits",
-      "clamavd",
-      "gearmand",
-      "storage-service"
-    ]
+    }
   },
   {
     "name": "mcp-server",
@@ -288,7 +274,7 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_MCPSERVER_MCPARCHIVEMATICA_SERVER",
-        "value": "gearmand:4730"
+        "value": "localhost:4730"
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED",
@@ -302,10 +288,7 @@
           "awslogs-region": "${log_group_region}",
           "awslogs-stream-prefix": "${log_group_prefix}"
         }
-    },
-    "links": [
-      "gearmand"
-    ]
+    }
   },
   {
     "name": "storage-service",
