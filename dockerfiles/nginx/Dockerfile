@@ -5,3 +5,6 @@ COPY etc/nginx/conf.d/archivematica.conf /etc/nginx/conf.d/archivematica.conf
 COPY etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 8000
+
+COPY run.sh /
+CMD ["/run.sh"]

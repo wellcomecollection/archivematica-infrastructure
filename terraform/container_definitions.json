@@ -31,12 +31,12 @@
       }
     ],
     "logConfiguration": {
-      "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "${log_group_name}",
-          "awslogs-region": "${log_group_region}",
-          "awslogs-stream-prefix": "${log_group_prefix}"
-        }
+    "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group_name}",
+        "awslogs-region": "${log_group_region}",
+        "awslogs-stream-prefix": "${log_group_prefix}"
+      }
     }
   },
   {
@@ -77,6 +77,12 @@
     "links": [
       "dashboard",
       "storage-service"
+    ],
+    "portMappings": [
+      {
+        "containerPort": 8000,
+        "hostPort": 8000
+      }
     ]
   },
   {
@@ -153,12 +159,6 @@
         "awslogs-stream-prefix": "${log_group_prefix}"
       }
     },
-    "portMappings": [
-      {
-        "containerPort": 9000,
-        "hostPort": 9000
-      }
-    ],
     "links": [
       "gearmand",
       "storage-service"
@@ -364,12 +364,6 @@
         "awslogs-region": "${log_group_region}",
         "awslogs-stream-prefix": "${log_group_prefix}"
       }
-    },
-    "portMappings": [
-      {
-        "containerPort": 8000,
-        "hostPort": 8000
-      }
-    ]
+    }
   }
 ]
