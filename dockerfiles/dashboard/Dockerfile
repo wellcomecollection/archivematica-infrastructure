@@ -24,7 +24,7 @@ ENV PYTHONPATH=/usr/lib/archivematica/archivematicaCommon:/usr/share/archivemati
 
 ENV AM_GUNICORN_BIND=0.0.0.0:8000
 ENV ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER=127.0.0.1:9200
-ENV DJANGO_SETTINGS_MODULE=settings.production
+ENV DJANGO_SETTINGS_MODULE=settings.wellcome
 ENV ARCHIVEMATICA_DASHBOARD_DASHBOARD_DJANGO_ALLOWED_HOSTS=*
 ENV ARCHIVEMATICA_DASHBOARD_DASHBOARD_DJANGO_SECRET_KEY="1jirTAmXxpgZyg1dJNQPFRmaqHYy1YEf"
 ENV ARCHIVEMATICA_DASHBOARD_CLIENT_HOST=localhost
@@ -35,6 +35,8 @@ ENV ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD=
 ENV REQUEST_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 RUN chown -R archivematica:archivematica /var/log/archivematica
+
+COPY settings.py /usr/share/archivematica/dashboard/settings/wellcome.py
 
 COPY /run_dashboard.sh /
 CMD ["/run_dashboard.sh"]

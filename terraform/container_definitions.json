@@ -111,10 +111,6 @@
         "value": "auto"
       },
       {
-        "name": "DJANGO_SETTINGS_MODULE",
-        "value": "settings.local"
-      },
-      {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER",
         "value": "localhost:4730"
       },
