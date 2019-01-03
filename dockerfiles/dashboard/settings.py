@@ -17,3 +17,11 @@ from .production import *
 # https://github.com/artefactual/archivematica/blob/2ffe3e8e5485dc038a3fb4fafe3723a1e4a45974/src/dashboard/src/settings/base.py#L397
 
 LOGIN_URL = "/archivematica/dashboard/administration/accounts/login/"
+
+
+# Changing this setting ensures that after a successful login, the user
+# remains in the dashboard and isn't booted to the root path of workflow.wc.org.
+#
+# https://github.com/artefactual/archivematica/blob/2ffe3e8e5485dc038a3fb4fafe3723a1e4a45974/src/dashboard/src/settings/base.py#L398
+
+LOGIN_REDIRECT_URL = "/archivematica/dashboard/"
