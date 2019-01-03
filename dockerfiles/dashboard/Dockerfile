@@ -38,5 +38,10 @@ RUN chown -R archivematica:archivematica /var/log/archivematica
 
 COPY settings.py /usr/share/archivematica/dashboard/settings/wellcome.py
 
+# html: replace `/ingest/status`, `/transfer/status`with prefixed versions
+RUN grep -rl /ingest/status/ /usr/share/archivematica/dashboard | xargs sed -i 's/\/ingest\/status/\/archivematica\/dashboard\/ingest\/status/g'
+RUN grep -rl /transfer/status/ /usr/share/archivematica/dashboard | xargs sed -i 's/\/transfer\/status/\/archivematica\/dashboard\/transfer\/status/g'
+
+
 COPY /run_dashboard.sh /
 CMD ["/run_dashboard.sh"]

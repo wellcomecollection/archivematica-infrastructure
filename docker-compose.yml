@@ -2,30 +2,30 @@ version: "3.4"
 
 services:
 
-  mysql:
-    image: "percona:5.6"
-    user: "mysql"
-    environment:
-      MYSQL_ROOT_PASSWORD: "12345"
-    expose:
-      - "3306"
-    ports:
-      - "127.0.0.1:62001:3306"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3306"]
-      timeout: 5s
-      retries: 3
-
-  mysql_bootstrap:
-    image: "percona:5.6"
-    environment:
-      MYSQL_ROOT_PASSWORD: "12345"
-    volumes:
-      - "./dockerfiles/bootstrap_mysql.sh:/bootstrap_mysql.sh"
-    command:
-      - "/bootstrap_mysql.sh"
-    links:
-      - "mysql"
+  # mysql:
+  #   image: "percona:5.6"
+  #   user: "mysql"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: "12345"
+  #   expose:
+  #     - "3306"
+  #   ports:
+  #     - "127.0.0.1:62001:3306"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3306"]
+  #     timeout: 5s
+  #     retries: 3
+  #
+  # mysql_bootstrap:
+  #   image: "percona:5.6"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: "12345"
+  #   volumes:
+  #     - "./dockerfiles/bootstrap_mysql.sh:/bootstrap_mysql.sh"
+  #   command:
+  #     - "/bootstrap_mysql.sh"
+  #   links:
+  #     - "mysql"
 
   elasticsearch:
     image: "elasticsearch:1.7-alpine"
@@ -78,19 +78,6 @@ services:
     volumes:
       - "./am_pipeline_data:/var/archivematica/sharedDirectory"
 
-  nginx:
-    image: "nginx:stable-alpine"
-    volumes:
-      - "./etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
-      - "./etc/nginx/conf.d/archivematica.conf:/etc/nginx/conf.d/archivematica.conf:ro"
-      - "./etc/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro"
-    expose:
-      - "80"
-      - "8000"
-    ports:
-      - "62080:80"
-      - "62081:8000"
-
   archivematica-mcp-server:
     image: "mcp_server"
     environment:
@@ -98,14 +85,13 @@ services:
       DJANGO_SETTINGS_MODULE: "settings.common"
       ARCHIVEMATICA_MCPSERVER_CLIENT_USER: "root"
       ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD: "12345"
-      ARCHIVEMATICA_MCPSERVER_CLIENT_HOST: "mysql"
+      ARCHIVEMATICA_MCPSERVER_CLIENT_HOST: "139.162.244.147"
       ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE: "MCP"
       ARCHIVEMATICA_MCPSERVER_MCPSERVER_MCPARCHIVEMATICASERVER: "gearmand:4730"
       ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED: "${AM_SEARCH_ENABLED:-true}"
     volumes:
       - "./am_pipeline_data:/var/archivematica/sharedDirectory"
     links:
-      - "mysql"
       - "gearmand"
 
       # Relies on storage service DB migrations
@@ -121,7 +107,7 @@ services:
       NAILGUN_PORT: "2113"
       ARCHIVEMATICA_MCPCLIENT_CLIENT_USER: "archivematica"
       ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD: "demo"
-      ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST: "mysql"
+      ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST: "139.162.244.147"
       ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE: "MCP"
       ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_ELASTICSEARCHSERVER: "elasticsearch:9200"
       ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER: "gearmand:4730"
@@ -137,24 +123,22 @@ services:
     links:
       - "fits"
       - "clamavd"
-      - "mysql"
       - "gearmand"
       - "elasticsearch"
       - "archivematica-storage-service"
 
   archivematica-dashboard:
-    image: "dashboard"
+    image: "archivematica_dashboard"
     environment:
       FORWARDED_ALLOW_IPS: "*"
       AM_GUNICORN_ACCESSLOG: "/dev/null"
       AM_GUNICORN_RELOAD: "true"
       AM_GUNICORN_RELOAD_ENGINE: "auto"
-      DJANGO_SETTINGS_MODULE: "settings.local"
       ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER: "gearmand:4730"
       ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER: "elasticsearch:9200"
       ARCHIVEMATICA_DASHBOARD_CLIENT_USER: "archivematica"
       ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD: "demo"
-      ARCHIVEMATICA_DASHBOARD_CLIENT_HOST: "mysql"
+      ARCHIVEMATICA_DASHBOARD_CLIENT_HOST: "139.162.244.147"
       ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE: "MCP"
       ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED: "${AM_SEARCH_ENABLED:-true}"
       SCRIPT_NAME: "/archivematica/dashboard"
@@ -167,28 +151,25 @@ services:
     expose:
       - "8000"
     links:
-      - "mysql"
       - "gearmand"
       - "elasticsearch"
       - "archivematica-storage-service"
 
   archivematica-storage-service:
-    image: "storage_service"
+    image: "archivematica_storage_service"
     environment:
       FORWARDED_ALLOW_IPS: "*"
       SS_GUNICORN_ACCESSLOG: "/dev/null"
       SS_GUNICORN_RELOAD: "true"
       SS_GUNICORN_RELOAD_ENGINE: "auto"
       DJANGO_SETTINGS_MODULE: "storage_service.settings.local"
-      SS_DB_URL: "mysql://archivematica:demo@mysql/SS"
+      SS_DB_URL: "mysql://archivematica:demo@139.162.244.147/SS"
       SS_GNUPG_HOME_PATH: "/var/archivematica/storage_service/.gnupg"
     volumes:
       - "./am_pipeline_data:/var/archivematica/sharedDirectory"
       - "./ss_location_data:/home"
     expose:
       - "8000"
-    links:
-      - "mysql"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
       interval: "10s"
@@ -197,17 +178,15 @@ services:
       start_period: "30s"
 
   nginx:
-    image: "nginx:stable-alpine"
-    volumes:
-      - "./nginx/nginx.conf:/etc/nginx/nginx.conf"
-      - "./nginx/conf.d/archivematica.conf:/etc/nginx/conf.d/archivematica.conf"
-      - "./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf"
+    image: "archivematica_nginx"
+    # volumes:
+    #   - "./dockerfiles/nginx/etc/nginx/nginx.conf:/etc/nginx/nginx.conf"
+    #   - "./dockerfiles/nginx/etc/nginx/conf.d/archivematica.conf:/etc/nginx/conf.d/archivematica.conf"
+    #   - "./dockerfiles/nginx/etc/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf"
     expose:
-      - "80"
-      - "8000"
+      - "8080"
     ports:
-      - "62080:80"
-      - "62081:8000"
+      - "8080:8080"
     links:
       - "archivematica-dashboard"
       - "archivematica-storage-service"

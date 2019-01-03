@@ -25,3 +25,13 @@ LOGIN_URL = "/archivematica/dashboard/administration/accounts/login/"
 # https://github.com/artefactual/archivematica/blob/2ffe3e8e5485dc038a3fb4fafe3723a1e4a45974/src/dashboard/src/settings/base.py#L398
 
 LOGIN_REDIRECT_URL = "/archivematica/dashboard/"
+
+
+# This tells the app that it should point to static assets at
+# /archivematica/dashboard/media, which is a path actually served by nginx.
+#
+# TODO: It would be nicer if Django served these assets and the dashboard
+# didn't have to know about nginx, but this was the easiest fix to get working
+# as a non-expert with Django URL handling.
+
+STATIC_URL = "/archivematica/dashboard/media/"
