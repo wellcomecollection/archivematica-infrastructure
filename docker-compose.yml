@@ -157,6 +157,7 @@ services:
       ARCHIVEMATICA_DASHBOARD_CLIENT_HOST: "mysql"
       ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE: "MCP"
       ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED: "${AM_SEARCH_ENABLED:-true}"
+      SCRIPT_NAME: "/archivematica/dashboard"
     volumes:
       - "./am_pipeline_data:/var/archivematica/sharedDirectory"
     expose:

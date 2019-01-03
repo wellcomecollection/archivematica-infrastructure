@@ -141,6 +141,10 @@
       {
         "name": "AM_GUNICORN_BIND",
         "value": "0.0.0.0:9000"
+      },
+      {
+        "name": "SCRIPT_NAME",
+        "value": "/archivematica/dashboard"
       }
     ],
     "logConfiguration": {
