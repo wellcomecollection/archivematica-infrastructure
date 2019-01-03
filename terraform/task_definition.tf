@@ -61,7 +61,7 @@ resource "aws_service_discovery_private_dns_namespace" "archivematica" {
 }
 
 resource "aws_alb_listener_rule" "https" {
-  listener_arn = "${local.load_balancer_https_listener_arn}"
+  listener_arn = "${module.load_balancer.https_listener_arn}"
 
   action {
     type             = "forward"
@@ -70,12 +70,7 @@ resource "aws_alb_listener_rule" "https" {
 
   condition {
     field  = "host-header"
-    values = ["workflow.wellcomecollection.org"]
-  }
-
-  condition {
-    field  = "path-pattern"
-    values = ["/archivematica/*"]
+    values = ["archivematica.wellcomecollection.org"]
   }
 }
 
@@ -86,7 +81,7 @@ module "service" {
   task_desired_count = 1
 
   # The root paths return 302s which redirect to this login page.
-  healthcheck_path = "/archivematica/dashboard/administration/accounts/login/"
+  healthcheck_path = "/administration/accounts/login/"
 
   task_definition_arn = "${aws_ecs_task_definition.archivematica.arn}"
 
@@ -96,8 +91,8 @@ module "service" {
     "${local.service_lb_security_group_id}",
   ]
 
-  container_name = "nginx"
-  container_port = 8080
+  container_name = "dashboard"
+  container_port = 9000
 
   ecs_cluster_id = "${aws_ecs_cluster.archivematica.id}"
 

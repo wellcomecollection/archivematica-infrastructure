@@ -12,6 +12,11 @@ variable "release_ids" {
 #
 # variable "key_name" {}
 #
+
+variable "admin_cidr_ingress" {
+  type = "list"
+}
+
 variable "controlled_access_cidr_ingress" {
   default = "195.143.129.128/25"
 }

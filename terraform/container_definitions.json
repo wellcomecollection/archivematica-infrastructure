@@ -143,10 +143,6 @@
         "value": "0.0.0.0:9000"
       },
       {
-        "name": "SCRIPT_NAME",
-        "value": "/archivematica/dashboard"
-      },
-      {
         "name": "WELLCOME_SS_URL",
         "value": "http://localhost:8000"
       },
@@ -162,7 +158,13 @@
         "awslogs-region": "${log_group_region}",
         "awslogs-stream-prefix": "${log_group_prefix}"
       }
-    }
+    },
+    "portMappings": [
+      {
+        "containerPort": 9000,
+        "hostPort": 9000
+      }
+    ]
   },
   {
     "name": "mcp-client",
