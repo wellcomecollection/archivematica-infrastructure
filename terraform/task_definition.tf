@@ -85,7 +85,8 @@ module "service" {
   service_name       = "archivematica"
   task_desired_count = 1
 
-  healthcheck_path = "/archivematica/"
+  # The root paths return 302s which redirect to this login page.
+  healthcheck_path = "/archivematica/dashboard/administration/accounts/login/"
 
   task_definition_arn = "${aws_ecs_task_definition.archivematica.arn}"
 
