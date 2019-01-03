@@ -76,6 +76,10 @@
     },
     "portMappings": [
       {
+        "containerPort": 9090,
+        "hostPort": 9090
+      },
+      {
         "containerPort": 8080,
         "hostPort": 8080
       }
@@ -158,13 +162,7 @@
         "awslogs-region": "${log_group_region}",
         "awslogs-stream-prefix": "${log_group_prefix}"
       }
-    },
-    "portMappings": [
-      {
-        "containerPort": 9000,
-        "hostPort": 9000
-      }
-    ]
+    }
   },
   {
     "name": "mcp-client",

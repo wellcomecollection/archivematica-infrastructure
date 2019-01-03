@@ -176,6 +176,8 @@ services:
       timeout: "5s"
       retries: 6
       start_period: "30s"
+    ports:
+      - "8000:8000"
 
   nginx:
     image: "archivematica_nginx"

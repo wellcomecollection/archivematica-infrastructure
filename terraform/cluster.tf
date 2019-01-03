@@ -18,7 +18,7 @@ module "cluster" {
   cluster_name = "${aws_ecs_cluster.archivematica.name}"
 
   asg_min     = 1
-  asg_desired = 1
+  asg_desired = 2
   asg_max     = 2
 
   instance_type = "t2.large"

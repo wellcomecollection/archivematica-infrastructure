@@ -77,11 +77,43 @@ resource "aws_alb_listener_rule" "https" {
 module "service" {
   source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/load_balanced?ref=v11.3.1"
 
-  service_name       = "archivematica"
+  service_name       = "archivematica-dashboard"
   task_desired_count = 1
 
   # The root paths return 302s which redirect to this login page.
   healthcheck_path = "/administration/accounts/login/"
+
+  task_definition_arn = "${aws_ecs_task_definition.archivematica.arn}"
+
+  security_group_ids = [
+    "${local.interservice_security_group_id}",
+    "${local.service_egress_security_group_id}",
+    "${local.service_lb_security_group_id}",
+  ]
+
+  container_name = "nginx"
+  container_port = 9090
+
+  ecs_cluster_id = "${aws_ecs_cluster.archivematica.id}"
+
+  vpc_id  = "${local.vpc_id}"
+  subnets = "${local.network_private_subnets}"
+
+  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
+
+  launch_type = "EC2"
+
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 200
+}
+
+module "storage_service" {
+  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/load_balanced?ref=v11.3.1"
+
+  service_name       = "archivematica-storage-service"
+  task_desired_count = 1
+
+  healthcheck_path = "/login/"
 
   task_definition_arn = "${aws_ecs_task_definition.archivematica.arn}"
 
@@ -105,4 +137,18 @@ module "service" {
 
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 200
+}
+
+resource "aws_alb_listener_rule" "storage_service_https" {
+  listener_arn = "${module.load_balancer_storage_service.https_listener_arn}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${module.storage_service.target_group_arn}"
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["archivematica-storage-service.wellcomecollection.org"]
+  }
 }
