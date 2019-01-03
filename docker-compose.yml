@@ -158,6 +158,10 @@ services:
       ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE: "MCP"
       ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED: "${AM_SEARCH_ENABLED:-true}"
       SCRIPT_NAME: "/archivematica/dashboard"
+
+      WELLCOME_SS_URL: "http://archivematica-storage-service:8000/"
+      WELLCOME_SITE_URL: "http://archivematica-dashboard:8000/"
+
     volumes:
       - "./am_pipeline_data:/var/archivematica/sharedDirectory"
     expose:

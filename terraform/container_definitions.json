@@ -145,6 +145,14 @@
       {
         "name": "SCRIPT_NAME",
         "value": "/archivematica/dashboard"
+      },
+      {
+        "name": "WELLCOME_SS_URL",
+        "value": "http://localhost:8000"
+      },
+      {
+        "name": "WELLCOME_SITE_URL",
+        "value": "http://localhost:9000"
       }
     ],
     "logConfiguration": {

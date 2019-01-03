@@ -17,9 +17,11 @@ set -o verbose
       --org-name="test" \
       --org-id="test" \
       --api-key="test" \
-      --ss-url="http://localhost:8000" \
+      --ss-url="$WELLCOME_SS_URL" \
       --ss-user="test" \
       --ss-api-key="test" \
-      --site-url="http://localhost:9000"
+      --site-url="$WELLCOME_SITE_URL"
 
-/usr/share/archivematica/virtualenvs/archivematica-dashboard/bin/gunicorn --config /etc/archivematica/dashboard.gunicorn-config.py wsgi:application
+/usr/share/archivematica/virtualenvs/archivematica-dashboard/bin/gunicorn \
+  --config /etc/archivematica/dashboard.gunicorn-config.py \
+  wsgi:application
