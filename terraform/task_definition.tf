@@ -91,8 +91,8 @@ module "service" {
     "${local.service_lb_security_group_id}",
   ]
 
-  container_name = "dashboard"
-  container_port = 9000
+  container_name = "nginx"
+  container_port = 8080
 
   ecs_cluster_id = "${aws_ecs_cluster.archivematica.id}"
 
