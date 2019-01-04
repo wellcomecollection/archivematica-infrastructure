@@ -13,6 +13,11 @@ variable "release_ids" {
 # variable "key_name" {}
 #
 
+variable "rds_admin_cidr_ingress" {}
+
+variable "rds_username" {}
+variable "rds_password" {}
+
 variable "admin_cidr_ingress" {
   type = "list"
 }
