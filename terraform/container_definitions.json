@@ -124,15 +124,19 @@
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_CLIENT_USER",
-        "value": "archivematica"
+        "value": "${rds_username}"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD",
-        "value": "demo"
+        "value": "${rds_password}"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_CLIENT_HOST",
-        "value": "139.162.244.147"
+        "value": "${rds_host}"
+      },
+      {
+        "name": "ARCHIVEMATICA_DASHBOARD_CLIENT_PORT",
+        "value": "${rds_port}"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE",
@@ -195,15 +199,19 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_CLIENT_USER",
-        "value": "archivematica"
+        "value": "${rds_username}"
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD",
-        "value": "demo"
+        "value": "${rds_password}"
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST",
-        "value": "139.162.244.147"
+        "value": "${rds_host}"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST",
+        "value": "${rds_port}"
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE",
@@ -266,15 +274,19 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_CLIENT_USER",
-        "value": "archivematica"
+        "value": "${rds_username}"
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD",
-        "value": "demo"
+        "value": "${rds_password}"
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_CLIENT_HOST",
-        "value": "139.162.244.147"
+        "value": "${rds_host}"
+      },
+      {
+        "name": "ARCHIVEMATICA_MCPSERVER_CLIENT_PORT",
+        "value": "${rds_port}"
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE",
@@ -341,7 +353,7 @@
       },
       {
         "name": "SS_DBURL",
-        "value": "mysql://archivematica:demo@139.162.244.147:3306/SS"
+        "value": "mysql://${rds_username}:${rds_password}@${rds_host}:${rds_port}/SS"
       },
       {
         "name": "SS_GNPUG_HOME_PATH",

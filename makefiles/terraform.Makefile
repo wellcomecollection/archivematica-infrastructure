@@ -106,7 +106,7 @@ define terraform_import
 	$(ROOT)/docker_run.py --aws -- \
 		--volume $(ROOT):$(ROOT) \
 		--workdir $(ROOT)/$(2) \
-		hashicorp/terraform:$(TF_VERSION) import $(filter-out $(1)-terraform-import,$(MAKECMDGOALS))
+		hashicorp/terraform:$(TF_VERSION) import $(filter-out tf-import,$(MAKECMDGOALS))
 endef
 
 

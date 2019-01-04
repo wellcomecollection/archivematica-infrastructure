@@ -6,21 +6,12 @@ module "rds_cluster" {
   password           = "${var.rds_password}"
   vpc_subnet_ids     = "${local.network_private_subnets}"
   vpc_id             = "${local.vpc_id}"
-  admin_cidr_ingress = "${var.rds_admin_cidr_ingress}"
 
-  db_access_security_group = ["${aws_security_group.rds_ingress_security_group.id}"]
+  # The database is in a private subnet, so this CIDR only gives access to
+  # other instances in the private subnet (in order to reach via bastion host)
+  admin_cidr_ingress = "0.0.0.0/0"
 
-  vpc_security_group_ids = []
-}
+  db_access_security_group = ["${local.interservice_security_group_id}"]
 
-resource "aws_security_group" "rds_ingress_security_group" {
-  name   = "archivematica_rds_ingress_security_group"
-  vpc_id = "${local.vpc_id}"
-
-  ingress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
-    self      = true
-  }
+  vpc_security_group_ids = "${local.interservice_security_group_id}"
 }

@@ -17,6 +17,11 @@ data "template_file" "container_definitions" {
     log_group_region = "${var.region}"
     log_group_name   = "${module.log_group.name}"
     log_group_prefix = "archivematica"
+
+    rds_username = "${module.rds_cluster.username}"
+    rds_password = "${module.rds_cluster.password}"
+    rds_host     = "${module.rds_cluster.host}"
+    rds_port     = "${module.rds_cluster.port}"
   }
 }
 
