@@ -30,7 +30,8 @@ data "template_file" "container_definitions" {
 
     efs_mount_path = "${local.efs_host_path}"
 
-    fits_service_hostname = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+    fits_service_hostname   = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+    clamav_service_hostname = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   }
 }
 
@@ -78,8 +79,8 @@ resource "aws_ecs_task_definition" "archivematica" {
     host_path = "${local.efs_host_path}/staging-data"
   }
 
-  cpu    = 1792
-  memory = 4096
+  cpu    = 1536
+  memory = 3072
 }
 
 resource "aws_alb_listener_rule" "https" {

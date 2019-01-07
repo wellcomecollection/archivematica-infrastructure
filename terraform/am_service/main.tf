@@ -57,8 +57,8 @@ resource "aws_ecs_task_definition" "task" {
     host_path = "${local.efs_host_path}/staging-data"
   }
 
-  cpu    = 256
-  memory = 512
+  cpu    = "${var.cpu}"
+  memory = "${var.memory}"
 }
 
 module "service" {
