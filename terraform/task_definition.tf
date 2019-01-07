@@ -78,8 +78,8 @@ resource "aws_ecs_task_definition" "archivematica" {
     host_path = "${local.efs_host_path}/staging-data"
   }
 
-  cpu    = 2048
-  memory = 5120
+  cpu    = 1792
+  memory = 4096
 }
 
 resource "aws_alb_listener_rule" "https" {
