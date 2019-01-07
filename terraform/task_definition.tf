@@ -80,11 +80,6 @@ resource "aws_ecs_task_definition" "archivematica" {
   memory = 5120
 }
 
-resource "aws_service_discovery_private_dns_namespace" "archivematica" {
-  name = "archivematica"
-  vpc  = "${local.vpc_id}"
-}
-
 resource "aws_alb_listener_rule" "https" {
   listener_arn = "${module.load_balancer.https_listener_arn}"
 
