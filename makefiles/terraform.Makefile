@@ -42,8 +42,8 @@ ifndef UPTODATE_GIT_DEFINED
 #
 uptodate-git:
 	@git fetch origin
-	@if ! git merge-base --is-ancestor origin/master HEAD; then \
-		echo "You need to be up-to-date with master before you can continue!"; \
+	@if ! git merge-base --is-ancestor origin/development HEAD; then \
+		echo "You need to be up-to-date with development before you can continue!"; \
 		exit 1; \
 	fi
 
