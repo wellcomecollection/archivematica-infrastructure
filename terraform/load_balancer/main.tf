@@ -24,6 +24,22 @@ resource "aws_alb_listener" "https" {
   }
 }
 
+resource "aws_lb_listener" "redirect_http_to_https" {
+  load_balancer_arn = "${aws_alb.load_balancer.arn}"
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
 data "aws_acm_certificate" "certificate" {
   domain   = "${var.certificate_domain}"
   statuses = ["ISSUED"]
