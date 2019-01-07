@@ -30,7 +30,7 @@ data "template_file" "container_definitions" {
 
     efs_mount_path = "${local.efs_host_path}"
 
-    fits_service_hostname = "${module.fits_service.name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+    fits_service_hostname = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   }
 }
 
