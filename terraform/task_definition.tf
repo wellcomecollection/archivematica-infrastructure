@@ -27,6 +27,8 @@ data "template_file" "container_definitions" {
     redis_port   = "${aws_elasticache_cluster.archivematica.cache_nodes.0.port}"
 
     elasticsearch_endpoint = "${aws_elasticsearch_domain.archivematica.endpoint}"
+
+    efs_mount_path = "${local.efs_host_path}"
   }
 }
 
@@ -40,6 +42,10 @@ module "iam_roles" {
   task_name = "archivematica"
 }
 
+locals {
+  efs_host_path = "/efs"
+}
+
 resource "aws_ecs_task_definition" "archivematica" {
   family                = "archivematica"
   container_definitions = "${data.template_file.container_definitions.rendered}"
@@ -47,25 +53,8 @@ resource "aws_ecs_task_definition" "archivematica" {
 
   network_mode = "awsvpc"
 
-  volume {
-    name = "pipeline-data"
-  }
-
-  volume {
-    name = "location-data"
-  }
-
-  volume {
-    name = "staging-data"
-  }
-
   # For now, using EBS/EFS means we need to be on EC2 instance.
   requires_compatibilities = ["EC2"]
-
-  placement_constraints {
-    type       = "memberOf"
-    expression = "attribute:ebs.volume exists"
-  }
 
   placement_constraints {
     type       = "memberOf"
@@ -73,13 +62,18 @@ resource "aws_ecs_task_definition" "archivematica" {
   }
 
   volume {
-    name      = "ebs"
-    host_path = "/ebs"
+    name      = "location-data"
+    host_path = "${local.efs_host_path}/location-data"
   }
 
   volume {
-    name      = "efs"
-    host_path = "/efs"
+    name      = "pipeline-data"
+    host_path = "${local.efs_host_path}/pipeline-data"
+  }
+
+  volume {
+    name      = "staging-data"
+    host_path = "${local.efs_host_path}/staging-data"
   }
 
   cpu    = 2048
