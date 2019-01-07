@@ -59,7 +59,28 @@ resource "aws_ecs_task_definition" "archivematica" {
     name = "staging-data"
   }
 
+  # For now, using EBS/EFS means we need to be on EC2 instance.
   requires_compatibilities = ["EC2"]
+
+  placement_constraints {
+    type       = "memberOf"
+    expression = "attribute:ebs.volume exists"
+  }
+
+  placement_constraints {
+    type       = "memberOf"
+    expression = "attribute:efs.volume exists"
+  }
+
+  volume {
+    name      = "ebs"
+    host_path = "/ebs"
+  }
+
+  volume {
+    name      = "efs"
+    host_path = "/efs"
+  }
 
   cpu    = 2048
   memory = 5120
