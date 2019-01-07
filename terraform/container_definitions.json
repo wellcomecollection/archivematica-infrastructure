@@ -7,7 +7,7 @@
     "essential": true,
     "user": "gearman",
     "command": [
-      "--queue-type=redis", "--redis-server=139.162.244.147", "--redis-port=6379"
+      "--queue-type=redis", "--redis-server=${redis_server}", "--redis-port=${redis_port}"
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
