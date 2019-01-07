@@ -19,27 +19,6 @@
     }
   },
   {
-    "name": "fits",
-    "image": "artefactual/fits-ngserver:0.8.4",
-    "cpu": 256,
-    "memory": 512,
-    "essential": true,
-    "mountPoints": [
-      {
-        "sourceVolume": "pipeline-data",
-        "containerPath": "/var/archivematica/sharedDirectory"
-      }
-    ],
-    "logConfiguration": {
-    "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "${log_group_name}",
-        "awslogs-region": "${log_group_region}",
-        "awslogs-stream-prefix": "${log_group_prefix}"
-      }
-    }
-  },
-  {
     "name": "clamavd",
     "image": "artefactual/clamav:latest",
     "cpu": 256,
@@ -191,7 +170,7 @@
       },
       {
         "name": "MAILGUN_SERVER",
-        "value": "localhost"
+        "value": "${fits_service_hostname}"
       },
       {
         "name": "MAILGUN_PORT",

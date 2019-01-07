@@ -29,6 +29,8 @@ data "template_file" "container_definitions" {
     elasticsearch_endpoint = "${aws_elasticsearch_domain.archivematica.endpoint}"
 
     efs_mount_path = "${local.efs_host_path}"
+
+    fits_service_hostname = "${module.fits_service.name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   }
 }
 
