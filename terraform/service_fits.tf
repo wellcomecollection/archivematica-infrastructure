@@ -58,7 +58,7 @@ resource "aws_ecs_task_definition" "fits" {
 }
 
 module "fits_service" {
-  source = "git::github.com/wellcometrust/terraform-modules//ecs/modules/service/prebuilt/default?ref=v11.3.1"
+  source = "git::github.com/wellcometrust/terraform-modules//ecs/modules/service/prebuilt/default?ref=unused-variables"
 
   service_name       = "archivematica-fits"
   task_desired_count = "1"
@@ -71,11 +71,8 @@ module "fits_service" {
     "${local.service_lb_security_group_id}",
   ]
 
-  container_port = 2113
-
   ecs_cluster_id = "${aws_ecs_cluster.archivematica.id}"
 
-  vpc_id  = "${local.vpc_id}"
   subnets = "${local.network_private_subnets}"
 
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
