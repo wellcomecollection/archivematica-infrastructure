@@ -25,6 +25,8 @@ data "template_file" "container_definitions" {
 
     redis_server = "${aws_elasticache_cluster.archivematica.cache_nodes.0.address}"
     redis_port   = "${aws_elasticache_cluster.archivematica.cache_nodes.0.port}"
+
+    elasticsearch_endpoint = "${aws_elasticsearch_domain.archivematica.endpoint}"
   }
 }
 

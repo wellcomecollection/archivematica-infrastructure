@@ -120,7 +120,7 @@
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER",
-        "value": "elastic:changeme@139.162.244.147:9200"
+        "value": "${elasticsearch_endpoint}"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_CLIENT_USER",
