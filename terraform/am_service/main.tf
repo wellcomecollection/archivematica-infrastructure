@@ -1,5 +1,5 @@
 locals {
-  full_name = "archivematica-${var.name}"
+  full_name = "am-${var.name}"
 }
 
 module "container_definition" {
