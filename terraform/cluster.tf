@@ -22,6 +22,4 @@ module "cluster" {
   asg_max     = 2
 
   instance_type = "t2.large"
-
-  ebs_size = 50
 }
