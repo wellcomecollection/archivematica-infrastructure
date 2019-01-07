@@ -22,6 +22,9 @@ data "template_file" "container_definitions" {
     rds_password = "${module.rds_cluster.password}"
     rds_host     = "${module.rds_cluster.host}"
     rds_port     = "${module.rds_cluster.port}"
+
+    redis_server = "${aws_elasticache_cluster.archivematica.cache_nodes.0.address}"
+    redis_port   = "${aws_elasticache_cluster.archivematica.cache_nodes.0.port}"
   }
 }
 
