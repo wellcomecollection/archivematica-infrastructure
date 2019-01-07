@@ -10,7 +10,6 @@ data "template_file" "container_definitions" {
   vars {
     dashboard_image       = "${module.ecr_dashboard.repository_url}:${var.release_ids["archivematica_dashboard"]}",
     mcp_client_image      = "${module.ecr_mcp_client.repository_url}:${var.release_ids["archivematica_mcp_client"]}"
-    mcp_server_image      = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
     nginx_image           = "${module.ecr_nginx.repository_url}:${var.release_ids["archivematica_nginx"]}"
     storage_service_image = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
 
@@ -30,6 +29,7 @@ data "template_file" "container_definitions" {
     fits_service_hostname   = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
     clamav_service_hostname = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
     gearmand_hostname       = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+    mcp_server_endpoint     = "${local.mcp_server_endpoint}"
   }
 }
 
@@ -77,8 +77,8 @@ resource "aws_ecs_task_definition" "archivematica" {
     host_path = "${local.efs_host_path}/staging-data"
   }
 
-  cpu    = 1280
-  memory = 2560
+  cpu    = 1024
+  memory = 2048
 }
 
 resource "aws_alb_listener_rule" "https" {
