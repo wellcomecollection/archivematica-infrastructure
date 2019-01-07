@@ -14,6 +14,11 @@ variable "aws_region" {
   default = "eu-west-1"
 }
 
+variable "command" {
+  type    = "list"
+  default = []
+}
+
 variable "cpu" {
   default = 256
 }
@@ -23,7 +28,8 @@ variable "memory" {
 }
 
 variable "mount_points" {
-  type = "list"
+  type    = "list"
+  default = []
 }
 
 variable "cluster_id" {}

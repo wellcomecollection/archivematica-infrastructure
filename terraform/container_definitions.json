@@ -1,24 +1,5 @@
 [
   {
-    "name": "gearmand",
-    "image": "artefactual/gearmand:1.1.17-alpine",
-    "cpu": 256,
-    "memory": 512,
-    "essential": true,
-    "user": "gearman",
-    "command": [
-      "--queue-type=redis", "--redis-server=${redis_server}", "--redis-port=${redis_port}"
-    ],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "${log_group_name}",
-          "awslogs-region": "${log_group_region}",
-          "awslogs-stream-prefix": "${log_group_prefix}"
-        }
-    }
-  },
-  {
     "name": "nginx",
     "image": "${nginx_image}",
     "cpu": 256,
@@ -74,7 +55,7 @@
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER",
-        "value": "localhost:4730"
+        "value": "${gearmand_hostname}:4730"
       },
       {
         "name": "ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER",
@@ -181,7 +162,7 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER",
-        "value": "localhost:4730"
+        "value": "${gearmand_hostname}:4730"
       },
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED",
@@ -252,7 +233,7 @@
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_MCPSERVER_MCPARCHIVEMATICA_SERVER",
-        "value": "localhost:4730"
+        "value": "${gearmand_hostname}:4730"
       },
       {
         "name": "ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED",

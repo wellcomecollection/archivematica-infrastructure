@@ -3,7 +3,7 @@ locals {
 }
 
 module "container_definition" {
-  source = "git::github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/container_definition/single_container?ref=v11.3.1"
+  source = "git::github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/container_definition/single_container?ref=v18.2.3"
 
   aws_region = "${var.aws_region}"
 
@@ -15,6 +15,8 @@ module "container_definition" {
   log_group_prefix = "archivematica/${var.name}"
 
   container_image = "${var.container_image}"
+
+  command = "${var.command}"
 
   cpu    = "${var.cpu}"
   memory = "${var.memory}"

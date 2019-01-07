@@ -23,15 +23,13 @@ data "template_file" "container_definitions" {
     rds_host     = "${module.rds_cluster.host}"
     rds_port     = "${module.rds_cluster.port}"
 
-    redis_server = "${aws_elasticache_cluster.archivematica.cache_nodes.0.address}"
-    redis_port   = "${aws_elasticache_cluster.archivematica.cache_nodes.0.port}"
-
     elasticsearch_endpoint = "${aws_elasticsearch_domain.archivematica.endpoint}"
 
     efs_mount_path = "${local.efs_host_path}"
 
     fits_service_hostname   = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
     clamav_service_hostname = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+    gearmand_hostname       = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   }
 }
 
@@ -79,8 +77,8 @@ resource "aws_ecs_task_definition" "archivematica" {
     host_path = "${local.efs_host_path}/staging-data"
   }
 
-  cpu    = 1536
-  memory = 3072
+  cpu    = 1280
+  memory = 2560
 }
 
 resource "aws_alb_listener_rule" "https" {
