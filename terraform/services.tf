@@ -1,9 +1,11 @@
 locals {
-  mcp_client_image
+  mcp_client_image      = "${module.ecr_mcp_client.repository_url}:${var.release_ids["archivematica_mcp_client"]}"
   mcp_server_image      = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
   storage_service_image = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
 
-  gearmand_hostname = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+  fits_service_hostname   = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+  clamav_service_hostname = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+  gearmand_hostname       = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
 
   storage_service_host = "${module.storage_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   storage_service_port = 8000
@@ -98,25 +100,30 @@ module "mcp_server_service" {
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
 
-module "mcp_clicnet_service" {
+module "mcp_client_service" {
   source = "./am_service"
 
   name = "mcp-client"
 
   env_vars = {
-    DJANGO_SECRET_KEY                       = "12345"
-    ARCHIVEMATICA_MCPSERVER_CLIENT_USER     = "${module.rds_cluster.username}"
-    ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD = "${module.rds_cluster.password}"
-    ARCHIVEMATICA_MCPSERVER_CLIENT_HOST     = "${module.rds_cluster.host}"
-    ARCHIVEMATICA_MCPSERVER_CLIENT_PORT     = "${module.rds_cluster.port}"
-    ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE = "MCP"
-
-    ARCHIVEMATICA_MCPSERVER_MCPSERVER_MCPARCHIVEMATICA_SERVER = "${local.gearmand_hostname}:4730"
-
-    ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED = true
+    DJANGO_SECRET_KEY                                              = "12345"
+    DJANGO_SETTINGS_MODULE                                         = "settings.common"
+    MAILGUN_SERVER                                                 = "${local.fits_service_hostname}"
+    MAILGUN_PORT                                                   = "2113"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = "${module.rds_cluster.username}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = "${module.rds_cluster.password}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = "${module.rds_cluster.host}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = "${module.rds_cluster.port}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                        = "MCP"
+    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "${aws_elasticsearch_domain.archivematica.endpoint}"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED               = true
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "${local.clamav_service_hostname}:3310"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
   }
 
-  env_vars_length = 8
+  env_vars_length = 15
 
   container_image = "${local.mcp_client_image}"
 

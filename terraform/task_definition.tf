@@ -9,7 +9,6 @@ data "template_file" "container_definitions" {
 
   vars {
     dashboard_image       = "${module.ecr_dashboard.repository_url}:${var.release_ids["archivematica_dashboard"]}",
-    mcp_client_image      = "${module.ecr_mcp_client.repository_url}:${var.release_ids["archivematica_mcp_client"]}"
     nginx_image           = "${module.ecr_storage_service_nginx.repository_url}:${var.release_ids["archivematica_nginx"]}"
 
     log_group_region = "${var.region}"
@@ -28,8 +27,6 @@ data "template_file" "container_definitions" {
 
     efs_mount_path = "${local.efs_host_path}"
 
-    fits_service_hostname   = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
-    clamav_service_hostname = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
     gearmand_hostname       = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   }
 }
@@ -129,48 +126,48 @@ module "service" {
   deployment_maximum_percent         = 200
 }
 
-module "storage_service" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/load_balanced?ref=v11.3.1"
-
-  service_name       = "archivematica-storage-service"
-  task_desired_count = 1
-
-  healthcheck_path = "/login/"
-
-  task_definition_arn = "${aws_ecs_task_definition.archivematica.arn}"
-
-  security_group_ids = [
-    "${local.interservice_security_group_id}",
-    "${local.service_egress_security_group_id}",
-    "${local.service_lb_security_group_id}",
-  ]
-
-  container_name = "nginx"
-  container_port = 8080
-
-  ecs_cluster_id = "${aws_ecs_cluster.archivematica.id}"
-
-  vpc_id  = "${local.vpc_id}"
-  subnets = "${local.network_private_subnets}"
-
-  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
-
-  launch_type = "EC2"
-
-  deployment_minimum_healthy_percent = 0
-  deployment_maximum_percent         = 200
-}
-
-resource "aws_alb_listener_rule" "storage_service_https" {
-  listener_arn = "${module.load_balancer_storage_service.https_listener_arn}"
-
-  action {
-    type             = "forward"
-    target_group_arn = "${module.storage_service.target_group_arn}"
-  }
-
-  condition {
-    field  = "host-header"
-    values = ["archivematica-storage-service.wellcomecollection.org"]
-  }
-}
+# module "storage_service" {
+#   source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/load_balanced?ref=v11.3.1"
+#
+#   service_name       = "archivematica-storage-service"
+#   task_desired_count = 1
+#
+#   healthcheck_path = "/login/"
+#
+#   task_definition_arn = "${aws_ecs_task_definition.archivematica.arn}"
+#
+#   security_group_ids = [
+#     "${local.interservice_security_group_id}",
+#     "${local.service_egress_security_group_id}",
+#     "${local.service_lb_security_group_id}",
+#   ]
+#
+#   container_name = "nginx"
+#   container_port = 8080
+#
+#   ecs_cluster_id = "${aws_ecs_cluster.archivematica.id}"
+#
+#   vpc_id  = "${local.vpc_id}"
+#   subnets = "${local.network_private_subnets}"
+#
+#   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
+#
+#   launch_type = "EC2"
+#
+#   deployment_minimum_healthy_percent = 0
+#   deployment_maximum_percent         = 200
+# }
+#
+# resource "aws_alb_listener_rule" "storage_service_https" {
+#   listener_arn = "${module.load_balancer_storage_service.https_listener_arn}"
+#
+#   action {
+#     type             = "forward"
+#     target_group_arn = "${module.storage_service.target_group_arn}"
+#   }
+#
+#   condition {
+#     field  = "host-header"
+#     values = ["archivematica-storage-service.wellcomecollection.org"]
+#   }
+# }
