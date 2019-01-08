@@ -20,6 +20,16 @@ module "container_definition" {
   app_container_image     = "${var.container_image}"
   sidecar_container_image = "${var.nginx_container_image}"
 
+  sidecar_port_mappings_string = <<EOF
+[
+  {
+    "ContainerPort": 80,
+    "HostPort": 80,
+    "Protocol": "tcp"
+  }
+]
+EOF
+
   app_cpu    = "${var.cpu}"
   app_memory = "${var.memory}"
 
@@ -69,10 +79,16 @@ resource "aws_ecs_task_definition" "task" {
 }
 
 module "service" {
-  source = "git::github.com/wellcometrust/terraform-modules//ecs/modules/service/prebuilt/default?ref=unused-variables"
+  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/load_balanced?ref=v11.3.1"
 
   service_name       = "${local.full_name}"
-  task_desired_count = "1"
+  task_desired_count = 1
+
+  # The root paths return 302s which redirect to this login page.
+  healthcheck_path = "${var.healthcheck_path}"
+
+  container_name = "sidecar"
+  container_port = 80
 
   task_definition_arn = "${aws_ecs_task_definition.task.arn}"
 
@@ -84,6 +100,7 @@ module "service" {
 
   ecs_cluster_id = "${var.cluster_id}"
 
+  vpc_id  = "${local.vpc_id}"
   subnets = "${local.network_private_subnets}"
 
   namespace_id = "${var.namespace_id}"
@@ -92,4 +109,18 @@ module "service" {
 
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
+}
+
+resource "aws_alb_listener_rule" "https" {
+  listener_arn = "${var.load_balancer_https_listener_arn}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${module.service.target_group_arn}"
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["${var.hostname}"]
+  }
 }

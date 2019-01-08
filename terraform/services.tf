@@ -146,6 +146,9 @@ module "storage_service" {
 
   name = "storage-service"
 
+  hostname         = "archivematica-storage-service.wellcomecollection.org"
+  healthcheck_path = "/login/"
+
   env_vars = {
     FORWARDED_ALLOW_IPS       = "*"
     AM_GUNICORN_ACCESSLOG     = "/dev/null"
@@ -178,6 +181,8 @@ module "storage_service" {
 
   nginx_container_image = "${local.storage_service_nginx_image}"
 
+  load_balancer_https_listener_arn = "${module.load_balancer.https_listener_arn}"
+
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
@@ -186,6 +191,9 @@ module "dashboard_service" {
   source = "./nginx_service"
 
   name = "dashboard"
+
+  hostname         = "archivematica.wellcomecollection.org"
+  healthcheck_path = "/administration/accounts/login/"
 
   env_vars = {
     FORWARDED_ALLOW_IPS                                    = "*"
@@ -217,6 +225,8 @@ module "dashboard_service" {
   ]
 
   nginx_container_image = "${local.dashboard_nginx_image}"
+
+  load_balancer_https_listener_arn = "${module.load_balancer.https_listener_arn}"
 
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"

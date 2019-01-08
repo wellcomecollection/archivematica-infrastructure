@@ -1,4 +1,6 @@
 locals {
+  vpc_id = "${data.terraform_remote_state.workflow.vpc_id}"
+
   network_private_subnets = "${data.terraform_remote_state.workflow.private_subnets}"
 
   interservice_security_group_id   = "${data.terraform_remote_state.workflow.interservice_security_group_id}"
