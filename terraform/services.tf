@@ -1,7 +1,10 @@
 locals {
-  mcp_client_image      = "${module.ecr_mcp_client.repository_url}:${var.release_ids["archivematica_mcp_client"]}"
-  mcp_server_image      = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
-  storage_service_image = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
+  dashboard_image             = "${module.ecr_dashboard.repository_url}:${var.release_ids["archivematica_dashboard"]}",
+  dashboard_nginx_image       = "${module.ecr_dashboard_nginx.repository_url}:${var.release_ids["archivematica_dashboard_nginx"]}",
+  mcp_client_image            = "${module.ecr_mcp_client.repository_url}:${var.release_ids["archivematica_mcp_client"]}"
+  mcp_server_image            = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
+  storage_service_image       = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
+  storage_service_nginx_image = "${module.ecr_storage_service_nginx.repository_url}:${var.release_ids["archivematica_storage_service_nginx"]}"
 
   fits_service_hostname   = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   clamav_service_hostname = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
@@ -139,7 +142,7 @@ module "mcp_client_service" {
 }
 
 module "storage_service" {
-  source = "./am_service"
+  source = "./nginx_service"
 
   name = "storage-service"
 
@@ -173,7 +176,48 @@ module "storage_service" {
     },
   ]
 
+  nginx_container_image = "${local.storage_service_nginx_image}"
+
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
 
+module "dashboard_service" {
+  source = "./nginx_service"
+
+  name = "dashboard"
+
+  env_vars = {
+    FORWARDED_ALLOW_IPS                                    = "*"
+    AM_GUNICORN_ACCESSLOG                                  = "/dev/null"
+    AM_GUNICORN_RELOAD                                     = "true"
+    AM_GUNICORN_RELOAD_ENGINE                              = "auto"
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER       = "${local.gearmand_hostname}:4730"
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "${aws_elasticsearch_domain.archivematica.endpoint}"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_USER                    = "${module.rds_cluster.username}"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD                = "${module.rds_cluster.password}"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_HOST                    = "${module.rds_cluster.host}"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_PORT                    = "${module.rds_cluster.port}"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE                = "MCP"
+    ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED                 = "true"
+    AM_GUNICORN_BIND                                       = "0.0.0.0:9000"
+    WELLCOME_SS_URL                                        = "http://${local.storage_service_host}:${local.storage_service_port}"
+    WELLCOME_SITE_URL                                      = "http://localhost:9000"
+  }
+
+  env_vars_length = 15
+
+  container_image = "${local.dashboard_image}"
+
+  mount_points = [
+    {
+      sourceVolume  = "pipeline-data",
+      containerPath = "/var/archivematica/sharedDirectory"
+    },
+  ]
+
+  nginx_container_image = "${local.dashboard_nginx_image}"
+
+  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
+}
