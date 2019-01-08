@@ -18,8 +18,11 @@ module "cluster" {
   cluster_name = "${aws_ecs_cluster.archivematica.name}"
 
   asg_min     = 1
-  asg_desired = 2
-  asg_max     = 2
+  asg_desired = 3
+  asg_max     = 3
 
-  instance_type = "t2.large"
+  # The constraint here isn't CPU or memory; it's Elastic Network Interfaces.
+  # We have deliberately small interfaces, but lots of them, to increase
+  # the number of available ENIs.
+  instance_type = "t2.medium"
 }
