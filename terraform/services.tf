@@ -1,5 +1,12 @@
 locals {
+  mcp_client_image
+  mcp_server_image      = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
+  storage_service_image = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
+
   gearmand_hostname = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+
+  storage_service_host = "${module.storage_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+  storage_service_port = 8000
 }
 
 module "fits_service" {
@@ -78,13 +85,85 @@ module "mcp_server_service" {
 
   env_vars_length = 8
 
-  container_image = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
+  container_image = "${local.mcp_server_image}"
 
   mount_points = [
     {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
     }
+  ]
+
+  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
+}
+
+module "mcp_clicnet_service" {
+  source = "./am_service"
+
+  name = "mcp-client"
+
+  env_vars = {
+    DJANGO_SECRET_KEY                       = "12345"
+    ARCHIVEMATICA_MCPSERVER_CLIENT_USER     = "${module.rds_cluster.username}"
+    ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD = "${module.rds_cluster.password}"
+    ARCHIVEMATICA_MCPSERVER_CLIENT_HOST     = "${module.rds_cluster.host}"
+    ARCHIVEMATICA_MCPSERVER_CLIENT_PORT     = "${module.rds_cluster.port}"
+    ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE = "MCP"
+
+    ARCHIVEMATICA_MCPSERVER_MCPSERVER_MCPARCHIVEMATICA_SERVER = "${local.gearmand_hostname}:4730"
+
+    ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED = true
+  }
+
+  env_vars_length = 8
+
+  container_image = "${local.mcp_client_image}"
+
+  mount_points = [
+    {
+      sourceVolume  = "pipeline-data"
+      containerPath = "/var/archivematica/sharedDirectory"
+    }
+  ]
+
+  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
+}
+
+module "storage_service" {
+  source = "./am_service"
+
+  name = "storage-service"
+
+  env_vars = {
+    FORWARDED_ALLOW_IPS       = "*"
+    AM_GUNICORN_ACCESSLOG     = "/dev/null"
+    AM_GUNICORN_RELOAD        = "true"
+    AM_GUNICORN_RELOAD_ENGINE = "auto"
+    DJANGO_SETTINGS_MODULE    = "storage_service.settings.local"
+    SS_DBURL                  = "mysql://${module.rds_cluster.username}:${module.rds_cluster.password}@${module.rds_cluster.host}:${module.rds_cluster.port}/SS"
+    SS_GNPUG_HOME_PATH        = "/var/archivematica/storage_service/.gnupg"
+    SS_GUNICORN_BIND          = "0.0.0.0:${local.storage_service_port}"
+  }
+
+  env_vars_length = 8
+
+  container_image = "${local.storage_service_image}"
+
+  mount_points = [
+    {
+      sourceVolume  = "pipeline-data",
+      containerPath = "/var/archivematica/sharedDirectory"
+    },
+    {
+      sourceVolume  = "location-data",
+      containerPath = "/home"
+    },
+    {
+      sourceVolume  = "staging-data",
+      containerPath = "/var/archivematica/storage_service"
+    },
   ]
 
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"

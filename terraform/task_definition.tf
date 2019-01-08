@@ -11,7 +11,6 @@ data "template_file" "container_definitions" {
     dashboard_image       = "${module.ecr_dashboard.repository_url}:${var.release_ids["archivematica_dashboard"]}",
     mcp_client_image      = "${module.ecr_mcp_client.repository_url}:${var.release_ids["archivematica_mcp_client"]}"
     nginx_image           = "${module.ecr_storage_service_nginx.repository_url}:${var.release_ids["archivematica_nginx"]}"
-    storage_service_image = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
 
     log_group_region = "${var.region}"
     log_group_name   = "${module.log_group.name}"
@@ -23,6 +22,9 @@ data "template_file" "container_definitions" {
     rds_port     = "${module.rds_cluster.port}"
 
     elasticsearch_endpoint = "${aws_elasticsearch_domain.archivematica.endpoint}"
+
+    storage_service_host = "${local.storage_service_host}"
+    storage_service_port = "${local.storage_service_port}"
 
     efs_mount_path = "${local.efs_host_path}"
 

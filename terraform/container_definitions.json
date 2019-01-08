@@ -91,7 +91,7 @@
       },
       {
         "name": "WELLCOME_SS_URL",
-        "value": "http://localhost:8000"
+        "value": "http://${storage_service_host}:${storage_service_port}"
       },
       {
         "name": "WELLCOME_SITE_URL",
@@ -179,65 +179,6 @@
       {
         "name": "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND",
         "value": "clamdscanner"
-      }
-    ],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "${log_group_name}",
-        "awslogs-region": "${log_group_region}",
-        "awslogs-stream-prefix": "${log_group_prefix}"
-      }
-    }
-  },
-  {
-    "name": "storage-service",
-    "image": "${storage_service_image}",
-    "cpu": 256,
-    "memory": 512,
-    "essential": true,
-    "mountPoints": [
-      {
-        "sourceVolume": "pipeline-data",
-        "containerPath": "/var/archivematica/sharedDirectory"
-      },
-      {
-        "sourceVolume": "location-data",
-        "containerPath": "/home"
-      },
-      {
-        "sourceVolume": "staging-data",
-        "containerPath": "/var/archivematica/storage_service"
-      }
-    ],
-    "environment": [
-      {
-        "name": "FORWARDED_ALLOW_IPS",
-        "value": "*"
-      },
-      {
-        "name": "AM_GUNICORN_ACCESSLOG",
-        "value": "/dev/null"
-      },
-      {
-        "name": "AM_GUNICORN_RELOAD",
-        "value": "true"
-      },
-      {
-        "name": "AM_GUNICORN_RELOAD_ENGINE",
-        "value": "auto"
-      },
-      {
-        "name": "DJANGO_SETTINGS_MODULE",
-        "value": "storage_service.settings.local"
-      },
-      {
-        "name": "SS_DBURL",
-        "value": "mysql://${rds_username}:${rds_password}@${rds_host}:${rds_port}/SS"
-      },
-      {
-        "name": "SS_GNPUG_HOME_PATH",
-        "value": "/var/archivematica/storage_service/.gnupg"
       }
     ],
     "logConfiguration": {
