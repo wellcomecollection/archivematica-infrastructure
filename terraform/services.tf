@@ -68,7 +68,6 @@ module "mcp_server_service" {
 
   env_vars = {
     DJANGO_SECRET_KEY                       = "12345"
-    DJANGO_SETTINGS_MODULE                  = "settings.common"
     ARCHIVEMATICA_MCPSERVER_CLIENT_USER     = "${module.rds_cluster.username}"
     ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD = "${module.rds_cluster.password}"
     ARCHIVEMATICA_MCPSERVER_CLIENT_HOST     = "${module.rds_cluster.host}"
@@ -82,7 +81,7 @@ module "mcp_server_service" {
     SS_GUNICORN_BIND = "0.0.0.0:${local.mcp_server_port}"
   }
 
-  env_vars_length = 10
+  env_vars_length = 9
 
   container_image = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
 

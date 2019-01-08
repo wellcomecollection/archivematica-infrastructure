@@ -20,16 +20,13 @@ RUN /install_apt_packages.sh
 #
 ENV PYTHONPATH=/usr/lib/archivematica/archivematicaCommon/:/usr/share/archivematica/dashboard/
 
-ENV DJANGO_SETTINGS_MODULE=settings.common
-ENV ARCHIVEMATICA_MCPSERVER_CLIENT_HOST=localhost
-ENV ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE=MCP
-ENV ARCHIVEMATICA_MCPSERVER_CLIENT_USER=archivematica
-ENV ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD=1O5N5UCiFoQP
-
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y archivematica-storage-service
 
-RUN apt-get install -y curl
+# Install our custom settings, and tell Django that it should use this
+# file in preference to the default.
+#
+COPY settings.py /usr/lib/archivematica/MCPServer/settings/wellcome.py
+ENV DJANGO_SETTINGS_MODULE=settings.wellcome
 
-COPY run_mcp_server.sh /
-CMD ["/run_mcp_server.sh"]
+CMD ["/usr/share/archivematica/virtualenvs/archivematica-mcp-server/bin/python", "/usr/lib/archivematica/MCPServer/archivematicaMCP.py"]
