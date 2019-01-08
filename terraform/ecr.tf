@@ -18,9 +18,9 @@ module "ecr_mcp_server" {
   name   = "archivematica_mcp_server"
 }
 
-module "ecr_nginx" {
+module "ecr_storage_service_nginx" {
   source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
-  name   = "archivematica_nginx"
+  name   = "archivematica_storage_service_nginx"
 }
 
 module "ecr_storage_service" {

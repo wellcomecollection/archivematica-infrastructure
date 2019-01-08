@@ -10,7 +10,7 @@ data "template_file" "container_definitions" {
   vars {
     dashboard_image       = "${module.ecr_dashboard.repository_url}:${var.release_ids["archivematica_dashboard"]}",
     mcp_client_image      = "${module.ecr_mcp_client.repository_url}:${var.release_ids["archivematica_mcp_client"]}"
-    nginx_image           = "${module.ecr_nginx.repository_url}:${var.release_ids["archivematica_nginx"]}"
+    nginx_image           = "${module.ecr_storage_service_nginx.repository_url}:${var.release_ids["archivematica_nginx"]}"
     storage_service_image = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
 
     log_group_region = "${var.region}"
