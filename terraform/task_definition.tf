@@ -29,7 +29,6 @@ data "template_file" "container_definitions" {
     fits_service_hostname   = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
     clamav_service_hostname = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
     gearmand_hostname       = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
-    mcp_server_endpoint     = "${local.mcp_server_endpoint}"
   }
 }
 

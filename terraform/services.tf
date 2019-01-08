@@ -1,8 +1,5 @@
 locals {
-  gearmand_hostname   = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
-  mcp_server_endpoint = "${module.mcp_server_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}:${local.mcp_server_port}"
-
-  mcp_server_port = 8000
+  gearmand_hostname = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
 }
 
 module "fits_service" {
@@ -77,11 +74,9 @@ module "mcp_server_service" {
     ARCHIVEMATICA_MCPSERVER_MCPSERVER_MCPARCHIVEMATICA_SERVER = "${local.gearmand_hostname}:4730"
 
     ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED = true
-
-    SS_GUNICORN_BIND = "0.0.0.0:${local.mcp_server_port}"
   }
 
-  env_vars_length = 9
+  env_vars_length = 8
 
   container_image = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
 

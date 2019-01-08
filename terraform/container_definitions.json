@@ -91,7 +91,7 @@
       },
       {
         "name": "WELLCOME_SS_URL",
-        "value": "http://${mcp_server_endpoint}"
+        "value": "http://localhost:8000"
       },
       {
         "name": "WELLCOME_SITE_URL",
