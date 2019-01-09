@@ -1,7 +1,7 @@
-module "load_balancer" {
+module "lb_dashboard" {
   source = "load_balancer"
 
-  name = "archivematica"
+  name = "archivematica-dashboard"
 
   vpc_id         = "${local.vpc_id}"
   public_subnets = "${local.network_public_subnets}"
@@ -15,7 +15,7 @@ module "load_balancer" {
   lb_controlled_ingress_cidrs = ["${var.admin_cidr_ingress}"]
 }
 
-module "load_balancer_storage_service" {
+module "lb_storage_service" {
   source = "load_balancer"
 
   name = "archivematica-storage-service"
