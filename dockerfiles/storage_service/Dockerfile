@@ -38,7 +38,6 @@ ENV SS_DB_USER=
 ENV SS_DB_HOST=
 ENV DJANGO_SETTINGS_MODULE=storage_service.settings.production
 ENV DJANGO_SECRET_KEY="7290fac28a8b30d0017f2bfbcd299d24d2fb5358"
-ENV SS_GUNICORN_BIND=0.0.0.0:8000
 
 ENV REQUEST_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
