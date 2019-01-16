@@ -1,6 +1,11 @@
 module "dashboard_repo_uri" {
   source     = "ssm_repo_uri"
-  image_name = "dashboard"
+  image_name = "archivematica_dashboard"
+}
+
+module "dashboard_nginx_repo_uri" {
+  source     = "ssm_repo_uri"
+  image_name = "archivematica_dashboard_nginx"
 }
 
 module "mcp_client_repo_uri" {
