@@ -1,6 +1,8 @@
 include functions.Makefile
 include formatting.Makefile
 
+export AWS_PROFILE = workflow-dev
+
 tf-plan:
 	$(call terraform_plan,terraform,false)
 
