@@ -1,5 +1,5 @@
 IMAGE_BUILDER_IMAGE = wellcome/image_builder:25
-PUBLISH_SERVICE_IMAGE = wellcome/publish_service:25
+PUBLISH_SERVICE_IMAGE = wellcome/publish_service
 
 
 # Build and tag a Docker image.
@@ -22,7 +22,6 @@ define publish_service
 	$(ROOT)/docker_run.py \
 	    --aws --dind -- \
 	    $(PUBLISH_SERVICE_IMAGE) \
-	        --project="$(1)" \
-	        --namespace=uk.ac.wellcome \
-	        --infra-bucket="$(INFRA_BUCKET)"
+			--image_name="$(1)" \
+			--project_name="archivematica"
 endef
