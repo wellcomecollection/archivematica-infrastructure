@@ -10,3 +10,36 @@ from .production import *
 LOGIN_EXEMPT_URLS += [
     r"^media/"
 ]
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "detailed": {
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "format": "%(levelname)-8s  %(asctime)s  %(name)s:%(module)s:%(funcName)s:%(lineno)d:  %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "archivematica": {
+            "handlers": ["console"],
+            "level": os.getenv("LOG_LEVEL", "INFO"),
+        },
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("LOG_LEVEL", "INFO"),
+        },
+    },
+    "root": {
+        "handlers": [
+            "archivematica",
+            "django",
+        ],
+        "level": "WARNING"
+    },
+}
