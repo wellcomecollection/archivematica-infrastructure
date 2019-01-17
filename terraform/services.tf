@@ -1,11 +1,4 @@
 locals {
-  dashboard_image             = "${module.ecr_dashboard.repository_url}:${var.release_ids["archivematica_dashboard"]}",
-  dashboard_nginx_image       = "${module.ecr_dashboard_nginx.repository_url}:${var.release_ids["archivematica_dashboard_nginx"]}",
-  mcp_client_image            = "${module.ecr_mcp_client.repository_url}:${var.release_ids["archivematica_mcp_client"]}"
-  mcp_server_image            = "${module.ecr_mcp_server.repository_url}:${var.release_ids["archivematica_mcp_server"]}"
-  storage_service_image       = "${module.ecr_storage_service.repository_url}:${var.release_ids["archivematica_storage_service"]}"
-  storage_service_nginx_image = "${module.ecr_storage_service_nginx.repository_url}:${var.release_ids["archivematica_storage_service_nginx"]}"
-
   fits_service_hostname   = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   clamav_service_hostname = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   gearmand_hostname       = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
@@ -90,7 +83,7 @@ module "mcp_server_service" {
 
   env_vars_length = 8
 
-  container_image = "${local.mcp_server_image}"
+  container_image = "${module.mcp_server_repo_uri.value}"
 
   mount_points = [
     {
@@ -128,7 +121,7 @@ module "mcp_client_service" {
 
   env_vars_length = 15
 
-  container_image = "${local.mcp_client_image}"
+  container_image = "${module.mcp_client_repo_uri.value}"
 
   mount_points = [
     {
@@ -162,7 +155,7 @@ module "storage_service" {
 
   env_vars_length = 8
 
-  container_image = "${local.storage_service_image}"
+  container_image = "${module.storage_service_repo_uri.value}"
 
   mount_points = [
     {
@@ -179,7 +172,7 @@ module "storage_service" {
     },
   ]
 
-  nginx_container_image = "${local.storage_service_nginx_image}"
+  nginx_container_image = "${module.storage_service_nginx_repo_uri.value}"
 
   load_balancer_https_listener_arn = "${module.lb_storage_service.https_listener_arn}"
 
@@ -215,7 +208,7 @@ module "dashboard_service" {
 
   env_vars_length = 15
 
-  container_image = "${local.dashboard_image}"
+  container_image = "${module.dashboard_repo_uri.value}"
 
   mount_points = [
     {
@@ -224,7 +217,7 @@ module "dashboard_service" {
     },
   ]
 
-  nginx_container_image = "${local.dashboard_nginx_image}"
+  nginx_container_image = "${module.dashboard_nginx_repo_uri.value}"
 
   load_balancer_https_listener_arn = "${module.lb_dashboard.https_listener_arn}"
 

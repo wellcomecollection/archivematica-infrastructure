@@ -64,7 +64,7 @@ resource "aws_ecs_task_definition" "task" {
 }
 
 module "service" {
-  source = "git::github.com/wellcometrust/terraform-modules//ecs/modules/service/prebuilt/default?ref=unused-variables"
+  source = "git::github.com/wellcometrust/terraform-modules//ecs/modules/service/prebuilt/default?ref=v19.0.0"
 
   service_name       = "${local.full_name}"
   task_desired_count = "1"
