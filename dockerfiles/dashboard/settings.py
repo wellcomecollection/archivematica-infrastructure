@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import
 
+import logging
+
 from .production import *
 
 
@@ -16,17 +18,21 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "detailed": {
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-            "format": "%(levelname)-8s  %(asctime)s  %(name)s:%(module)s:%(funcName)s:%(lineno)d:  %(message)s"
+            "format": "[%(levelname)s] %(name)s:%(module)s:%(funcName)s:%(lineno)d: %(message)s"
         }
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "detailed",
         },
     },
     "loggers": {
         "archivematica": {
+            "handlers": ["console"],
+            "level": os.getenv("LOG_LEVEL", "INFO"),
+        },
+        "archivematica.dashboard": {
             "handlers": ["console"],
             "level": os.getenv("LOG_LEVEL", "INFO"),
         },
@@ -37,9 +43,10 @@ LOGGING = {
     },
     "root": {
         "handlers": [
-            "archivematica",
-            "django",
+            "console",
         ],
         "level": "WARNING"
     },
 }
+
+logging.config.dictConfig(LOGGING)
