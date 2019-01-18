@@ -229,8 +229,12 @@ def get_processing_config_fields_handler(*args, **kwargs):
 
 
 def startRPCServer():
-    gm_worker = gearman.GearmanWorker([django_settings.GEARMAN_SERVER])
+    gearman_hostname = django_settings.GEARMAN_SERVER
+    logger.debug("Creating Gearman worker with hostname %r", gearman_hostname)
+    gm_worker = gearman.GearmanWorker([gearman_hostname])
+
     hostID = gethostname() + "_MCPServer"
+    logger.debug("Setting Gearman client ID to %r", hostID)
     gm_worker.set_client_id(hostID)
 
     # The tasks registered in this worker should not block.
