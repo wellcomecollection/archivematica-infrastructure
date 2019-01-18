@@ -15,7 +15,7 @@ LOGIN_EXEMPT_URLS += [
 
 
 # Send logs to stdout as well as to a file on disk, so they're picked up by
-# the CloudWatch agent and more easily accessible.
+# the CloudWatch agent and more easily?
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
