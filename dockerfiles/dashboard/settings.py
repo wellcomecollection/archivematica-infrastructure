@@ -48,7 +48,7 @@ LOGGING = {
         "handlers": [
             "console",
         ],
-        "level": "WARNING"
+        "level": os.getenv("LOG_LEVEL", "INFO"),
     },
 }
 
