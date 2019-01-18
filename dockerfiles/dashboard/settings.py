@@ -14,8 +14,15 @@ LOGIN_EXEMPT_URLS += [
 ]
 
 
-# Send logs to stdout as well as to a file on disk, so they're picked up by
-# the CloudWatch agent and more easily?
+# Normally the dashboard sends its logs to a file on disk, which can be found at:
+#
+#     /var/log/archivematica/dashboard
+#
+# See https://wiki.archivematica.org/MCPServer#Parsing_Logs
+#
+# This config adds a logging handler that copies all messages to stdout as
+# well as to the file, so they show up in CloudWatch.
+#
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
