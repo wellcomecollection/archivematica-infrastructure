@@ -322,30 +322,35 @@ def created_shared_directory_structure():
 
 naiveip_re = re.compile(r"""^(?:
 (?P<addr>
-    (?P<ipv4>\d{1,3}(?:\.\d{1,3}){3}) |         # IPv4 address
-    (?P<ipv6>\[[a-fA-F0-9:]+\]) |               # IPv6 address
-    (?P<fqdn>[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*) # FQDN
+    (?:\d{1,3}(?:\.\d{1,3}){3}) |           # IPv4 address
+    (?:\[[a-fA-F0-9:]+\]) |                 # IPv6 address
+    (?:[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*)   # FQDN
 ):)?(?P<port>\d+)$""", re.X)
 
 
 def start_prometheus_http_server(addrport):
     if not addrport:
         return
-    m = re.match(naiveip_re, addrport)
+    m = naiveip_re.match(addrport)
     if m is None:
-        logger.error('[prometheus_http_server]'
-                     ' "%s" is not a valid port number or address:port pair.',
+        logger.error('[prometheus_http_server] '
+                     '%r is not a valid port number or address:port pair.',
                      addrport)
         return
-    addr, _ipv4, _ipv6, _fqdn, port = m.groups()
+
+    addr = m.group("addr")
+    port = m.group("port")
+
     try:
         port = int(port)
     except ValueError:
-        logger.error('[prometheus_http_server]'
-                     ' "%r" is not a valid port number.', port)
+        logger.error('[prometheus_http_server] '
+                     '%r is not a valid port number.', port)
         return
     if addr is None:
         addr = '127.0.0.1'
+
+    logger.info("[prometheus_http_server] Detected addr=%r, port=%r", addr, port)
     start_http_server(*(port, addr))
 
 
