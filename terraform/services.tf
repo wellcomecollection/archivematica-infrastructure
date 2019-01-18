@@ -76,12 +76,12 @@ module "mcp_server_service" {
     ARCHIVEMATICA_MCPSERVER_CLIENT_PORT     = "${module.rds_cluster.port}"
     ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE = "MCP"
 
-    ARCHIVEMATICA_MCPSERVER_MCPSERVER_MCPARCHIVEMATICA_SERVER = "${local.gearmand_hostname}:4730"
+    ARCHIVEMATICA_MCPSERVER_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
 
     ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED = true
   }
 
-  env_vars_length = 8
+  env_vars_length = 9
 
   container_image = "${module.mcp_server_repo_uri.value}"
 
@@ -111,7 +111,7 @@ module "mcp_client_service" {
     ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = "${module.rds_cluster.host}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = "${module.rds_cluster.port}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                        = "MCP"
-    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "${aws_elasticsearch_domain.archivematica.endpoint}"
+    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "https://${aws_elasticsearch_domain.archivematica.endpoint}"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED               = true
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
@@ -188,13 +188,16 @@ module "dashboard_service" {
   hostname         = "archivematica.wellcomecollection.org"
   healthcheck_path = "/administration/accounts/login/"
 
+  cpu    = 512
+  memory = 1024
+
   env_vars = {
     FORWARDED_ALLOW_IPS                                    = "*"
     AM_GUNICORN_ACCESSLOG                                  = "/dev/null"
     AM_GUNICORN_RELOAD                                     = "true"
     AM_GUNICORN_RELOAD_ENGINE                              = "auto"
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER       = "${local.gearmand_hostname}:4730"
-    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "${aws_elasticsearch_domain.archivematica.endpoint}"
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "https://${aws_elasticsearch_domain.archivematica.endpoint}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_USER                    = "${module.rds_cluster.username}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD                = "${module.rds_cluster.password}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_HOST                    = "${module.rds_cluster.host}"

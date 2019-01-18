@@ -16,11 +16,30 @@ from .common import *
 # This config adds a logging handler that copies all messages to stdout as
 # well as to the file, so they show up in CloudWatch.
 #
-logger = logging.getLogger("archivematica.mcp.server")
-level = os.environ.get("LOG_LEVEL", "INFO")
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "detailed": {
+            "format": "[%(levelname)s] %(name)s:%(module)s:%(funcName)s:%(lineno)d: %(message)s"
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "detailed",
+        },
+    },
+    "loggers": {
+        "archivematica": {
+            "handlers": ["console"],
+            "level": os.getenv("LOG_LEVEL", "INFO"),
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": os.getenv("LOG_LEVEL", "INFO"),
+    },
+}
 
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(level)
-formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logging.config.dictConfig(LOGGING)

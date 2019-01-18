@@ -29,4 +29,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y archivematica-storage-serv
 COPY settings.py /usr/lib/archivematica/MCPServer/settings/wellcome.py
 ENV DJANGO_SETTINGS_MODULE=settings.wellcome
 
+# Copy in a vendored copy of the Archivematica source code, so I can start
+# adding some more logging calls and see what's going on.
+COPY src /usr/lib/archivematica/MCPServer
+
 CMD ["/usr/share/archivematica/virtualenvs/archivematica-mcp-server/bin/python", "/usr/lib/archivematica/MCPServer/archivematicaMCP.py"]
