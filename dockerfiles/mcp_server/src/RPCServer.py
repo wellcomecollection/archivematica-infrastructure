@@ -253,7 +253,11 @@ def startRPCServer():
     while True:
         try:
             gm_worker.work()
-        except gearman.errors.ServerUnavailable:
+        except gearman.errors.ServerUnavailable as err:
+            logger.warn(
+                "Gearman server unavailable: %r (sleeping for %d seconds)",
+                err, failSleep
+            )
             time.sleep(failSleep)
             if failSleep < failMaxSleep:
                 failSleep += failSleepIncrementor
