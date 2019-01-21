@@ -151,9 +151,13 @@ module "storage_service" {
     SS_DBURL                  = "mysql://${module.rds_cluster.username}:${module.rds_cluster.password}@${module.rds_cluster.host}:${module.rds_cluster.port}/SS"
     SS_GNPUG_HOME_PATH        = "/var/archivematica/storage_service/.gnupg"
     SS_GUNICORN_BIND          = "0.0.0.0:${local.storage_service_port}"
+
+    # The volume mounts are owned by "root".  By default gunicorn runs with
+    # the 'archivematica' user, which can't access these mounts.
+    SS_GUNICORN_USER = "root"
   }
 
-  env_vars_length = 8
+  env_vars_length = 9
 
   container_image = "${module.storage_service_repo_uri.value}"
 
