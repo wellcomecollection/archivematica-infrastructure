@@ -16,6 +16,9 @@ RUN /install_apt_packages.sh
 #
 RUN apt-get install --yes libmysqlclient20
 
+# The storage service uses rsync for some of its internal process.
+RUN apt-get install --yes rsync
+
 # The installation instructions tell you to run
 #
 #     $ service start archivematica-storage-service
