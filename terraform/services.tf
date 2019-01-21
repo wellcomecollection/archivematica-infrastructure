@@ -207,9 +207,13 @@ module "dashboard_service" {
     AM_GUNICORN_BIND                                       = "0.0.0.0:9000"
     WELLCOME_SS_URL                                        = "http://${local.storage_service_host}:${local.storage_service_port}"
     WELLCOME_SITE_URL                                      = "http://localhost:9000"
+
+    # The volume mounts are owned by "root".  By default gunicorn runs with
+    # the 'archivematica' user, which can't access these mounts.
+    AM_GUNICORN_USER = "root"
   }
 
-  env_vars_length = 15
+  env_vars_length = 16
 
   container_image = "${module.dashboard_repo_uri.value}"
 
