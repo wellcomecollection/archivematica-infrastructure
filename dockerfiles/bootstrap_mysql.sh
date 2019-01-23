@@ -4,6 +4,12 @@ set -o errexit
 set -o nounset
 set -o verbose
 
+until mysql --host=mysql --port=3306 --user=root --password="$MYSQL_ROOT_PASSWORD"; do
+  >&2 echo "MySQL is unavailable - sleeping"
+  sleep 5
+done
+
+>&2 echo "MySQL is available - running commands"
 exec mysql --host=mysql --port=3306 --user=root --password="$MYSQL_ROOT_PASSWORD" --execute "\
 		DROP DATABASE IF EXISTS SS;
 		CREATE DATABASE SS;
