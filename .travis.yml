@@ -1,27 +1,33 @@
-language: sh
+language: "sh"
 
-sudo: required
+sudo: "required"
 
 services:
-  - docker
+  - "docker"
 
-dist: trusty
+dist: "trusty"
 
 branches:
   only:
-    - master
+    - "development"
 
-cache:
-  directories:
-    - ~/.scripts
-
-jobs:
-  include:
-    - env: TASK=travis-format
-      stage: test
+env:
+  matrix:
+    - "IMAGE=dashboard"
+    - "IMAGE=dashboard_nginx"
+    - "IMAGE=mcp_client"
+    - "IMAGE=mcp_server"
+    - "IMAGE=storage_service"
+    - "IMAGE=storage_service_nginx"
 
 script:
-  - make "$TASK"
+  >
+    if [[ "$TRAVIS_EVENT_TYPE" == "push" ]]; then
+      make "$IMAGE-publish"
+    else
+      make "$IMAGE-build"
+    fi
 
-stages:
-  - test
+notifications:
+  email:
+    - "wellcomedigitalplatform@wellcome.ac.uk"
