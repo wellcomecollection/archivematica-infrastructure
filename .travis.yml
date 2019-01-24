@@ -20,16 +20,13 @@ env:
     - "IMAGE=storage_service"
     - "IMAGE=storage_service_nginx"
 
-jobs:
-  include:
-    - if: type = pull_request
-      env: TASK=build
-
-    - if: type = push
-      env: TASK=publish
-
 script:
-  - make "$IMAGE-$TASK"
+  >
+    if [[ "$TRAVIS_EVENT_TYPE" == "push"]; then
+      make "$IMAGE-publish"
+    else
+      make "$IMAGE-build"
+    fi
 
 notifications:
   email:
