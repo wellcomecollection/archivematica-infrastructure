@@ -1,6 +1,6 @@
 # Archivematica Infrastructure on ECS
 
-[![Build Status](https://travis-ci.org/wellcometrust/archivematica.svg?branch=master)](https://travis-ci.org/wellcometrust/archivematica)
+[![Build Status](https://travis-ci.org/wellcometrust/archivematica-infra.svg?branch=development)](https://travis-ci.org/wellcometrust/archivematica-infra)
 
 Dockerfiles & Terraform required to run Archivematica on AWS ECS.
 
