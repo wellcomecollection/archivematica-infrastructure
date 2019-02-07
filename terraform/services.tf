@@ -104,8 +104,8 @@ module "mcp_client_service" {
   env_vars = {
     DJANGO_SECRET_KEY                                              = "12345"
     DJANGO_SETTINGS_MODULE                                         = "settings.common"
-    MAILGUN_SERVER                                                 = "${local.fits_service_hostname}"
-    MAILGUN_PORT                                                   = "2113"
+    NAILGUN_SERVER                                                 = "${local.fits_service_hostname}"
+    NAILGUN_PORT                                                   = "2113"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = "${module.rds_cluster.username}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = "${module.rds_cluster.password}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = "${module.rds_cluster.host}"
