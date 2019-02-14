@@ -60,7 +60,7 @@ endif
 #
 define terraform_plan
 	make uptodate-git
-	$(ROOT)/docker_run.py --aws -- \
+	AWS_PROFILE=workflow-dev $(ROOT)/docker_run.py --aws -- \
 		--volume $(ROOT):$(ROOT) \
 		--workdir $(ROOT)/$(1) \
 		--env OP=plan \
@@ -79,7 +79,7 @@ endef
 #
 define terraform_apply
 	make uptodate-git
-	$(ROOT)/docker_run.py --aws -- \
+	AWS_PROFILE=workflow-dev $(ROOT)/docker_run.py --aws -- \
 		--volume $(ROOT):$(ROOT) \
 		--workdir $(ROOT)/$(1) \
 		--env BUCKET_NAME=$(TFPLAN_BUCKET) \
@@ -103,7 +103,7 @@ endef
 # which is slow and boring.
 #
 define terraform_import
-	$(ROOT)/docker_run.py --aws -- \
+	AWS_PROFILE=workflow-dev $(ROOT)/docker_run.py --aws -- \
 		--volume $(ROOT):$(ROOT) \
 		--workdir $(ROOT)/$(2) \
 		hashicorp/terraform:$(TF_VERSION) import $(filter-out tf-import,$(MAKECMDGOALS))
@@ -111,7 +111,7 @@ endef
 
 
 define terraform_state_rm
-	$(ROOT)/docker_run.py --aws -- \
+	AWS_PROFILE=workflow-dev $(ROOT)/docker_run.py --aws -- \
 		--volume $(ROOT):$(ROOT) \
 		--workdir $(ROOT)/$(2) \
 		hashicorp/terraform:$(TF_VERSION) state rm $(filter-out $(1)-terraform-state-rm,$(MAKECMDGOALS))
