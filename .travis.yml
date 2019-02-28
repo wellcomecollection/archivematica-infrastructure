@@ -13,10 +13,7 @@ branches:
 
 env:
   matrix:
-    - "IMAGE=dashboard"
     - "IMAGE=dashboard_nginx"
-    - "IMAGE=mcp_client"
-    - "IMAGE=mcp_server"
     - "IMAGE=storage_service"
     - "IMAGE=storage_service_nginx"
 
