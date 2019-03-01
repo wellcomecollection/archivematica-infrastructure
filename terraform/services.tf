@@ -81,7 +81,7 @@ module "mcp_server_service" {
     ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED = true
   }
 
-  env_vars_length = 9
+  env_vars_length = 8
 
   container_image = "${module.mcp_server_repo_uri.value}"
 
@@ -111,7 +111,7 @@ module "mcp_client_service" {
     ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = "${module.rds_cluster.host}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = "${module.rds_cluster.port}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                        = "MCP"
-    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "https://${aws_elasticsearch_domain.archivematica.endpoint}"
+    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "${var.elasticsearch_url}"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED               = true
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
@@ -134,6 +134,14 @@ module "mcp_client_service" {
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
 
+resource "random_integer" "storage_service_django_key" {
+  min     = 1
+  max     = 999999999
+  keepers = {
+    repo_uri = "${module.storage_service_repo_uri.value}"
+  }
+}
+
 module "storage_service" {
   source = "./nginx_service"
 
@@ -147,17 +155,19 @@ module "storage_service" {
     AM_GUNICORN_ACCESSLOG     = "/dev/null"
     AM_GUNICORN_RELOAD        = "true"
     AM_GUNICORN_RELOAD_ENGINE = "auto"
-    DJANGO_SETTINGS_MODULE    = "storage_service.settings.local"
-    SS_DBURL                  = "mysql://${module.rds_cluster.username}:${module.rds_cluster.password}@${module.rds_cluster.host}:${module.rds_cluster.port}/SS"
+    SS_DB_URL                 = "mysql://${module.rds_cluster.username}:${module.rds_cluster.password}@${module.rds_cluster.host}:${module.rds_cluster.port}/SS"
     SS_GNPUG_HOME_PATH        = "/var/archivematica/storage_service/.gnupg"
     SS_GUNICORN_BIND          = "0.0.0.0:${local.storage_service_port}"
+    DJANGO_ALLOWED_HOSTS      = "*"
+    DJANGO_SECRET_KEY         = "${random_integer.storage_service_django_key.result}"
 
     # The volume mounts are owned by "root".  By default gunicorn runs with
     # the 'archivematica' user, which can't access these mounts.
-    SS_GUNICORN_USER = "root"
+    SS_GUNICORN_USER  = "root"
+    SS_GUNICORN_GROUP = "root"
   }
 
-  env_vars_length = 9
+  env_vars_length = 11
 
   container_image = "${module.storage_service_repo_uri.value}"
 
@@ -184,6 +194,14 @@ module "storage_service" {
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
 
+resource "random_integer" "dashboard_django_key" {
+  min     = 1
+  max     = 999999999
+  keepers = {
+    repo_uri = "${module.dashboard_repo_uri.value}"
+  }
+}
+
 module "dashboard_service" {
   source = "./nginx_service"
 
@@ -201,13 +219,15 @@ module "dashboard_service" {
     AM_GUNICORN_RELOAD                                     = "true"
     AM_GUNICORN_RELOAD_ENGINE                              = "auto"
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER       = "${local.gearmand_hostname}:4730"
-    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "https://${aws_elasticsearch_domain.archivematica.endpoint}"
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "${var.elasticsearch_url}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_USER                    = "${module.rds_cluster.username}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD                = "${module.rds_cluster.password}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_HOST                    = "${module.rds_cluster.host}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_PORT                    = "${module.rds_cluster.port}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE                = "MCP"
     ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED                 = "true"
+    ARCHIVEMATICA_DASHBOARD_DJANGO_ALLOWED_HOSTS           = "*"
+    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY              = "${random_integer.dashboard_django_key.result}"
     AM_GUNICORN_BIND                                       = "0.0.0.0:9000"
     WELLCOME_SS_URL                                        = "http://${local.storage_service_host}:${local.storage_service_port}"
     WELLCOME_SITE_URL                                      = "http://localhost:9000"
@@ -217,7 +237,7 @@ module "dashboard_service" {
     AM_GUNICORN_USER = "root"
   }
 
-  env_vars_length = 16
+  env_vars_length = 18
 
   container_image = "${module.dashboard_repo_uri.value}"
 

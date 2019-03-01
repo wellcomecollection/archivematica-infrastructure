@@ -5,7 +5,7 @@ variable "label" {
 variable "image_name" {}
 
 data "aws_ssm_parameter" "release_id" {
-  name = "/releases/archivematica/${var.label}/${var.image_name}"
+  name = "/archivematica/images/prod/${var.image_name}"
 }
 
 output "value" {

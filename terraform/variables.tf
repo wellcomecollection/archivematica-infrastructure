@@ -10,3 +10,5 @@ variable "rds_password" {}
 variable "admin_cidr_ingress" {
   type = "list"
 }
+
+variable "elasticsearch_url" {}
