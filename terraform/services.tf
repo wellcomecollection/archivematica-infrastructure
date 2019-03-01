@@ -194,6 +194,14 @@ module "storage_service" {
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
 
+resource "random_integer" "dashboard_django_key" {
+  min     = 1
+  max     = 999999999
+  keepers = {
+    repo_uri = "${module.dashboard_repo_uri.value}"
+  }
+}
+
 module "dashboard_service" {
   source = "./nginx_service"
 
@@ -218,6 +226,8 @@ module "dashboard_service" {
     ARCHIVEMATICA_DASHBOARD_CLIENT_PORT                    = "${module.rds_cluster.port}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE                = "MCP"
     ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED                 = "true"
+    ARCHIVEMATICA_DASHBOARD_DJANGO_ALLOWED_HOSTS           = "*"
+    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY              = "${random_integer.dashboard_django_key.result}"
     AM_GUNICORN_BIND                                       = "0.0.0.0:9000"
     WELLCOME_SS_URL                                        = "http://${local.storage_service_host}:${local.storage_service_port}"
     WELLCOME_SITE_URL                                      = "http://localhost:9000"
@@ -227,7 +237,7 @@ module "dashboard_service" {
     AM_GUNICORN_USER = "root"
   }
 
-  env_vars_length = 16
+  env_vars_length = 18
 
   container_image = "${module.dashboard_repo_uri.value}"
 
