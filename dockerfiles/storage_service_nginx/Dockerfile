@@ -1,4 +1,4 @@
-FROM archivematica_storage_service
+# FROM archivematica_storage_service
 
 
 # This is where the nginx image starts.
@@ -16,7 +16,7 @@ COPY etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 #  2) Lets us solve the path problems in nginx config, and not have to serve
 #     them through Django
 #
-COPY --from=0 /usr/share/archivematica/virtualenvs/archivematica-storage-service/lib/python2.7/site-packages/storage_service/static /usr/share/nginx/html/storage_service/static/
+# COPY --from=0 /usr/share/archivematica/virtualenvs/archivematica-storage-service/lib/python2.7/site-packages/storage_service/static /usr/share/nginx/html/storage_service/static/
 
 EXPOSE 80
 

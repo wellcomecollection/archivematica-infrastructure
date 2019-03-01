@@ -12,7 +12,7 @@ dashboard_nginx-build: dashboard-build
 storage_service-build: archivematica_base-build
 	$(call build_image,archivematica_storage_service,dockerfiles/storage_service/Dockerfile)
 
-storage_service_nginx-build: storage_service-build
+storage_service_nginx-build:
 	$(call build_image,archivematica_storage_service_nginx,dockerfiles/storage_service_nginx/Dockerfile)
 
 
