@@ -33,6 +33,7 @@
             "awslogs-stream-prefix": "${log_group_prefix}"
         }
     },
-    "mountPoints": ${app_mount_points}
+    "mountPoints": ${app_mount_points},
+    "user": "root"
   }
 ]
