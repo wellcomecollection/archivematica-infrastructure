@@ -3,7 +3,7 @@ locals {
 }
 
 module "container_definition" {
-  source = "git::github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/container_definition/single_container?ref=v18.2.3"
+  source = "../modules/single_container"
 
   aws_region = "${var.aws_region}"
 

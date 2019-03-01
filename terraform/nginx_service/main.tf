@@ -6,7 +6,7 @@ locals {
 }
 
 module "container_definition" {
-  source = "git::github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/container_definition/container_with_sidecar?ref=v18.2.3"
+  source = "../modules/container_with_sidecar"
 
   aws_region = "${var.aws_region}"
 
