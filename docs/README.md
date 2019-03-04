@@ -46,6 +46,18 @@ If you want to deploy a new version of a service:
 
 *   Inside this repo, run `make tf-plan` and then `make tf-apply`.
 
+If you don't want to wait for Travis, you can deploy a service manually from the appropriate repo:
+
+*   wellcometrust/archivematica fork:
+
+    -   Dashboard ~> `make dashboard-publish`
+    -   MCP client ~> `make mcp_client-publish`
+    -   MCP server ~> `make mcp_server-publish`
+
+*   wellcometrust/archivematica-storage-service fork:
+
+    -   Storage service ~> `make archivematica-storage-service-publish`
+
 
 ## Known issues
 
