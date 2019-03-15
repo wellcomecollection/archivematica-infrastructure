@@ -12,7 +12,7 @@ module "fits_service" {
 
   name = "fits"
 
-  container_image = "artefactual/fits-ngserver:0.8.4"
+  container_image = "${module.fits_ngserver_repo_uri.value}"
 
   mount_points = [
     {
