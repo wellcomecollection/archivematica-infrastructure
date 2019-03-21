@@ -48,6 +48,7 @@ resource "aws_ecs_task_definition" "task" {
   family                = "${local.full_name}"
   container_definitions = "${module.container_definition.rendered}"
   execution_role_arn    = "${module.iam_roles.task_execution_role_arn}"
+  task_role_arn         = "${module.iam_roles.task_role_arn}"
 
   network_mode = "awsvpc"
 
