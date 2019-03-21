@@ -30,9 +30,6 @@ module "clamav_service" {
 
   name = "clamav"
 
-  cpu    = 256
-  memory = 1024
-
   container_image = "artefactual/clamav:latest"
 
   mount_points = [
@@ -209,9 +206,6 @@ module "dashboard_service" {
 
   hostname         = "archivematica.wellcomecollection.org"
   healthcheck_path = "/administration/accounts/login/"
-
-  cpu    = 512
-  memory = 1024
 
   env_vars = {
     FORWARDED_ALLOW_IPS                                    = "*"

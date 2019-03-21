@@ -21,11 +21,11 @@ variable "aws_region" {
 }
 
 variable "cpu" {
-  default = 256
+  default = 1024
 }
 
 variable "memory" {
-  default = 512
+  default = 1536
 }
 
 variable "mount_points" {
