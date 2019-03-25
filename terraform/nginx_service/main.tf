@@ -6,7 +6,7 @@ locals {
 }
 
 module "container_definition" {
-  source = "../modules/container_with_sidecar"
+  source = "github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/container_definition/container_with_sidecar?ref=v19.8.0"
 
   aws_region = "${var.aws_region}"
 
@@ -37,10 +37,12 @@ EOF
   sidecar_memory = "${local.nginx_memory}"
 
   app_mount_points = "${var.mount_points}"
+
+  execution_role_name = "${module.iam_roles.task_execution_role_name}"
 }
 
 module "iam_roles" {
-  source    = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=v17.1.0"
+  source    = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=v19.8.0"
   task_name = "${local.full_name}"
 }
 
