@@ -35,3 +35,12 @@ variable "mount_points" {
 
 variable "cluster_id" {}
 variable "namespace_id" {}
+
+variable "secret_env_vars" {
+  type    = "map"
+  default = {}
+}
+
+variable "secret_env_vars_length" {
+  default = 0
+}
