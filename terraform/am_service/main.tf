@@ -3,12 +3,15 @@ locals {
 }
 
 module "container_definition" {
-  source = "../modules/single_container"
+  source = "github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/container_definition/single_container?ref=v19.8.0"
 
   aws_region = "${var.aws_region}"
 
   env_vars        = "${var.env_vars}"
   env_vars_length = "${var.env_vars_length}"
+
+  secret_env_vars        = {}
+  secret_env_vars_length = 0
 
   task_name = "${local.full_name}"
 
@@ -22,10 +25,12 @@ module "container_definition" {
   memory = "${var.memory}"
 
   mount_points = "${var.mount_points}"
+
+  execution_role_name = "${module.iam_roles.task_execution_role_name}"
 }
 
 module "iam_roles" {
-  source    = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=v17.1.0"
+  source    = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=v19.8.0"
   task_name = "${local.full_name}"
 }
 
