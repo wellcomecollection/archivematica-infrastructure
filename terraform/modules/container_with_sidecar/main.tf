@@ -25,6 +25,8 @@ data "template_file" "definition" {
 
     app_environment_vars = "${module.app_env_vars.env_vars_string}"
 
+    app_secret_environment_vars = "${module.app_secret_env_vars.env_vars_string}"
+
     app_cpu    = "${var.app_cpu}"
     app_memory = "${var.app_memory}"
 
@@ -39,6 +41,8 @@ data "template_file" "definition" {
     sidecar_port_mappings = "${var.sidecar_port_mappings_string}"
 
     sidecar_environment_vars = "${module.sidecar_env_vars.env_vars_string}"
+
+    sidecar_secret_environment_vars = "${module.sidecar_secret_env_vars.env_vars_string}"
 
     sidecar_cpu    = "${var.sidecar_cpu}"
     sidecar_memory = "${var.sidecar_memory}"
@@ -60,6 +64,13 @@ module "sidecar_env_vars" {
   env_vars_length = "${var.sidecar_env_vars_length}"
 }
 
+module "sidecar_secret_env_vars" {
+  source                 = "git::github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/secrets?ref=v19.11.0"
+  secret_env_vars        = "${var.secret_sidecar_env_vars}"
+  secret_env_vars_length = "${var.secret_sidecar_env_vars_length}"
+  execution_role_name    = "${var.execution_role_name}"
+}
+
 # App
 
 module "app_log_group" {
@@ -71,4 +82,11 @@ module "app_env_vars" {
   source          = "git::github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/env_vars?ref=v18.2.3"
   env_vars        = "${var.app_env_vars}"
   env_vars_length = "${var.app_env_vars_length}"
+}
+
+module "app_secret_env_vars" {
+  source                 = "git::github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/secrets?ref=v19.11.0"
+  secret_env_vars        = "${var.secret_app_env_vars}"
+  secret_env_vars_length = "${var.secret_app_env_vars_length}"
+  execution_role_name    = "${var.execution_role_name}"
 }

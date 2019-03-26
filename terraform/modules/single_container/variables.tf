@@ -1,11 +1,5 @@
 variable "aws_region" {}
 
-variable "env_vars" {
-  description = "Environment variables to pass to the container"
-  type        = "map"
-  default     = {}
-}
-
 variable "task_name" {}
 
 variable "task_port" {
@@ -32,6 +26,24 @@ variable "command" {
   default = []
 }
 
+variable "execution_role_name" {}
+
+variable "env_vars" {
+  description = "Environment variables to pass to the container"
+  type        = "map"
+  default     = {}
+}
+
 variable "env_vars_length" {
+  default = 0
+}
+
+variable "secret_env_vars" {
+  description = "Secure environment variables to pass to the container"
+  type        = "map"
+  default     = {}
+}
+
+variable "secret_env_vars_length" {
   default = 0
 }

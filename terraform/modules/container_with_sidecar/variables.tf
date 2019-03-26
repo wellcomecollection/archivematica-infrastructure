@@ -24,12 +24,20 @@ variable "app_mount_points" {
 }
 
 variable "app_env_vars" {
-  description = "Environment variables to pass to the container"
-  type        = "map"
-  default     = {}
+  type    = "map"
+  default = {}
 }
 
-variable "sidecar_env_vars_length" {
+variable "app_env_vars_length" {
+  default = 0
+}
+
+variable "secret_app_env_vars" {
+  type    = "map"
+  default = {}
+}
+
+variable "secret_app_env_vars_length" {
   default = 0
 }
 
@@ -50,11 +58,21 @@ variable "sidecar_mount_points" {
 }
 
 variable "sidecar_env_vars" {
-  description = "Environment variables to pass to the container"
-  type        = "map"
-  default     = {}
+  type    = "map"
+  default = {}
 }
 
-variable "app_env_vars_length" {
+variable "sidecar_env_vars_length" {
   default = 0
 }
+
+variable "secret_sidecar_env_vars" {
+  type    = "map"
+  default = {}
+}
+
+variable "secret_sidecar_env_vars_length" {
+  default = 0
+}
+
+variable "execution_role_name" {}

@@ -37,10 +37,12 @@ EOF
   sidecar_memory = "${local.nginx_memory}"
 
   app_mount_points = "${var.mount_points}"
+
+  execution_role_name = "${module.iam_roles.task_execution_role_name}"
 }
 
 module "iam_roles" {
-  source    = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=v17.1.0"
+  source    = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=v19.11.0"
   task_name = "${local.full_name}"
 }
 
