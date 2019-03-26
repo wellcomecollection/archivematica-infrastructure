@@ -76,3 +76,11 @@ variable "secret_sidecar_env_vars_length" {
 }
 
 variable "execution_role_name" {}
+
+variable "app_user" {
+  default = "root"
+}
+
+variable "sidecar_user" {
+  default = "root"
+}

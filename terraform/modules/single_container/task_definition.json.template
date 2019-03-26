@@ -18,7 +18,7 @@
             "awslogs-stream-prefix": "${log_group_prefix}"
         }
     },
-    "mountPoints": ${mount_points},
-    "user": "root"
+    "user": "${user}",
+    "mountPoints": ${mount_points}
   }
 ]
