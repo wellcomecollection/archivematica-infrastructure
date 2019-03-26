@@ -21,7 +21,7 @@ variable "aws_region" {
 }
 
 variable "cpu" {
-  default = 1024
+  default = 896  # 1024 - 128 for the sidecar
 }
 
 variable "memory" {
