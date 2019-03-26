@@ -18,8 +18,8 @@ module "cluster" {
   cluster_name = "${aws_ecs_cluster.archivematica.name}"
 
   asg_min     = 1
-  asg_desired = 4
-  asg_max     = 4
+  asg_desired = 6
+  asg_max     = 6
 
   # The constraint here isn't CPU or memory; it's Elastic Network Interfaces.
   # We have deliberately small interfaces, but lots of them, to increase
