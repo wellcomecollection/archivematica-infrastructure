@@ -8,6 +8,15 @@ variable "env_vars_length" {
   default = 0
 }
 
+variable "secret_env_vars" {
+  type    = "map"
+  default = {}
+}
+
+variable "secret_env_vars_length" {
+  default = 0
+}
+
 variable "load_balancer_https_listener_arn" {}
 
 variable "healthcheck_path" {}
@@ -21,7 +30,7 @@ variable "aws_region" {
 }
 
 variable "cpu" {
-  default = 1024
+  default = 896  # 1024 - 128 for the sidecar
 }
 
 variable "memory" {
