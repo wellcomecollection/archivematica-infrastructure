@@ -153,6 +153,7 @@ data "aws_iam_policy_document" "storage_service_aws_permissions" {
 
     resources = [
       "arn:aws:s3:::wellcomecollection-storage-ingests/",
+      "arn:aws:s3:::wellcomecollection-storage-ingests/*",
     ]
   }
 }
