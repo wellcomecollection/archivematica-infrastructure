@@ -27,7 +27,7 @@ module "container_definition" {
 }
 
 module "iam_roles" {
-  source    = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=v19.11.0"
+  source    = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=b59b32d"
   task_name = "${local.full_name}"
 }
 
