@@ -66,7 +66,6 @@ module "mcp_server_service" {
   name = "mcp-server"
 
   env_vars = {
-    DJANGO_SECRET_KEY                       = "12345"
     ARCHIVEMATICA_MCPSERVER_CLIENT_USER     = "${module.rds_cluster.username}"
     ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD = "${module.rds_cluster.password}"
     ARCHIVEMATICA_MCPSERVER_CLIENT_HOST     = "${module.rds_cluster.host}"
@@ -78,7 +77,13 @@ module "mcp_server_service" {
     ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED = true
   }
 
-  env_vars_length = 8
+  env_vars_length = 7
+
+  secret_env_vars = {
+    DJANGO_SECRET_KEY = "archivematica/mcp_server_django_secret_key"
+  }
+
+  secret_env_vars_length = 1
 
   container_image = "${module.mcp_server_repo_uri.value}"
 
@@ -99,7 +104,6 @@ module "mcp_client_service" {
   name = "mcp-client"
 
   env_vars = {
-    DJANGO_SECRET_KEY                                              = "12345"
     DJANGO_SETTINGS_MODULE                                         = "settings.common"
     NAILGUN_SERVER                                                 = "${local.fits_service_hostname}"
     NAILGUN_PORT                                                   = "2113"
@@ -116,7 +120,14 @@ module "mcp_client_service" {
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
   }
 
-  env_vars_length = 15
+  env_vars_length = 14
+
+  secret_env_vars = {
+    DJANGO_SECRET_KEY = "archivematica/mcp_client_django_secret_key"
+  }
+
+  secret_env_vars_length = 1
+
 
   container_image = "${module.mcp_client_repo_uri.value}"
 
@@ -129,14 +140,6 @@ module "mcp_client_service" {
 
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
-}
-
-resource "random_integer" "storage_service_django_key" {
-  min     = 1
-  max     = 999999999
-  keepers = {
-    repo_uri = "${module.storage_service_repo_uri.value}"
-  }
 }
 
 resource "aws_iam_role_policy" "storage_service_task_role_policy" {
@@ -175,7 +178,6 @@ module "storage_service" {
     SS_GNPUG_HOME_PATH        = "/var/archivematica/storage_service/.gnupg"
     SS_GUNICORN_BIND          = "0.0.0.0:${local.storage_service_port}"
     DJANGO_ALLOWED_HOSTS      = "*"
-    DJANGO_SECRET_KEY         = "${random_integer.storage_service_django_key.result}"
 
     # The volume mounts are owned by "root".  By default gunicorn runs with
     # the 'archivematica' user, which can't access these mounts.
@@ -183,7 +185,13 @@ module "storage_service" {
     SS_GUNICORN_GROUP = "root"
   }
 
-  env_vars_length = 11
+  env_vars_length = 10
+
+  secret_env_vars = {
+    DJANGO_SECRET_KEY = "archivematica/storage_service_django_secret_key"
+  }
+
+  secret_env_vars_length = 1
 
   container_image = "${module.storage_service_repo_uri.value}"
 
@@ -240,7 +248,6 @@ module "dashboard_service" {
     ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE                = "MCP"
     ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED                 = "true"
     ARCHIVEMATICA_DASHBOARD_DJANGO_ALLOWED_HOSTS           = "*"
-    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY              = "${random_integer.dashboard_django_key.result}"
     AM_GUNICORN_BIND                                       = "0.0.0.0:9000"
     WELLCOME_SS_URL                                        = "http://${local.storage_service_host}:${local.storage_service_port}"
     WELLCOME_SITE_URL                                      = "http://localhost:9000"
@@ -250,7 +257,13 @@ module "dashboard_service" {
     AM_GUNICORN_USER = "root"
   }
 
-  env_vars_length = 18
+  env_vars_length = 17
+
+  secret_env_vars = {
+    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY = "archivematica/dashboard_django_secret_key"
+  }
+
+  secret_env_vars_length = 1
 
   container_image = "${module.dashboard_repo_uri.value}"
 

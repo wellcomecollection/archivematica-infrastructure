@@ -3,12 +3,15 @@ locals {
 }
 
 module "container_definition" {
-  source = "../modules/single_container"
+  source = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/container_definition/single_container?ref=b59b32d"
 
   aws_region = "${var.aws_region}"
 
   env_vars        = "${var.env_vars}"
   env_vars_length = "${var.env_vars_length}"
+
+  secret_env_vars        = "${var.secret_env_vars}"
+  secret_env_vars_length = "${var.secret_env_vars_length}"
 
   task_name = "${local.full_name}"
 

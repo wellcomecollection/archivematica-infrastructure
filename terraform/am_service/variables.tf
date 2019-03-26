@@ -8,6 +8,15 @@ variable "env_vars_length" {
   default = 0
 }
 
+variable "secret_env_vars" {
+  type    = "map"
+  default = {}
+}
+
+variable "secret_env_vars_length" {
+  default = 0
+}
+
 variable "container_image" {}
 
 variable "aws_region" {

@@ -13,6 +13,9 @@ module "container_definition" {
   app_env_vars        = "${var.env_vars}"
   app_env_vars_length = "${var.env_vars_length}"
 
+  secret_app_env_vars        = "${var.secret_env_vars}"
+  secret_app_env_vars_length = "${var.secret_env_vars_length}"
+
   task_name = "${local.full_name}"
 
   log_group_prefix = "archivematica/${var.name}"
