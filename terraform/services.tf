@@ -218,14 +218,6 @@ module "storage_service" {
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
 
-resource "random_integer" "dashboard_django_key" {
-  min     = 1
-  max     = 999999999
-  keepers = {
-    repo_uri = "${module.dashboard_repo_uri.value}"
-  }
-}
-
 module "dashboard_service" {
   source = "./nginx_service"
 
