@@ -112,7 +112,7 @@ module "mcp_client_service" {
     ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = "${module.rds_cluster.host}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = "${module.rds_cluster.port}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                        = "MCP"
-    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "${var.elasticsearch_url}"
+    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "${local.elasticsearch_url}"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED               = true
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
@@ -141,25 +141,6 @@ module "mcp_client_service" {
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
-
-resource "aws_iam_role_policy" "storage_service_task_role_policy" {
-  role   = "${module.storage_service.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_service_aws_permissions.json}"
-}
-
-
-data "aws_iam_policy_document" "storage_service_aws_permissions" {
-  statement {
-    actions = [
-      "s3:PutObject",
-    ]
-
-    resources = [
-      "arn:aws:s3:::wellcomecollection-storage-ingests/",
-    ]
-  }
-}
-
 
 module "storage_service" {
   source = "./nginx_service"
@@ -218,14 +199,6 @@ module "storage_service" {
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
 
-resource "random_integer" "dashboard_django_key" {
-  min     = 1
-  max     = 999999999
-  keepers = {
-    repo_uri = "${module.dashboard_repo_uri.value}"
-  }
-}
-
 module "dashboard_service" {
   source = "./nginx_service"
 
@@ -240,7 +213,7 @@ module "dashboard_service" {
     AM_GUNICORN_RELOAD                                     = "true"
     AM_GUNICORN_RELOAD_ENGINE                              = "auto"
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER       = "${local.gearmand_hostname}:4730"
-    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "${var.elasticsearch_url}"
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "${local.elasticsearch_url}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_USER                    = "${module.rds_cluster.username}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD                = "${module.rds_cluster.password}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_HOST                    = "${module.rds_cluster.host}"

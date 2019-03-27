@@ -10,7 +10,7 @@ module "cluster" {
   region   = "${var.region}"
   key_name = "wellcomedigitalworkflow"
 
-  controlled_access_cidr_ingress = ["${var.admin_cidr_ingress}"]
+  controlled_access_cidr_ingress = ["${local.admin_cidr_ingress}"]
 
   efs_security_group_ids = ["${local.efs_security_group_id}"]
   efs_id                 = "${module.efs.efs_id}"

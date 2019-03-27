@@ -2,8 +2,8 @@ module "rds_cluster" {
   source             = "git::https://github.com/wellcometrust/terraform.git//rds?ref=v13.0.0"
   cluster_identifier = "archivematica"
   database_name      = "archivematica"
-  username           = "${var.rds_username}"
-  password           = "${var.rds_password}"
+  username           = "${local.rds_username}"
+  password           = "${local.rds_password}"
   vpc_subnet_ids     = "${local.network_private_subnets}"
   vpc_id             = "${local.vpc_id}"
 
