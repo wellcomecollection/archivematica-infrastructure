@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "ingests_put" {
       type = "AWS"
 
        identifiers = [
-        "${aws_iam_role_policy.storage_service_task_role_policy.arn}",
+        "${module.storage_service.task_role_arn}",
       ]
     }
   }
