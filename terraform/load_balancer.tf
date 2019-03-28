@@ -11,8 +11,6 @@ module "lb_dashboard" {
   service_lb_security_group_ids = [
     "${local.service_lb_security_group_id}",
   ]
-
-  lb_controlled_ingress_cidrs = ["${local.admin_cidr_ingress}"]
 }
 
 module "lb_storage_service" {
@@ -28,6 +26,4 @@ module "lb_storage_service" {
   service_lb_security_group_ids = [
     "${local.service_lb_security_group_id}",
   ]
-
-  lb_controlled_ingress_cidrs = ["${local.admin_cidr_ingress}"]
 }
