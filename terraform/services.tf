@@ -7,6 +7,22 @@ locals {
   storage_service_port = 8000
 }
 
+module "mcp_service" {
+  source = "./mcp_service"
+
+  fits_container_image = "${module.fits_ngserver_repo_uri.value}"
+  fits_mount_points    = [
+    {
+      sourceVolume  = "pipeline-data"
+      containerPath = "/var/archivematica/sharedDirectory"
+    }
+  ]
+}
+
+output "task_definition" {
+  value = "${module.mcp_service.task_definition}"
+}
+
 module "fits_service" {
   source = "./am_service"
 
