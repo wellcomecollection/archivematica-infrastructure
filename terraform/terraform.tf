@@ -10,6 +10,18 @@ terraform {
   }
 }
 
+data "terraform_remote_state" "storage_service" {
+  backend = "s3"
+
+  config {
+    role_arn = "arn:aws:iam::975596993436:role/developer"
+
+    bucket = "wellcomecollection-storage-infra"
+    key    = "terraform/storage.tfstate"
+    region = "eu-west-1"
+  }
+}
+
 data "terraform_remote_state" "workflow" {
   backend = "s3"
 
