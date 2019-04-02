@@ -10,7 +10,8 @@ locals {
 module "mcp_service" {
   source = "./mcp_service"
 
-  efs_host_path = "/efs"
+  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 
   fits_container_image = "${module.fits_ngserver_repo_uri.value}"
   fits_mount_points    = [

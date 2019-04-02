@@ -1,4 +1,5 @@
-variable "efs_host_path" {}
+variable "cluster_id" {}
+variable "namespace_id" {}
 
 variable "fits_cpu" {
   default = 1024
