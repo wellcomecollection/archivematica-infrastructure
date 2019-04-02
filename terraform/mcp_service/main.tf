@@ -20,6 +20,14 @@ data "template_file" "container_definition" {
     clamav_container_image = "${var.clamav_container_image}"
     clamav_log_group_name  = "clamav"
     clamav_mount_points    = "${jsonencode(var.clamav_mount_points)}"
+
+    mcp_client_cpu             = "${var.mcp_client_cpu}"
+    mcp_client_memory          = "${var.mcp_client_memory}"
+    mcp_client_container_image = "${var.mcp_client_container_image}"
+    mcp_client_log_group_name  = "mcp_client"
+    mcp_client_env_vars        = "${module.mcp_client_env_vars.env_vars_string}"
+    mcp_client_secrets         = "${module.mcp_client_secrets.env_vars_string}"
+    mcp_client_mount_points    = "${jsonencode(var.mcp_client_mount_points)}"
   }
 }
 
@@ -53,8 +61,8 @@ resource "aws_ecs_task_definition" "task" {
     host_path = "${local.efs_host_path}/staging-data"
   }
 
-  cpu    = "${var.fits_cpu + var.clamav_cpu}"
-  memory = "${var.fits_memory + var.clamav_memory}"
+  cpu    = "${var.fits_cpu + var.clamav_cpu + var.mcp_client_cpu}"
+  memory = "${var.fits_memory + var.clamav_memory + var.mcp_client_memory}"
 }
 
 module "service" {
