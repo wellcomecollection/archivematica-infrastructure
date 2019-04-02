@@ -1,3 +1,5 @@
+variable "efs_host_path" {}
+
 variable "fits_cpu" {
   default = 1024
 }

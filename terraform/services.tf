@@ -10,6 +10,8 @@ locals {
 module "mcp_service" {
   source = "./mcp_service"
 
+  efs_host_path = "/efs"
+
   fits_container_image = "${module.fits_ngserver_repo_uri.value}"
   fits_mount_points    = [
     {
