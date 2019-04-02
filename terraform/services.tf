@@ -19,6 +19,14 @@ module "mcp_service" {
       containerPath = "/var/archivematica/sharedDirectory"
     }
   ]
+
+  clamav_container_image = "artefactual/clamav:latest"
+  clamav_mount_points    = [
+    {
+      sourceVolume  = "pipeline-data"
+      containerPath = "/var/archivematica/sharedDirectory"
+    }
+  ]
 }
 
 output "task_definition" {

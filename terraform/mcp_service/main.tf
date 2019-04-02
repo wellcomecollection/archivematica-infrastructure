@@ -10,6 +10,12 @@ data "template_file" "container_definition" {
     fits_container_image = "${var.fits_container_image}"
     fits_log_group_name  = "fits"
     fits_mount_points    = "${jsonencode(var.fits_mount_points)}"
+
+    clamav_cpu             = "${var.clamav_cpu}"
+    clamav_memory          = "${var.clamav_memory}"
+    clamav_container_image = "${var.clamav_container_image}"
+    clamav_log_group_name  = "clamav"
+    clamav_mount_points    = "${jsonencode(var.clamav_mount_points)}"
   }
 }
 
@@ -43,6 +49,6 @@ resource "aws_ecs_task_definition" "task" {
     host_path = "${var.efs_host_path}/staging-data"
   }
 
-  cpu    = "${var.fits_cpu}"
-  memory = "${var.fits_memory}"
+  cpu    = "${var.fits_cpu + var.clamav_cpu}"
+  memory = "${var.fits_memory + var.clamav_memory}"
 }

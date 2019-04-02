@@ -14,5 +14,21 @@
         }
     },
     "mountPoints": ${fits_mount_points}
+  },
+  {
+    "cpu": ${clamav_cpu},
+    "memory": ${clamav_memory},
+    "essential": true,
+    "image": "${clamav_container_image}",
+    "name": "clamav",
+    "networkMode": "awsvpc",
+    "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "${clamav_log_group_name}",
+            "awslogs-region": "${log_group_region}"
+        }
+    },
+    "mountPoints": ${clamav_mount_points}
   }
 ]
