@@ -29,7 +29,7 @@ module "mcp_service" {
 
   mcp_client_env_vars = {
     DJANGO_SETTINGS_MODULE                                         = "settings.common"
-    NAILGUN_SERVER                                                 = "fits"
+    NAILGUN_SERVER                                                 = "localhost"
     NAILGUN_PORT                                                   = "2113"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = "${module.rds_cluster.username}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = "${module.rds_cluster.password}"
@@ -40,7 +40,7 @@ module "mcp_service" {
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED               = true
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "clamav:3310"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "localhost:3310"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
   }
 

@@ -13,7 +13,8 @@
             "awslogs-region": "${log_group_region}"
         }
     },
-    "mountPoints": ${fits_mount_points}
+    "mountPoints": ${fits_mount_points},
+    "user": "root"
   },
   {
     "cpu": ${clamav_cpu},
@@ -29,7 +30,8 @@
             "awslogs-region": "${log_group_region}"
         }
     },
-    "mountPoints": ${clamav_mount_points}
+    "mountPoints": ${clamav_mount_points},
+    "user": "root"
   },
   {
     "cpu": ${mcp_client_cpu},
@@ -47,6 +49,7 @@
             "awslogs-region": "${log_group_region}"
         }
     },
-    "mountPoints": ${mcp_client_mount_points}
+    "mountPoints": ${mcp_client_mount_points},
+    "user": "root"
   }
 ]
