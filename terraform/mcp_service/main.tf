@@ -2,6 +2,24 @@ locals {
   full_name = "am-mcp_client2"
 }
 
+module "fits_log_group" {
+  source = "github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/log_group?ref=v19.12.0"
+
+  task_name = "am-fits"
+}
+
+module "clamav_log_group" {
+  source = "github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/log_group?ref=v19.12.0"
+
+  task_name = "am-clamav"
+}
+
+module "mcp_client_log_group" {
+  source = "github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/log_group?ref=v19.12.0"
+
+  task_name = "am-mcp_client"
+}
+
 data "template_file" "container_definition" {
   template = "${file("${path.module}/task_definition.json.template")}"
 
@@ -12,19 +30,19 @@ data "template_file" "container_definition" {
     fits_cpu             = "${var.fits_cpu}"
     fits_memory          = "${var.fits_memory}"
     fits_container_image = "${var.fits_container_image}"
-    fits_log_group_name  = "fits"
+    fits_log_group_name  = "ecs/am-fits"
     fits_mount_points    = "${jsonencode(var.fits_mount_points)}"
 
     clamav_cpu             = "${var.clamav_cpu}"
     clamav_memory          = "${var.clamav_memory}"
     clamav_container_image = "${var.clamav_container_image}"
-    clamav_log_group_name  = "clamav"
+    clamav_log_group_name  = "ecs/am-clamav"
     clamav_mount_points    = "${jsonencode(var.clamav_mount_points)}"
 
     mcp_client_cpu             = "${var.mcp_client_cpu}"
     mcp_client_memory          = "${var.mcp_client_memory}"
     mcp_client_container_image = "${var.mcp_client_container_image}"
-    mcp_client_log_group_name  = "mcp_client"
+    mcp_client_log_group_name  = "ecs/am-mcp_client"
     mcp_client_env_vars        = "${module.mcp_client_env_vars.env_vars_string}"
     mcp_client_secrets         = "${module.mcp_client_secrets.env_vars_string}"
     mcp_client_mount_points    = "${jsonencode(var.mcp_client_mount_points)}"
