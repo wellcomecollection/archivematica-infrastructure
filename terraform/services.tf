@@ -1,46 +1,65 @@
 locals {
-  fits_service_hostname   = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
-  clamav_service_hostname = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
-  gearmand_hostname       = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+  gearmand_hostname = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
 
   storage_service_host = "${module.storage_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   storage_service_port = 8000
 }
 
-module "fits_service" {
-  source = "./am_service"
+module "mcp_service" {
+  source = "./mcp_service"
 
-  name = "fits"
+  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 
-  container_image = "${module.fits_ngserver_repo_uri.value}"
-
-  mount_points = [
+  fits_container_image = "${module.fits_ngserver_repo_uri.value}"
+  fits_mount_points    = [
     {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
     }
   ]
 
-  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
-  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
-}
-
-module "clamav_service" {
-  source = "./am_service"
-
-  name = "clamav"
-
-  container_image = "artefactual/clamav:latest"
-
-  mount_points = [
+  clamav_container_image = "artefactual/clamav:latest"
+  clamav_mount_points    = [
     {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
     }
   ]
 
-  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
-  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
+  mcp_client_env_vars = {
+    DJANGO_SETTINGS_MODULE                                         = "settings.common"
+    NAILGUN_SERVER                                                 = "localhost"
+    NAILGUN_PORT                                                   = "2113"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = "${module.rds_cluster.username}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = "${module.rds_cluster.password}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = "${module.rds_cluster.host}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = "${module.rds_cluster.port}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                        = "MCP"
+    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "${local.elasticsearch_url}"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED               = true
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "localhost:3310"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
+  }
+
+  mcp_client_env_vars_length = 14
+
+  mcp_client_secret_env_vars = {
+    DJANGO_SECRET_KEY = "archivematica/mcp_client_django_secret_key"
+  }
+
+  mcp_client_secret_env_vars_length = 1
+
+  mcp_client_container_image = "${module.mcp_client_repo_uri.value}"
+
+  mcp_client_mount_points = [
+    {
+      sourceVolume  = "pipeline-data"
+      containerPath = "/var/archivematica/sharedDirectory"
+    }
+  ]
 }
 
 module "gearmand_service" {
@@ -86,50 +105,6 @@ module "mcp_server_service" {
   secret_env_vars_length = 1
 
   container_image = "${module.mcp_server_repo_uri.value}"
-
-  mount_points = [
-    {
-      sourceVolume  = "pipeline-data"
-      containerPath = "/var/archivematica/sharedDirectory"
-    }
-  ]
-
-  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
-  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
-}
-
-module "mcp_client_service" {
-  source = "./am_service"
-
-  name = "mcp-client"
-
-  env_vars = {
-    DJANGO_SETTINGS_MODULE                                         = "settings.common"
-    NAILGUN_SERVER                                                 = "${local.fits_service_hostname}"
-    NAILGUN_PORT                                                   = "2113"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = "${module.rds_cluster.username}"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = "${module.rds_cluster.password}"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = "${module.rds_cluster.host}"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = "${module.rds_cluster.port}"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                        = "MCP"
-    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "${local.elasticsearch_url}"
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED               = true
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "${local.clamav_service_hostname}:3310"
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
-  }
-
-  env_vars_length = 14
-
-  secret_env_vars = {
-    DJANGO_SECRET_KEY = "archivematica/mcp_client_django_secret_key"
-  }
-
-  secret_env_vars_length = 1
-
-
-  container_image = "${module.mcp_client_repo_uri.value}"
 
   mount_points = [
     {
