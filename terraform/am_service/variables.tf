@@ -29,11 +29,11 @@ variable "command" {
 }
 
 variable "cpu" {
-  default = 1024
+  default = 768
 }
 
 variable "memory" {
-  default = 1536
+  default = 1024
 }
 
 variable "mount_points" {
