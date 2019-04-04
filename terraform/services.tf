@@ -1,5 +1,5 @@
 locals {
-  gearmand_hostname = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+  gearmand_hostname = "${module.gearman_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
 
   storage_service_host = "${module.storage_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   storage_service_port = 8000
@@ -62,10 +62,10 @@ module "mcp_service" {
   ]
 }
 
-module "gearmand_service" {
-  source = "./am_service"
+module "gearman_service" {
+  source = "./gearman_service"
 
-  name = "gearmand"
+  name = "gearman"
 
   container_image = "artefactual/gearmand:1.1.17-alpine"
 
