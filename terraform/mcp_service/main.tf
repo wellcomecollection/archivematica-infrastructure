@@ -1,5 +1,5 @@
 locals {
-  full_name = "am-mcp_client2"
+  full_name = "am-mcp_client"
 }
 
 module "fits_log_group" {
