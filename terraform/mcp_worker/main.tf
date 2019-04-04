@@ -93,8 +93,8 @@ resource "aws_ecs_task_definition" "task" {
     host_path = "${local.efs_host_path}/staging-data"
   }
 
-  cpu    = "${var.fits_cpu + var.clamav_cpu + var.mcp_client_cpu}"
-  memory = "${var.fits_memory + var.clamav_memory + var.mcp_client_memory}"
+  cpu    = "${var.fits_cpu + var.clamav_cpu + var.mcp_client_cpu + var.mcp_server_cpu}"
+  memory = "${var.fits_memory + var.clamav_memory + var.mcp_client_memory + var.mcp_server_memory}"
 }
 
 module "service" {
