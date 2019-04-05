@@ -1,12 +1,12 @@
 locals {
-  gearmand_hostname = "${module.gearmand_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+  gearmand_hostname = "${module.gearman_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
 
   storage_service_host = "${module.storage_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   storage_service_port = 8000
 }
 
-module "mcp_service" {
-  source = "./mcp_service"
+module "mcp_worker_service" {
+  source = "./mcp_worker"
 
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
@@ -60,31 +60,8 @@ module "mcp_service" {
       containerPath = "/var/archivematica/sharedDirectory"
     }
   ]
-}
 
-module "gearmand_service" {
-  source = "./am_service"
-
-  name = "gearmand"
-
-  container_image = "artefactual/gearmand:1.1.17-alpine"
-
-  command = [
-    "--queue-type=redis",
-    "--redis-server=${aws_elasticache_cluster.archivematica.cache_nodes.0.address}",
-    "--redis-port=${aws_elasticache_cluster.archivematica.cache_nodes.0.port}",
-  ]
-
-  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
-  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
-}
-
-module "mcp_server_service" {
-  source = "./am_service"
-
-  name = "mcp-server"
-
-  env_vars = {
+  mcp_server_env_vars = {
     ARCHIVEMATICA_MCPSERVER_CLIENT_USER     = "${module.rds_cluster.username}"
     ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD = "${module.rds_cluster.password}"
     ARCHIVEMATICA_MCPSERVER_CLIENT_HOST     = "${module.rds_cluster.host}"
@@ -96,21 +73,35 @@ module "mcp_server_service" {
     ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED = true
   }
 
-  env_vars_length = 7
+  mcp_server_env_vars_length = 7
 
-  secret_env_vars = {
+  mcp_server_secret_env_vars = {
     DJANGO_SECRET_KEY = "archivematica/mcp_server_django_secret_key"
   }
 
-  secret_env_vars_length = 1
+  mcp_server_secret_env_vars_length = 1
 
-  container_image = "${module.mcp_server_repo_uri.value}"
+  mcp_server_container_image = "${module.mcp_server_repo_uri.value}"
 
-  mount_points = [
+  mcp_server_mount_points = [
     {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
     }
+  ]
+}
+
+module "gearman_service" {
+  source = "./gearman_service"
+
+  name = "gearman"
+
+  container_image = "artefactual/gearmand:1.1.17-alpine"
+
+  command = [
+    "--queue-type=redis",
+    "--redis-server=${aws_elasticache_cluster.archivematica.cache_nodes.0.address}",
+    "--redis-port=${aws_elasticache_cluster.archivematica.cache_nodes.0.port}",
   ]
 
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"

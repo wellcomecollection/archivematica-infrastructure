@@ -1,5 +1,5 @@
 locals {
-  full_name = "am-mcp_client2"
+  full_name = "am-mcp_worker"
 }
 
 module "fits_log_group" {
@@ -18,6 +18,12 @@ module "mcp_client_log_group" {
   source = "github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/log_group?ref=v19.12.0"
 
   task_name = "am-mcp_client"
+}
+
+module "mcp_server_log_group" {
+  source = "github.com/wellcometrust/terraform-modules.git//ecs/modules/task/modules/log_group?ref=v19.12.0"
+
+  task_name = "am-mcp_server"
 }
 
 data "template_file" "container_definition" {
@@ -46,6 +52,14 @@ data "template_file" "container_definition" {
     mcp_client_env_vars        = "${module.mcp_client_env_vars.env_vars_string}"
     mcp_client_secrets         = "${module.mcp_client_secrets.env_vars_string}"
     mcp_client_mount_points    = "${jsonencode(var.mcp_client_mount_points)}"
+
+    mcp_server_cpu             = "${var.mcp_server_cpu}"
+    mcp_server_memory          = "${var.mcp_server_memory}"
+    mcp_server_container_image = "${var.mcp_server_container_image}"
+    mcp_server_log_group_name  = "ecs/am-mcp_server"
+    mcp_server_env_vars        = "${module.mcp_server_env_vars.env_vars_string}"
+    mcp_server_secrets         = "${module.mcp_server_secrets.env_vars_string}"
+    mcp_server_mount_points    = "${jsonencode(var.mcp_server_mount_points)}"
   }
 }
 
@@ -79,8 +93,8 @@ resource "aws_ecs_task_definition" "task" {
     host_path = "${local.efs_host_path}/staging-data"
   }
 
-  cpu    = "${var.fits_cpu + var.clamav_cpu + var.mcp_client_cpu}"
-  memory = "${var.fits_memory + var.clamav_memory + var.mcp_client_memory}"
+  cpu    = "${var.fits_cpu + var.clamav_cpu + var.mcp_client_cpu + var.mcp_server_cpu}"
+  memory = "${var.fits_memory + var.clamav_memory + var.mcp_client_memory + var.mcp_server_memory}"
 }
 
 module "service" {

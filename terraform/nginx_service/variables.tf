@@ -30,11 +30,11 @@ variable "aws_region" {
 }
 
 variable "cpu" {
-  default = 896  # 1024 - 128 for the sidecar
+  default = 640  # 768 - 128 for the sidecar
 }
 
 variable "memory" {
-  default = 1536
+  default = 1024
 }
 
 variable "mount_points" {

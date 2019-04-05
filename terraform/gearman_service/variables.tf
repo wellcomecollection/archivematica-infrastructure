@@ -29,7 +29,7 @@ variable "command" {
 }
 
 variable "cpu" {
-  default = 768
+  default = 512
 }
 
 variable "memory" {

@@ -51,5 +51,24 @@
     },
     "mountPoints": ${mcp_client_mount_points},
     "user": "root"
+  },
+  {
+    "cpu": ${mcp_server_cpu},
+    "memory": ${mcp_server_memory},
+    "essential": true,
+    "image": "${mcp_server_container_image}",
+    "name": "mcp_server",
+    "networkMode": "awsvpc",
+    "environment": ${mcp_server_env_vars},
+    "secrets": ${mcp_server_secrets},
+    "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "${mcp_server_log_group_name}",
+            "awslogs-region": "${log_group_region}"
+        }
+    },
+    "mountPoints": ${mcp_server_mount_points},
+    "user": "root"
   }
 ]
