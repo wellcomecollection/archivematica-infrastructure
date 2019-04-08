@@ -22,7 +22,5 @@ module "cluster" {
   asg_max     = 1
 
   # The constraint here isn't CPU or memory; it's Elastic Network Interfaces.
-  # We have deliberately small interfaces, but lots of them, to increase
-  # the number of available ENIs.
-  instance_type = "c5.2xlarge"
+  instance_type = "c5.4xlarge"
 }
