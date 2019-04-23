@@ -11,8 +11,10 @@ cloud-init-per once install_efs_utils yum install -y amazon-efs-utils
 # Create /efs folder
 cloud-init-per once mkdir_efs mkdir -p ${efs_host_path}
 
-# Add /efs to fstab
-cloud-init-per once mount_efs echo -e '${efs_fs_id}:/ ${efs_host_path} efs defaults,_netdev 0 0' >> /etc/fstab
+# Add /efs to fstab.  We mount the shared filesystem as 'sync' so changes
+# propagate between instances.
+# See https://github.com/wellcometrust/platform/issues/3548
+cloud-init-per once mount_efs echo -e '${efs_fs_id}:/ ${efs_host_path} efs defaults,_netdev,sync 0 0' >> /etc/fstab
 
 # Mount all
 mount -a
