@@ -6,7 +6,7 @@ locals {
 }
 
 module "mcp_worker_service" {
-  source = "./mcp_worker"
+  source = "./modules/mcp_worker"
 
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
@@ -92,7 +92,7 @@ module "mcp_worker_service" {
 }
 
 module "gearman_service" {
-  source = "./gearman_service"
+  source = "./modules/gearman_service"
 
   name = "gearman"
 
@@ -109,7 +109,7 @@ module "gearman_service" {
 }
 
 module "storage_service" {
-  source = "./nginx_service"
+  source = "./modules/nginx_service"
 
   name = "storage-service"
 
@@ -166,7 +166,7 @@ module "storage_service" {
 }
 
 module "dashboard_service" {
-  source = "./nginx_service"
+  source = "./modules/nginx_service"
 
   name = "dashboard"
 

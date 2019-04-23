@@ -1,5 +1,5 @@
 module "cluster" {
-  source = "cluster"
+  source = "./modules/cluster"
 
   name = "archivematica"
 

@@ -1,5 +1,5 @@
 module "lb_dashboard" {
-  source = "load_balancer"
+  source = "./modules/load_balancer"
 
   name = "archivematica-dashboard"
 
@@ -14,7 +14,7 @@ module "lb_dashboard" {
 }
 
 module "lb_storage_service" {
-  source = "load_balancer"
+  source = "./modules/load_balancer"
 
   name = "archivematica-storage-service"
 
