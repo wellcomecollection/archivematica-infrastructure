@@ -10,3 +10,8 @@ resource "aws_s3_bucket" "archivematica_drop" {
     enabled = true
   }
 }
+
+resource "aws_s3_bucket" "archivematica_transfer" {
+  bucket = "wellcomecollection-archivematica-transfer-source"
+  acl    = "private"
+}

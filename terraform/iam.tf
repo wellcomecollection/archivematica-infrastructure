@@ -11,7 +11,38 @@ data "aws_iam_policy_document" "storage_service_aws_permissions" {
     ]
 
     resources = [
+      "${aws_s3_bucket.archivematica_drop.arn}",
       "${aws_s3_bucket.archivematica_drop.arn}/*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:ListBucket",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.archivematica_transfer.arn}",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:HeadBucket",
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.archivematica_transfer.arn}/*",
     ]
   }
 }
