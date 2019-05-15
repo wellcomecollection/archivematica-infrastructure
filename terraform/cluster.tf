@@ -1,5 +1,5 @@
 module "cluster" {
-  source = "cluster"
+  source = "./modules/cluster"
 
   name = "archivematica"
 
@@ -17,10 +17,10 @@ module "cluster" {
 
   cluster_name = "${aws_ecs_cluster.archivematica.name}"
 
-  asg_min     = 1
-  asg_desired = 1
-  asg_max     = 1
+  asg_min     = 3
+  asg_desired = 3
+  asg_max     = 3
 
   # The constraint here isn't CPU or memory; it's Elastic Network Interfaces.
-  instance_type = "c5.4xlarge"
+  instance_type = "t2.xlarge"
 }
