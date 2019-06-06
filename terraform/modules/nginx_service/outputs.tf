@@ -9,3 +9,7 @@ output "task_role_arn" {
 output "task_role_name" {
   value = "${module.iam_roles.name}"
 }
+
+output "hostname" {
+  value = "${var.hostname}"
+}
