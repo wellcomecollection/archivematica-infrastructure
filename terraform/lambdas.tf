@@ -10,6 +10,10 @@ module "s3_starttransfer_lambda" {
   environment_variables = {
     "ARCHIVEMATICA_URL" = "https://${module.dashboard_service.hostname}"
     "ARCHIVEMATICA_SS_URL" = "https://${module.storage_service.hostname}"
+    "ARCHIVEMATICA_USERNAME" = "${local.archivematica_username}"
+    "ARCHIVEMATICA_API_KEY" = "${local.archivematica_api_key}"
+    "ARCHIVEMATICA_SS_USERNAME" = "${local.archivematica_ss_username}"
+    "ARCHIVEMATICA_SS_API_KEY" = "${local.archivematica_ss_api_key}"
   }
 
   timeout = 120
