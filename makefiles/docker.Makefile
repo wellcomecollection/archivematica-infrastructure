@@ -13,6 +13,21 @@ define build_image
 endef
 
 
+# Publish a ZIP file containing a Lambda definition to S3.
+#
+# Args:
+#   $1 - Path to the Lambda src directory, relative to the root of the repo.
+#
+define publish_lambda
+    $(ROOT)/docker_run.py --aws --root --dind -- \
+        wellcome/publish_lambda:14 \
+        "$(1)" --key="lambdas/$(1).zip" --bucket="$(INFRA_BUCKET)"
+endef
+
+s3_starttransfer-publish:
+	$(call publish_lambda,s3_starttransfer)
+
+
 # Publish a Docker image to ECR, and put its associated release ID in S3.
 #
 # Args:
