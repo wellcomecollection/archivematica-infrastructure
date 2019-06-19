@@ -4,13 +4,13 @@ import logging
 import os
 import os.path
 import time
+
 try:
     from botocore.vendored import requests
 except ImportError:
     import requests
 from os import fsencode
 import urllib.parse
-
 
 
 def am_api_post_json(url, data):
@@ -20,9 +20,9 @@ def am_api_post_json(url, data):
     :param data: Dict of data to post
     :returns dict of json data returned by request:
     """
-    am_url = os.environ['ARCHIVEMATICA_URL']
-    am_user = os.environ['ARCHIVEMATICA_USERNAME']
-    am_api_key = os.environ['ARCHIVEMATICA_API_KEY']
+    am_url = os.environ["ARCHIVEMATICA_URL"]
+    am_user = os.environ["ARCHIVEMATICA_USERNAME"]
+    am_api_key = os.environ["ARCHIVEMATICA_API_KEY"]
     am_headers = {"Authorization": "ApiKey {0}:{1}".format(am_user, am_api_key)}
 
     url = "{0}{1}".format(am_url, url)
@@ -41,9 +41,9 @@ def ss_api_get(api_path, params=None):
     :param params: Dict of params to include in the request
     :returns dict of json data returned by request:
     """
-    ss_url = os.environ['ARCHIVEMATICA_SS_URL']
-    ss_user = os.environ['ARCHIVEMATICA_SS_USERNAME']
-    ss_api_key = os.environ['ARCHIVEMATICA_SS_API_KEY']
+    ss_url = os.environ["ARCHIVEMATICA_SS_URL"]
+    ss_user = os.environ["ARCHIVEMATICA_SS_USERNAME"]
+    ss_api_key = os.environ["ARCHIVEMATICA_SS_API_KEY"]
     ss_headers = {"Authorization": "ApiKey {0}:{1}".format(ss_user, ss_api_key)}
 
     params = params or {}
@@ -69,26 +69,20 @@ def get_target_location(bucket, key):
     # Get s3 location matching bucket and key
     # Look for an S3 transfer source that matches the bucket name and prefix
     # and take the transfer ID of that location
-    relative_path = ''
-    target_path = ''
-    ts_location_uuid = None
     s3_sources = ss_api_get(
-        '/api/v2/location/',
-        {
-            'space__access_protocol': 'S3',
-            'purpose': 'TS'
-        }
+        "/api/v2/location/", {"space__access_protocol": "S3", "purpose": "TS"}
     )
-    for location in s3_sources['objects']:
-        relative_path = location['relative_path'].strip(os.sep)
+    for location in s3_sources["objects"]:
+        relative_path = location["relative_path"].strip(os.sep)
 
         if key.startswith(relative_path):
-            space_bucket = ss_api_get(location['space'])['s3_bucket']
+            space_bucket = ss_api_get(location["space"])["s3_bucket"]
             if space_bucket == bucket:
-                ts_location_uuid = location['uuid']
+                ts_location_uuid = location["uuid"]
                 target_path = key.split(relative_path, 1)[-1]
 
                 return fsencode(ts_location_uuid) + b":" + fsencode(target_path)
+
 
 def start_transfer(name, path):
     """
@@ -107,13 +101,15 @@ def start_transfer(name, path):
         "auto_approve": True,
     }
     response_json = am_api_post_json("/api/v2beta/package", data)
-    return response_json['id']
+    return response_json["id"]
 
 
 def main(event, context=None):
     # Get the object from the event and show its content type
-    bucket = event['Records'][0]['s3']['bucket']['name']
-    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+    bucket = event["Records"][0]["s3"]["bucket"]["name"]
+    key = urllib.parse.unquote_plus(
+        event["Records"][0]["s3"]["object"]["key"], encoding="utf-8"
+    )
     target_name = os.path.basename(key)
 
     target_path = get_target_location(bucket, key)
@@ -127,15 +123,20 @@ def main(event, context=None):
         print("Cannot find S3 transfer source for {} in bucket {}".format(bucket, key))
 
 
-if __name__ == '__main__':
-    key = 'test-uploads/PPTHW_2466.zip'
-    main({
-        'Records': [
-            {
-                's3': {
-                    'bucket': { 'name': 'wellcomecollection-archivematica-transfer-source' },
-                    'object': { 'key': key },
+if __name__ == "__main__":
+    key = "test-uploads/PPTHW_2466.zip"
+    main(
+        {
+            "Records": [
+                {
+                    "s3": {
+                        "bucket": {
+                            "name": "wellcomecollection-archivematica-transfer-source"
+                        },
+                        "object": {"key": key},
+                    }
                 }
-            }
-        ]
-    }, None)
+            ]
+        },
+        None,
+    )
