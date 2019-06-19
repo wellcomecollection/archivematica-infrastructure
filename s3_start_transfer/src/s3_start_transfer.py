@@ -18,7 +18,7 @@ def am_api_post_json(url, data):
     POST json to the Archivematica API
     :param api_path: URL path to request (without hostname, e.g. /api/v2/location/)
     :param data: Dict of data to post
-    :returns dict of json data returned by request:
+    :returns: dict of json data returned by request
     """
     am_url = os.environ["ARCHIVEMATICA_URL"]
     am_user = os.environ["ARCHIVEMATICA_USERNAME"]
@@ -39,7 +39,7 @@ def ss_api_get(api_path, params=None):
     GET request to the Archivematica storage service API
     :param api_path: URL path to request (without hostname, e.g. /api/v2/location/)
     :param params: Dict of params to include in the request
-    :returns dict of json data returned by request:
+    :returns: dict of json data returned by request
     """
     ss_url = os.environ["ARCHIVEMATICA_SS_URL"]
     ss_user = os.environ["ARCHIVEMATICA_SS_USERNAME"]
@@ -56,26 +56,61 @@ def ss_api_get(api_path, params=None):
     return response_json
 
 
-def get_target_location(bucket, key):
+def get_target_path(bucket, key):
     """
-    Get an S3 location from the Archivematica storage service
-    to match the given bucket and key
+    Get the uploaded file's path on the the Archivematica storage service
 
-    :param bucket: Name of s2 bucket
+    This takes the form `<location_uuid>:<target_path>` where:
+        `location_uuid` is the UUID of an S3 transfer source `Location` on the
+        Archivematica storage service which is configured with the same 
+        bucket name and (optionally) a relative path that is a parent of the key
+        `target_path` is the path of the key within the relative path
+
+    e.g. a Location with bucket `test-bucket`, relative path '/test/path' and uuid 123 will match for
+    bucket='test-bucket' and key='/test/path/subdir/file.zip' 
+    The return value will be '123:/subdir/file.zip'
+
+    :param bucket: Name of s3 bucket
     :param key: Name of s3 key
-    :returns: bytestring identifying location, of the form
-        b'<location_uuid>:<target_path>'
+    :returns: bytestring identifying the path
     """
+
     # Get s3 location matching bucket and key
     # Look for an S3 transfer source that matches the bucket name and prefix
     # and take the transfer ID of that location
-    s3_sources = ss_api_get(
+    """
+    Example of relevant fields in Location API return json:
+    {
+        "meta": ...
+        "objects": [{
+            "description": "S3 Transfer Source",
+            "purpose": "TS",
+            "relative_path": "/test-uploads/",
+            "space": "/api/v2/space/6710c8dd-00ad-4614-8f1c-d9be23052179/",
+            "uuid": "017fcad6-fb5c-434e-818a-14b812ef6427"
+            ...
+            }]
+    }
+    """
+    s3_transfer_sources = ss_api_get(
         "/api/v2/location/", {"space__access_protocol": "S3", "purpose": "TS"}
     )
-    for location in s3_sources["objects"]:
+    for location in s3_transfer_sources["objects"]:
         relative_path = location["relative_path"].strip(os.sep)
 
         if key.startswith(relative_path):
+            # Key matched: since bucket name lives on the `Space` object rather
+            # than `Location` (every `Location` has a `Space`) we must query the
+            # Space URI to make sure the bucket name also matches
+            """
+            Example of relevant fields in Space API json:
+            {
+                "access_protocol": "S3",
+                "s3_bucket": "wellcomecollection-archivematica-transfer-source",
+                "uuid": "6710c8dd-00ad-4614-8f1c-d9be23052179",
+                ...
+            }
+            """
             space_bucket = ss_api_get(location["space"])["s3_bucket"]
             if space_bucket == bucket:
                 ts_location_uuid = location["uuid"]
@@ -112,7 +147,7 @@ def main(event, context=None):
     )
     target_name = os.path.basename(key)
 
-    target_path = get_target_location(bucket, key)
+    target_path = get_target_path(bucket, key)
 
     # Start the transfer
     if target_path:

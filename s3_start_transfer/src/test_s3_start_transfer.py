@@ -13,7 +13,7 @@ import s3_start_transfer
 
 class TestStartTransfer:
     @patch.object(s3_start_transfer, 'ss_api_get')
-    def test_get_target_location(self, mock_ss_get):
+    def test_get_target_path(self, mock_ss_get):
         mock_ss_get.side_effect = [
             {
                 'objects':  [
@@ -23,7 +23,7 @@ class TestStartTransfer:
             },
             {'s3_bucket': 'bucket01'},
         ]
-        assert s3_start_transfer.get_target_location('bucket01', 'path/a/test1.zip') == b'space1-uuid:/test1.zip'
+        assert s3_start_transfer.get_target_path('bucket01', 'path/a/test1.zip') == b'space1-uuid:/test1.zip'
 
         mock_ss_get.assert_has_calls([
             call('/api/v2/location/', {'space__access_protocol': 'S3', 'purpose': 'TS'}),
@@ -31,21 +31,21 @@ class TestStartTransfer:
         ])
 
     @patch.object(s3_start_transfer, 'ss_api_get')
-    def test_get_target_location_no_path_match(self, mock_ss_get):
+    def test_get_target_path_no_path_match(self, mock_ss_get):
         mock_ss_get.return_value = {
             'objects':  [
                 {'relative_path': '/path/a', 'space': '/api/v2/space/1', 'uuid': 'space1-uuid'},
             ]
         }
 
-        assert s3_start_transfer.get_target_location('bucket02', 'path/x/test1.zip') is None
+        assert s3_start_transfer.get_target_path('bucket02', 'path/x/test1.zip') is None
 
         mock_ss_get.assert_has_calls([
             call('/api/v2/location/', {'space__access_protocol': 'S3', 'purpose': 'TS'}),
         ])
 
     @patch.object(s3_start_transfer, 'ss_api_get')
-    def test_get_target_location_no_bucket_match(self, mock_ss_get):
+    def test_get_target_path_no_bucket_match(self, mock_ss_get):
         mock_ss_get.side_effect = [
             {
                 'objects':  [
@@ -55,7 +55,7 @@ class TestStartTransfer:
             {'s3_bucket': 'bucket01'},
         ]
 
-        assert s3_start_transfer.get_target_location('bucket03', 'path/a/test1.zip') is None
+        assert s3_start_transfer.get_target_path('bucket03', 'path/a/test1.zip') is None
 
         mock_ss_get.assert_has_calls([
             call('/api/v2/location/', {'space__access_protocol': 'S3', 'purpose': 'TS'}),
@@ -111,8 +111,8 @@ class TestStartTransfer:
         )
 
     @patch.object(s3_start_transfer, 'start_transfer')
-    @patch.object(s3_start_transfer, 'get_target_location')
-    def test_main(self, mock_get_target_location, mock_start_transfer):
+    @patch.object(s3_start_transfer, 'get_target_path')
+    def test_main(self, mock_get_target_path, mock_start_transfer):
         events = {
             'Records': [
                 {
@@ -126,5 +126,5 @@ class TestStartTransfer:
 
         s3_start_transfer.main(events)
 
-        mock_get_target_location.assert_called_with('test-bucket', '/path/test-key')
-        mock_start_transfer.assert_called_with('test-key', mock_get_target_location.return_value)
+        mock_get_target_path.assert_called_with('test-bucket', '/path/test-key')
+        mock_start_transfer.assert_called_with('test-key', mock_get_target_path.return_value)
