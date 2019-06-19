@@ -24,3 +24,9 @@ The credentials will expire after 60 minutes; re-run the script to get a fresh s
 
 Note: we cannot use AssumeRole in the Terraform provider because we also need it when retrieving the Terraform vars file from the S3 bucket in the workflow account.
 Later we might consider pushing this inside our wrapper.
+
+## Lambda development
+
+The `s3_start_transfer` lambda initiates an Archivematica transfer when a file is uploaded to the watched Archivematica bucket (set up as an S3 transfer source in the Archivematica storage service).
+
+If changes need to be made to the lambda, it can be tested with `make lambda-test` and then republished to s3 as a zipfile with `make lambda-publish`. A redeployment will be necessary so that Terraform can pick up the newly published lambda zipfile and upload it to the lambda service.

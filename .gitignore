@@ -179,3 +179,4 @@ override.tf.json
 .idea
 .lambda_zips
 *.zip
+.Dockerfile

@@ -15,4 +15,5 @@ tf-import:
 
 include dockerfiles/Makefile
 
-lambda-publish: s3_starttransfer-publish
+lambda-publish: s3_start_transfer-publish
+lambda-test: s3_start_transfer-test

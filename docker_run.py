@@ -94,9 +94,12 @@ if __name__ == '__main__':
     if namespace.share_aws_creds:
         cmd += _aws_credentials_args()
 
+    if namespace.expose_host_root_folder or namespace.docker_in_docker:
+        cmd += ["--volume", "%s:%s" % (ROOT, ROOT)]
+        cmd += ["--workdir", ROOT]
+
     if namespace.docker_in_docker:
-        cmd += ['--volume', '%s:/repo' % ROOT]
-        cmd += ['--volume', '/var/run/docker.sock:/var/run/docker.sock']
+        cmd += ["--volume", "/var/run/docker.sock:/var/run/docker.sock"]
 
     if namespace.share_sbt_dirs:
         cmd += ['--volume', '%s/.sbt:/root/.sbt' % os.environ['HOME']]
