@@ -4,6 +4,7 @@ import logging
 import os
 import os.path
 import time
+from collections import OrderedDict
 
 try:
     from botocore.vendored import requests
@@ -58,17 +59,8 @@ def ss_api_get(api_path, params=None):
 
 def get_target_path(bucket, key):
     """
-    Get the uploaded file's path on the the Archivematica storage service
-
-    This takes the form `<location_uuid>:<target_path>` where:
-        `location_uuid` is the UUID of an S3 transfer source `Location` on the
-        Archivematica storage service which is configured with the same 
-        bucket name and (optionally) a relative path that is a parent of the key
-        `target_path` is the path of the key within the relative path
-
-    e.g. a Location with bucket `test-bucket`, relative path '/test/path' and uuid 123 will match for
-    bucket='test-bucket' and key='/test/path/subdir/file.zip' 
-    The return value will be '123:/subdir/file.zip'
+    Get the uploaded file's path on the Archivematica storage service,
+    as a `<location_uuid>:<target_path>` bytestring returned by `find_matching_path`
 
     :param bucket: Name of s3 bucket
     :param key: Name of s3 key
@@ -92,31 +84,57 @@ def get_target_path(bucket, key):
             }]
     }
     """
-    s3_transfer_sources = ss_api_get(
+    s3_sources = ss_api_get(
         "/api/v2/location/", {"space__access_protocol": "S3", "purpose": "TS"}
     )
-    for location in s3_transfer_sources["objects"]:
+
+    """
+    Example of relevant fields in Space API json:
+    {
+        "access_protocol": "S3",
+        "s3_bucket": "wellcomecollection-archivematica-transfer-source",
+        "uuid": "6710c8dd-00ad-4614-8f1c-d9be23052179",
+        ...
+    }
+    """
+    all_spaces = OrderedDict(
+        (location["space"], None) for location in s3_sources["objects"]
+    )
+    buckets = {space: ss_api_get(space)["s3_bucket"] for space in all_spaces}
+    for location in s3_sources["objects"]:
+        location["s3_bucket"] = buckets[location["space"]]
+
+    return find_matching_path(s3_sources["objects"], bucket, key)
+
+
+def find_matching_path(locations, bucket, key):
+    """
+    Match the given bucket and key to a location and return a path on the
+    Archivematica storage service
+
+    This takes the form `<location_uuid>:<target_path>` where:
+        `location_uuid` is the UUID of an S3 transfer source `Location` on the
+        Archivematica storage service which is configured with the same
+        bucket name and (optionally) a relative path that is a parent of the key
+        `target_path` is the path of the key within the relative path
+
+    e.g. a Location with bucket `test-bucket`, relative path '/test/path' and uuid 123 will match for
+    bucket='test-bucket' and key='/test/path/subdir/file.zip'
+    The return value will be '123:/subdir/file.zip'
+
+    :param locations: Iterable of location dicts,
+            each with `relative_path`, `s3_bucket` and `uuid` fields
+    :param bucket: Name of s3 bucket
+    :param key: Name of s3 key
+    :returns: bytestring identifying the path
+    """
+
+    for location in locations:
         relative_path = location["relative_path"].strip(os.sep)
 
-        if key.startswith(relative_path):
-            # Key matched: since bucket name lives on the `Space` object rather
-            # than `Location` (every `Location` has a `Space`) we must query the
-            # Space URI to make sure the bucket name also matches
-            """
-            Example of relevant fields in Space API json:
-            {
-                "access_protocol": "S3",
-                "s3_bucket": "wellcomecollection-archivematica-transfer-source",
-                "uuid": "6710c8dd-00ad-4614-8f1c-d9be23052179",
-                ...
-            }
-            """
-            space_bucket = ss_api_get(location["space"])["s3_bucket"]
-            if space_bucket == bucket:
-                ts_location_uuid = location["uuid"]
-                target_path = key.split(relative_path, 1)[-1]
-
-                return fsencode(ts_location_uuid) + b":" + fsencode(target_path)
+        if key.startswith(relative_path) and location["s3_bucket"] == bucket:
+            target_path = key.split(relative_path, 1)[-1]
+            return b"%s:%s" % (fsencode(location["uuid"]), fsencode(target_path))
 
 
 def start_transfer(name, path):
