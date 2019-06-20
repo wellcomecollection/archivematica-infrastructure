@@ -74,24 +74,20 @@ class TestStartTransfer:
             {"relative_path": "/path/a", "s3_bucket": "bucket01", "uuid": "space1-uuid"}
         ]
 
-        assert (
+        with pytest.raises(s3_start_transfer.StoragePathException):
             s3_start_transfer.find_matching_path(
                 locations, "bucket01", "path/x/test1.zip"
             )
-            is None
-        )
 
     def test_find_matching_path_no_bucket_match(self):
         locations = [
             {"relative_path": "/path/a", "s3_bucket": "bucket01", "uuid": "space1-uuid"}
         ]
 
-        assert (
+        with pytest.raises(s3_start_transfer.StoragePathException):
             s3_start_transfer.find_matching_path(
                 locations, "bucket02", "path/a/test1.zip"
             )
-            is None
-        )
 
     @patch.object(s3_start_transfer, "am_api_post_json")
     def test_start_transfer(self, mock_am_post):
@@ -112,6 +108,13 @@ class TestStartTransfer:
                 "auto_approve": True,
             },
         )
+
+    @patch.object(s3_start_transfer, "am_api_post_json")
+    def test_start_transfer_raises_upon_error(self, mock_am_post):
+        mock_am_post.return_value = {"error": True, "message": "An error occurred"}
+
+        with pytest.raises(s3_start_transfer.StartTransferException):
+            s3_start_transfer.start_transfer("test1.zip", b"space1-uuid:/test1.zip")
 
     @patch.object(s3_start_transfer.requests, "get")
     def test_ss_api_get(self, mock_get, monkeypatch):

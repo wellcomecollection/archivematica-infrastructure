@@ -14,6 +14,14 @@ from os import fsencode
 import urllib.parse
 
 
+class StartTransferException(Exception):
+    pass
+
+
+class StoragePathException(Exception):
+    pass
+
+
 def am_api_post_json(url, data):
     """
     POST json to the Archivematica API
@@ -136,6 +144,8 @@ def find_matching_path(locations, bucket, key):
             target_path = key.split(relative_path, 1)[-1]
             return b"%s:%s" % (fsencode(location["uuid"]), fsencode(target_path))
 
+    raise StoragePathException("Unable to find location for %s:%s" % (bucket, key))
+
 
 def start_transfer(name, path):
     """
@@ -154,6 +164,10 @@ def start_transfer(name, path):
         "auto_approve": True,
     }
     response_json = am_api_post_json("/api/v2beta/package", data)
+    if "error" in response_json:
+        raise StartTransferException(
+            "Error starting transfer: %s" % response_json["message"]
+        )
     return response_json["id"]
 
 
@@ -163,17 +177,14 @@ def main(event, context=None):
     key = urllib.parse.unquote_plus(
         event["Records"][0]["s3"]["object"]["key"], encoding="utf-8"
     )
-    target_name = os.path.basename(key)
 
+    # Identify the file's location on the AM storage service
     target_path = get_target_path(bucket, key)
 
-    # Start the transfer
-    if target_path:
-        transfer_id = start_transfer(target_name, target_path)
+    target_name = os.path.basename(key)
+    transfer_id = start_transfer(target_name, target_path)
 
-        print("Started transfer {}".format(transfer_id))
-    else:
-        print("Cannot find S3 transfer source for {} in bucket {}".format(bucket, key))
+    print("Started transfer {}".format(transfer_id))
 
 
 if __name__ == "__main__":
