@@ -140,7 +140,7 @@ def find_matching_path(locations, bucket, key):
     """
 
     for location in locations:
-        relative_path = location["relative_path"].strip(os.sep)
+        relative_path = location["relative_path"].strip("/")
 
         if key.startswith(relative_path) and location["s3_bucket"] == bucket:
             target_path = key.split(relative_path, 1)[-1]
