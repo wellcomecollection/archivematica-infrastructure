@@ -85,7 +85,7 @@ def get_target_path(bucket, key):
         "objects": [{
             "description": "S3 Transfer Source",
             "purpose": "TS",
-            "relative_path": "/test-uploads/",
+            "relative_path": "/uploads/",
             "space": "/api/v2/space/6710c8dd-00ad-4614-8f1c-d9be23052179/",
             "uuid": "017fcad6-fb5c-434e-818a-14b812ef6427"
             ...
