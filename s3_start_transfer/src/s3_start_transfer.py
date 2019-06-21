@@ -105,6 +105,8 @@ def get_target_path(bucket, key):
         ...
     }
     """
+    # We use an OrderedDict here to improve testability - as it stabilitses
+    # the order of the API calls
     all_spaces = OrderedDict(
         (location["space"], None) for location in s3_sources["objects"]
     )
