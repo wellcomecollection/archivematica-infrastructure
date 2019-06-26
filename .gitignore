@@ -177,3 +177,6 @@ override.tf.json
 # End of https://www.gitignore.io/api/python,terraform
 
 .idea
+.lambda_zips
+*.zip
+.Dockerfile

@@ -13,6 +13,40 @@ define build_image
 endef
 
 
+# Publish a ZIP file containing a Lambda definition to S3.
+#
+# Args:
+#   $1 - Path to the Lambda src directory, relative to the root of the repo.
+#
+define publish_lambda
+    $(ROOT)/docker_run.py --aws --root --dind -- \
+        wellcome/publish_lambda:14 \
+        "$(1)" --key="lambdas/$(1).zip" --bucket="$(INFRA_BUCKET)"
+endef
+
+# Test a Python project.
+#
+# Args:
+#   $1 - Path to the Python project's directory, relative to the root
+#        of the repo.
+#
+define test_python
+	$(ROOT)/docker_run.py --aws --root --dind -- \
+		wellcome/build_test_python $(1)
+
+	$(ROOT)/docker_run.py --aws --dind -- \
+		--net=host \
+		--volume $(ROOT)/shared_conftest.py:/conftest.py \
+		--workdir $(ROOT)/$(1) --tty \
+		wellcome/test_python_$(shell basename $(1)):latest
+endef
+
+s3_start_transfer-publish:
+	$(call publish_lambda,s3_start_transfer)
+
+s3_start_transfer-test:
+	$(call test_python,s3_start_transfer)
+
 # Publish a Docker image to ECR, and put its associated release ID in S3.
 #
 # Args:
