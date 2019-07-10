@@ -18,12 +18,12 @@ class TestStartTransfer:
             {
                 "objects": [
                     {
-                        "relative_path": "/path/a",
+                        "relative_path": "/path-a/",
                         "space": "/api/v2/space/1",
                         "uuid": "space1-uuid",
                     },
                     {
-                        "relative_path": "/path/b",
+                        "relative_path": "/path-b/",
                         "space": "/api/v2/space/2",
                         "uuid": "space2-uuid",
                     },
@@ -33,7 +33,7 @@ class TestStartTransfer:
             {"s3_bucket": "bucket02"},
         ]
         assert (
-            s3_start_transfer.get_target_path("bucket01", "path/a/test1.zip")
+            s3_start_transfer.get_target_path("bucket01", "path-a", "test1.zip")
             == b"space1-uuid:/test1.zip"
         )
 
@@ -51,12 +51,12 @@ class TestStartTransfer:
     def test_find_matching_path(self):
         locations = [
             {
-                "relative_path": "/path/a",
+                "relative_path": "/path-a/",
                 "s3_bucket": "bucket01",
                 "uuid": "space1-uuid",
             },
             {
-                "relative_path": "/path/b",
+                "relative_path": "/path-b/",
                 "s3_bucket": "bucket02",
                 "uuid": "space2-uuid",
             },
@@ -64,29 +64,37 @@ class TestStartTransfer:
 
         assert (
             s3_start_transfer.find_matching_path(
-                locations, "bucket01", "path/a/test1.zip"
+                locations, "bucket01", "path-a", "test1.zip"
             )
             == b"space1-uuid:/test1.zip"
         )
 
     def test_find_matching_path_no_path_match(self):
         locations = [
-            {"relative_path": "/path/a", "s3_bucket": "bucket01", "uuid": "space1-uuid"}
+            {
+                "relative_path": "/path-a/",
+                "s3_bucket": "bucket01",
+                "uuid": "space1-uuid",
+            }
         ]
 
         with pytest.raises(s3_start_transfer.StoragePathException):
             s3_start_transfer.find_matching_path(
-                locations, "bucket01", "path/x/test1.zip"
+                locations, "bucket01", "path-x", "test1.zip"
             )
 
     def test_find_matching_path_no_bucket_match(self):
         locations = [
-            {"relative_path": "/path/a", "s3_bucket": "bucket01", "uuid": "space1-uuid"}
+            {
+                "relative_path": "/path-a/",
+                "s3_bucket": "bucket01",
+                "uuid": "space1-uuid",
+            }
         ]
 
         with pytest.raises(s3_start_transfer.StoragePathException):
             s3_start_transfer.find_matching_path(
-                locations, "bucket02", "path/a/test1.zip"
+                locations, "bucket02", "path-a", "test1.zip"
             )
 
     @patch.object(s3_start_transfer, "am_api_post_json")
@@ -94,7 +102,9 @@ class TestStartTransfer:
         mock_am_post.return_value = {"id": "my-transfer-id"}
 
         assert (
-            s3_start_transfer.start_transfer("test1.zip", b"space1-uuid:/test1.zip")
+            s3_start_transfer.start_transfer(
+                "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
+            )
             == "my-transfer-id"
         )
 
@@ -104,7 +114,7 @@ class TestStartTransfer:
                 "name": "test1.zip",
                 "type": "zipfile",
                 "path": "c3BhY2UxLXV1aWQ6L3Rlc3QxLnppcA==",
-                "processing_config": "automated",
+                "processing_config": "born_digital",
                 "auto_approve": True,
             },
         )
@@ -114,7 +124,9 @@ class TestStartTransfer:
         mock_am_post.return_value = {"error": True, "message": "An error occurred"}
 
         with pytest.raises(s3_start_transfer.StartTransferException):
-            s3_start_transfer.start_transfer("test1.zip", b"space1-uuid:/test1.zip")
+            s3_start_transfer.start_transfer(
+                "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
+            )
 
     @patch.object(s3_start_transfer.requests, "get")
     def test_ss_api_get(self, mock_get, monkeypatch):
@@ -156,8 +168,8 @@ class TestStartTransfer:
             "Records": [
                 {
                     "s3": {
-                        "bucket": {"name": "test-bucket"},
-                        "object": {"key": "/path/test-key"},
+                        "bucket": {"name": "upload-bucket"},
+                        "object": {"key": "/born-digital/test-key"},
                     }
                 }
             ]
@@ -165,7 +177,9 @@ class TestStartTransfer:
 
         s3_start_transfer.main(events)
 
-        mock_get_target_path.assert_called_with("test-bucket", "/path/test-key")
+        mock_get_target_path.assert_called_with(
+            "upload-bucket", "born-digital", "test-key"
+        )
         mock_start_transfer.assert_called_with(
-            "test-key", mock_get_target_path.return_value
+            "test-key", mock_get_target_path.return_value, "born-digital"
         )

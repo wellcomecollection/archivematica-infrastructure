@@ -1,17 +1,17 @@
-import json
 import base64
+import json
 import logging
 import os
 import os.path
 import time
+import urllib.parse
 from collections import OrderedDict
+from os import fsencode
 
 try:
     from botocore.vendored import requests
 except ImportError:
     import requests
-from os import fsencode
-import urllib.parse
 
 
 class StartTransferException(Exception):
@@ -65,12 +65,13 @@ def ss_api_get(api_path, params=None):
     return response_json
 
 
-def get_target_path(bucket, key):
+def get_target_path(bucket, directory, key):
     """
     Get the uploaded file's path on the Archivematica storage service,
     as a `<location_uuid>:<target_path>` bytestring returned by `find_matching_path`
 
     :param bucket: Name of s3 bucket
+    :param directory: Top level directory in which key is found
     :param key: Name of s3 key
     :returns: bytestring identifying the path
     """
@@ -114,10 +115,10 @@ def get_target_path(bucket, key):
     for location in s3_sources["objects"]:
         location["s3_bucket"] = buckets[location["space"]]
 
-    return find_matching_path(s3_sources["objects"], bucket, key)
+    return find_matching_path(s3_sources["objects"], bucket, directory, key)
 
 
-def find_matching_path(locations, bucket, key):
+def find_matching_path(locations, bucket, directory, key):
     """
     Match the given bucket and key to a location and return a path on the
     Archivematica storage service
@@ -142,14 +143,14 @@ def find_matching_path(locations, bucket, key):
     for location in locations:
         relative_path = location["relative_path"].strip("/")
 
-        if key.startswith(relative_path) and location["s3_bucket"] == bucket:
-            target_path = key.split(relative_path, 1)[-1]
+        if relative_path == directory and location["s3_bucket"] == bucket:
+            target_path = "/" + key
             return b"%s:%s" % (fsencode(location["uuid"]), fsencode(target_path))
 
     raise StoragePathException("Unable to find location for %s:%s" % (bucket, key))
 
 
-def start_transfer(name, path):
+def start_transfer(name, path, processing_config):
     """
     Start an Archivematica transfer using the automated workflow
 
@@ -158,11 +159,12 @@ def start_transfer(name, path):
 
     :returns: transfer uuid
     """
+    # Archivematica processing configs don't support dashes, so replace with underscores
     data = {
         "name": name,
         "type": "zipfile",
         "path": base64.b64encode(path).decode(),
-        "processing_config": "automated",
+        "processing_config": processing_config.replace("-", "_"),
         "auto_approve": True,
     }
     response_json = am_api_post_json("/api/v2beta/package", data)
@@ -180,11 +182,16 @@ def main(event, context=None):
         event["Records"][0]["s3"]["object"]["key"], encoding="utf-8"
     )
 
+    # Take the first part of the key as the bucket path, to be used
+    # as processing config
+    # e.g. /born-digital/subdir/myfile.zip => 'born-digital', 'subdir/myfile.zip'
+    directory, key_path = key.strip("/").split("/", 1)
+
     # Identify the file's location on the AM storage service
-    target_path = get_target_path(bucket, key)
+    target_path = get_target_path(bucket, directory, key_path)
 
     target_name = os.path.basename(key)
-    transfer_id = start_transfer(target_name, target_path)
+    transfer_id = start_transfer(target_name, target_path, directory)
 
     print("Started transfer {}".format(transfer_id))
 
