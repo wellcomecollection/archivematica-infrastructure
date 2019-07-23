@@ -45,6 +45,16 @@ data "aws_iam_policy_document" "storage_service_aws_permissions" {
       "${aws_s3_bucket.archivematica_transfer.arn}/*",
     ]
   }
+
+  statement {
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::wellcomecollection-storage-access/*",
+    ]
+  }
 }
 
 resource "aws_s3_bucket_policy" "archivematica_ingests_bucket_policy" {
