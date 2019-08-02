@@ -7,13 +7,14 @@ module "s3_start_transfer_lambda" {
   description     = "Start new Archivematica transfers for uploads to transfer bucket"
   name            = "s3_start_transfer"
   alarm_topic_arn = "${data.terraform_remote_state.shared_infra.lambda_error_alarm_arn}"
+
   environment_variables = {
-    "ARCHIVEMATICA_URL" = "https://${module.dashboard_service.hostname}"
-    "ARCHIVEMATICA_SS_URL" = "https://${module.storage_service.hostname}"
-    "ARCHIVEMATICA_USERNAME" = "${local.archivematica_username}"
-    "ARCHIVEMATICA_API_KEY" = "${local.archivematica_api_key}"
+    "ARCHIVEMATICA_URL"         = "https://${module.dashboard_service.hostname}"
+    "ARCHIVEMATICA_SS_URL"      = "https://${module.storage_service.hostname}"
+    "ARCHIVEMATICA_USERNAME"    = "${local.archivematica_username}"
+    "ARCHIVEMATICA_API_KEY"     = "${local.archivematica_api_key}"
     "ARCHIVEMATICA_SS_USERNAME" = "${local.archivematica_ss_username}"
-    "ARCHIVEMATICA_SS_API_KEY" = "${local.archivematica_ss_api_key}"
+    "ARCHIVEMATICA_SS_API_KEY"  = "${local.archivematica_ss_api_key}"
   }
 
   timeout = 120
@@ -28,7 +29,7 @@ resource "aws_lambda_permission" "allow_lambda" {
 }
 
 resource "aws_s3_bucket_notification" "bucket_notification" {
-  bucket    = "${aws_s3_bucket.archivematica_transfer.id}"
+  bucket = "${aws_s3_bucket.archivematica_transfer.id}"
 
   lambda_function {
     lambda_function_arn = "${module.s3_start_transfer_lambda.arn}"
