@@ -31,15 +31,15 @@ data "aws_iam_policy_document" "archivematica_transfer" {
     ]
 
     resources = [
-      "${aws_s3_bucket.archivematica_transfer.arn}/*"
+      "${aws_s3_bucket.archivematica_transfer.arn}/*",
     ]
 
     principals {
       identifiers = [
-        "arn:aws:iam::404315009621:role/digitisation-developer"
+        "arn:aws:iam::404315009621:role/digitisation-developer",
       ]
+
       type = "AWS"
     }
   }
 }
-
