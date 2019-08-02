@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 0.9"
 
   backend "s3" {
-    role_arn = "arn:aws:iam::299497370133:role/developer"
+    role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
 
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/state/archivematica-infra.tfstate"
@@ -14,7 +14,7 @@ data "terraform_remote_state" "storage_service" {
   backend = "s3"
 
   config {
-    role_arn = "arn:aws:iam::975596993436:role/developer"
+    role_arn = "arn:aws:iam::975596993436:role/storage-developer"
 
     bucket = "wellcomecollection-storage-infra"
     key    = "terraform/storage.tfstate"
@@ -26,7 +26,7 @@ data "terraform_remote_state" "workflow" {
   backend = "s3"
 
   config {
-    role_arn = "arn:aws:iam::299497370133:role/developer"
+    role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
 
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/workflow.tfstate"
@@ -38,7 +38,7 @@ data "terraform_remote_state" "shared_infra" {
   backend = "s3"
 
   config {
-    role_arn = "arn:aws:iam::760097843905:role/developer"
+    role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
 
     bucket = "wellcomecollection-platform-infra"
     key    = "terraform/shared_infra.tfstate"
