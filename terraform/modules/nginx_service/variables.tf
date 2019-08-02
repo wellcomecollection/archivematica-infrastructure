@@ -4,6 +4,7 @@ variable "env_vars" {
   type    = "map"
   default = {}
 }
+
 variable "env_vars_length" {
   default = 0
 }
@@ -30,7 +31,7 @@ variable "aws_region" {
 }
 
 variable "cpu" {
-  default = 640  # 768 - 128 for the sidecar
+  default = 640 # 768 - 128 for the sidecar
 }
 
 variable "memory" {

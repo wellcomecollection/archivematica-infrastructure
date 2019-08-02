@@ -3,7 +3,6 @@ resource "aws_iam_role_policy" "storage_service_task_role_policy" {
   policy = "${data.aws_iam_policy_document.storage_service_aws_permissions.json}"
 }
 
-
 data "aws_iam_policy_document" "storage_service_aws_permissions" {
   statement {
     actions = [
@@ -45,6 +44,18 @@ data "aws_iam_policy_document" "storage_service_aws_permissions" {
       "${aws_s3_bucket.archivematica_transfer.arn}/*",
     ]
   }
+
+  statement {
+    actions = [
+      "s3:Get*",
+      "s3:List*",
+    ]
+
+    resources = [
+      "arn:aws:s3:::wellcomecollection-storage-access/*",
+      "arn:aws:s3:::wellcomecollection-storage-access",
+    ]
+  }
 }
 
 resource "aws_s3_bucket_policy" "archivematica_ingests_bucket_policy" {
@@ -66,7 +77,7 @@ data "aws_iam_policy_document" "archivematica_ingests_bucket_policy" {
       type = "AWS"
 
       identifiers = [
-        "${data.terraform_remote_state.storage_service.unpacker_task_role_arns}"
+        "${data.terraform_remote_state.storage_service.unpacker_task_role_arns}",
       ]
     }
   }

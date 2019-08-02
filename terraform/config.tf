@@ -31,12 +31,12 @@ data "aws_ssm_parameter" "archivematica_ss_api_key" {
 }
 
 locals {
-  rds_username       = "${data.aws_ssm_parameter.rds_username.value}"
-  rds_password       = "${data.aws_ssm_parameter.rds_password.value}"
-  elasticsearch_url  = "${data.aws_ssm_parameter.elasticsearch_url.value}"
-  admin_cidr_ingress = "${split(",", data.aws_ssm_parameter.admin_cidr_ingress.value)}"
-  archivematica_username = "${data.aws_ssm_parameter.archivematica_username.value}"
-  archivematica_api_key = "${data.aws_ssm_parameter.archivematica_api_key.value}"
+  rds_username              = "${data.aws_ssm_parameter.rds_username.value}"
+  rds_password              = "${data.aws_ssm_parameter.rds_password.value}"
+  elasticsearch_url         = "${data.aws_ssm_parameter.elasticsearch_url.value}"
+  admin_cidr_ingress        = "${split(",", data.aws_ssm_parameter.admin_cidr_ingress.value)}"
+  archivematica_username    = "${data.aws_ssm_parameter.archivematica_username.value}"
+  archivematica_api_key     = "${data.aws_ssm_parameter.archivematica_api_key.value}"
   archivematica_ss_username = "${data.aws_ssm_parameter.archivematica_ss_username.value}"
-  archivematica_ss_api_key = "${data.aws_ssm_parameter.archivematica_ss_api_key.value}"
+  archivematica_ss_api_key  = "${data.aws_ssm_parameter.archivematica_ss_api_key.value}"
 }

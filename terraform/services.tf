@@ -12,19 +12,21 @@ module "mcp_worker_service" {
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 
   fits_container_image = "${module.fits_ngserver_repo_uri.value}"
-  fits_mount_points    = [
+
+  fits_mount_points = [
     {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
-    }
+    },
   ]
 
   clamav_container_image = "artefactual/clamav:latest"
-  clamav_mount_points    = [
+
+  clamav_mount_points = [
     {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
-    }
+    },
   ]
 
   mcp_client_env_vars = {
@@ -57,7 +59,7 @@ module "mcp_worker_service" {
     {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
-    }
+    },
   ]
 
   mcp_server_env_vars = {
@@ -68,7 +70,6 @@ module "mcp_worker_service" {
     ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE = "MCP"
 
     ARCHIVEMATICA_MCPSERVER_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
-
   }
 
   mcp_server_env_vars_length = 7
@@ -85,7 +86,7 @@ module "mcp_worker_service" {
     {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
-    }
+    },
   ]
 }
 
@@ -126,7 +127,8 @@ module "storage_service" {
 
     # The volume mounts are owned by "root".  By default gunicorn runs with
     # the 'archivematica' user, which can't access these mounts.
-    SS_GUNICORN_USER  = "root"
+    SS_GUNICORN_USER = "root"
+
     SS_GUNICORN_GROUP = "root"
   }
 
@@ -142,15 +144,15 @@ module "storage_service" {
 
   mount_points = [
     {
-      sourceVolume  = "pipeline-data",
+      sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
     },
     {
-      sourceVolume  = "location-data",
+      sourceVolume  = "location-data"
       containerPath = "/home"
     },
     {
-      sourceVolume  = "staging-data",
+      sourceVolume  = "staging-data"
       containerPath = "/var/archivematica/storage_service"
     },
   ]
@@ -205,7 +207,7 @@ module "dashboard_service" {
 
   mount_points = [
     {
-      sourceVolume  = "pipeline-data",
+      sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
     },
   ]

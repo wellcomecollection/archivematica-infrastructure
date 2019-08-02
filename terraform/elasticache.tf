@@ -12,6 +12,6 @@ resource "aws_elasticache_cluster" "archivematica" {
   engine_version       = "3.2.10"
   port                 = 6379
 
-  subnet_group_name    = "${aws_elasticache_subnet_group.archivematica.name}"
-  security_group_ids   = ["${local.interservice_security_group_id}"]
+  subnet_group_name  = "${aws_elasticache_subnet_group.archivematica.name}"
+  security_group_ids = ["${local.interservice_security_group_id}"]
 }

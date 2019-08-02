@@ -4,6 +4,7 @@ variable "env_vars" {
   type    = "map"
   default = {}
 }
+
 variable "env_vars_length" {
   default = 0
 }
