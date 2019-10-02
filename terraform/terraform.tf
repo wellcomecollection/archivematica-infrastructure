@@ -10,14 +10,26 @@ terraform {
   }
 }
 
-data "terraform_remote_state" "storage_service" {
+data "terraform_remote_state" "storage_service_prod" {
   backend = "s3"
 
   config {
-    role_arn = "arn:aws:iam::975596993436:role/storage-developer"
+    role_arn = "arn:aws:iam::975596993436:role/storage-read_only"
 
     bucket = "wellcomecollection-storage-infra"
-    key    = "terraform/storage.tfstate"
+    key    = "terraform/storage-service/stack_prod.tfstate"
+    region = "eu-west-1"
+  }
+}
+
+data "terraform_remote_state" "storage_service_staging" {
+  backend = "s3"
+
+  config {
+    role_arn = "arn:aws:iam::975596993436:role/storage-read_only"
+
+    bucket = "wellcomecollection-storage-infra"
+    key    = "terraform/storage-service/stack_staging.tfstate"
     region = "eu-west-1"
   }
 }
