@@ -52,8 +52,8 @@ data "aws_iam_policy_document" "storage_service_aws_permissions" {
     ]
 
     resources = [
-      "arn:aws:s3:::wellcomecollection-storage-access/*",
-      "arn:aws:s3:::wellcomecollection-storage-access",
+      "arn:aws:s3:::wellcomecollection-storage/*",
+      "arn:aws:s3:::wellcomecollection-storage",
     ]
   }
 }
@@ -77,7 +77,8 @@ data "aws_iam_policy_document" "archivematica_ingests_bucket_policy" {
       type = "AWS"
 
       identifiers = [
-        "${data.terraform_remote_state.storage_service.unpacker_task_role_arns}",
+        "${data.terraform_remote_state.storage_service_prod.unpacker_task_role_arn}",
+        "${data.terraform_remote_state.storage_service_staging.unpacker_task_role_arn}",
       ]
     }
   }
