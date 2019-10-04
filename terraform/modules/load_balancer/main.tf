@@ -4,6 +4,7 @@ resource "aws_alb" "load_balancer" {
 
   subnets         = ["${var.public_subnets}"]
   security_groups = ["${concat(var.service_lb_security_group_ids, list(aws_security_group.external_lb_security_group.id))}"]
+  idle_timeout    = "${var.idle_timeout}"
 }
 
 resource "aws_alb_listener" "https" {
