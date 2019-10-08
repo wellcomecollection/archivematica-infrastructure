@@ -11,7 +11,11 @@ module "lb_dashboard" {
   service_lb_security_group_ids = [
     "${local.service_lb_security_group_id}",
   ]
-  idle_timeout = "3600"
+
+  # We set a high timeout here and on the dashboard load balancer to allow
+  # Archivematica time to prepare large AIP files for download
+  # If nginx is sending back 499 responses, this may not be high enough.
+  idle_timeout = 3600
 }
 
 module "lb_storage_service" {
@@ -31,5 +35,5 @@ module "lb_storage_service" {
   # We set a high timeout here and on the dashboard load balancer to allow
   # Archivematica time to prepare large AIP files for download
   # If nginx is sending back 499 responses, this may not be high enough.
-  idle_timeout = "3600"
+  idle_timeout = 3600
 }
