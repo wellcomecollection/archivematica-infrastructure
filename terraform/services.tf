@@ -178,6 +178,10 @@ module "dashboard_service" {
     AM_GUNICORN_ACCESSLOG                                  = "/dev/null"
     AM_GUNICORN_RELOAD                                     = "true"
     AM_GUNICORN_RELOAD_ENGINE                              = "auto"
+    # Multiple workers allow the dashboard to continue to serve web requests while
+    # large downloads are in progress (these will occupy a whole worker process)
+    # See https://github.com/wellcometrust/platform/issues/3954
+    AM_GUNICORN_WORKERS                                    = 4
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER       = "${local.gearmand_hostname}:4730"
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "${local.elasticsearch_url}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_USER                    = "${module.rds_cluster.username}"
