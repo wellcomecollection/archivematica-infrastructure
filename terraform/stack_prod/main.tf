@@ -36,6 +36,9 @@ module "critical" {
   archivematica_ss_username = local.archivematica_ss_username
   archivematica_ss_api_key  = local.archivematica_ss_api_key
 
+  azure_tenant_id = local.azure_tenant_id
+  oidc_client_id  = local.oidc_client_id
+
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets
   network_public_subnets  = data.terraform_remote_state.workflow.outputs.public_subnets
   vpc_id                  = data.terraform_remote_state.workflow.outputs.vpc_id
