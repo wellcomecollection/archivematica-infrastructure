@@ -1,6 +1,4 @@
 locals {
-  full_name = "am-${var.name}"
-
   nginx_cpu    = 128
   nginx_memory = 256
 }
@@ -8,7 +6,7 @@ locals {
 module "task_definition" {
   source = "./container_with_sidecar"
 
-  task_name = local.full_name
+  task_name = var.name
 
   cpu    = "${var.cpu + local.nginx_cpu}"
   memory = "${var.memory + local.nginx_memory}"
@@ -37,7 +35,7 @@ module "task_definition" {
 module "service" {
   source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.0.0"
 
-  service_name = local.full_name
+  service_name = var.name
   cluster_arn  = var.cluster_arn
 
   desired_task_count = 1
@@ -67,7 +65,7 @@ module "service" {
 resource "aws_alb_target_group" "ecs_service" {
   # We use snake case in a lot of places, but ALB Target Group names can
   # only contain alphanumerics and hyphens.
-  name = replace(local.full_name, "_", "-")
+  name = replace(var.name, "_", "-")
 
   target_type = "ip"
 
