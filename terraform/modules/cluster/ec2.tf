@@ -1,5 +1,5 @@
 module "cluster_hosts" {
-  source = "../efs"
+  source = "./efs"
 
   cluster_name = "${var.cluster_name}"
   vpc_id       = "${var.vpc_id}"
@@ -23,7 +23,7 @@ module "cluster_hosts" {
 }
 
 module "bastion_host" {
-  source = "../bastion"
+  source = "./bastion"
 
   vpc_id = "${var.vpc_id}"
 

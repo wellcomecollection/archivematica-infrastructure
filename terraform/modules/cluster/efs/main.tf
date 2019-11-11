@@ -1,5 +1,5 @@
 module "cloudformation_stack" {
-  source = "../ec2_asg"
+  source = "../asg"
 
   subnet_list        = "${var.subnets}"
   asg_name           = "${var.asg_name}"
@@ -26,7 +26,7 @@ resource "aws_launch_configuration" "launch_config" {
 }
 
 module "security_groups" {
-  source = "../ec2_security_groups"
+  source = "../security_groups"
 
   name   = "${var.asg_name}"
   vpc_id = "${var.vpc_id}"
@@ -37,7 +37,7 @@ module "security_groups" {
 }
 
 module "instance_profile" {
-  source = "../ec2_instance_profile"
+  source = "../instance_profile"
   name   = "${var.asg_name}"
 }
 
