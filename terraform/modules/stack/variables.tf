@@ -6,6 +6,16 @@ variable "efs_security_group_id" {}
 variable "redis_server" {}
 variable "redis_port" {}
 
+variable "elasticsearch_url" {}
+
+variable "rds_username" {}
+variable "rds_password" {}
+variable "rds_host" {}
+variable "rds_port" {}
+
+variable "mcp_client_container_image" {}
+variable "mcp_server_container_image" {}
+
 variable "network_private_subnets" {}
 variable "network_public_subnets" {}
 variable "vpc_id" {}

@@ -17,3 +17,19 @@ output "redis_port" {
 output "interservice_security_group_id" {
   value = module.critical.interservice_security_group_id
 }
+
+output "rds_username" {
+  value = local.rds_username
+}
+
+output "rds_password" {
+  value = local.rds_password
+}
+
+output "rds_host" {
+  value = module.critical.rds_host
+}
+
+output "rds_port" {
+  value = module.critical.rds_port
+}

@@ -9,6 +9,16 @@ module "critical" {
   redis_server = data.terraform_remote_state.critical.outputs.redis_server
   redis_port   = data.terraform_remote_state.critical.outputs.redis_port
 
+  elasticsearch_url = local.elasticsearch_url
+
+  rds_username = data.terraform_remote_state.critical.outputs.rds_username
+  rds_password = data.terraform_remote_state.critical.outputs.rds_password
+  rds_host     = data.terraform_remote_state.critical.outputs.rds_host
+  rds_port     = data.terraform_remote_state.critical.outputs.rds_port
+
+  mcp_client_container_image = module.mcp_client_repo_uri.value
+  mcp_server_container_image = module.mcp_server_repo_uri.value
+
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets
   network_public_subnets  = data.terraform_remote_state.workflow.outputs.public_subnets
   vpc_id                  = data.terraform_remote_state.workflow.outputs.vpc_id

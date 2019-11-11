@@ -17,3 +17,11 @@ output "redis_port" {
 output "interservice_security_group_id" {
   value = aws_security_group.interservice.id
 }
+
+output "rds_host" {
+  value = aws_rds_cluster.archivematica.endpoint
+}
+
+output "rds_port" {
+  value = aws_rds_cluster.archivematica.port
+}
