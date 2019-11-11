@@ -7,7 +7,7 @@ module "cluster_hosts" {
   asg_name = "${var.name}"
 
   ssh_ingress_security_groups = ["${module.bastion_host.ssh_controlled_ingress_sg}"]
-  custom_security_groups      = ["${var.efs_security_group_ids}"]
+  custom_security_groups      = "${var.efs_security_group_ids}"
 
   subnets  = "${var.private_subnets}"
   key_name = "wellcomedigitalworkflow"
@@ -23,13 +23,13 @@ module "cluster_hosts" {
 }
 
 module "bastion_host" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ec2/prebuilt/bastion?ref=v11.3.1"
+  source = "../bastion"
 
   vpc_id = "${var.vpc_id}"
 
   name = "${var.name}-bastion"
 
-  controlled_access_cidr_ingress = ["${var.controlled_access_cidr_ingress}"]
+  controlled_access_cidr_ingress = "${var.controlled_access_cidr_ingress}"
 
   key_name    = "${var.key_name}"
   subnet_list = "${var.public_subnets}"

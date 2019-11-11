@@ -5,124 +5,91 @@ locals {
   nginx_memory = 256
 }
 
-module "container_definition" {
-  source = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/container_definition/container_with_sidecar?ref=b59b32d"
+module "task_definition" {
+  source = "./container_with_sidecar"
 
-  aws_region = "${var.aws_region}"
-
-  app_env_vars        = "${var.env_vars}"
-  app_env_vars_length = "${var.env_vars_length}"
-
-  secret_app_env_vars        = "${var.secret_env_vars}"
-  secret_app_env_vars_length = "${var.secret_env_vars_length}"
-
-  task_name = "${local.full_name}"
-
-  log_group_prefix = "archivematica/${var.name}"
-
-  app_container_image     = "${var.container_image}"
-  sidecar_container_image = "${var.nginx_container_image}"
-
-  sidecar_port_mappings_string = <<EOF
-[
-  {
-    "ContainerPort": 80,
-    "HostPort": 80,
-    "Protocol": "tcp"
-  }
-]
-EOF
-
-  app_cpu    = "${var.cpu}"
-  app_memory = "${var.memory}"
-
-  sidecar_cpu    = "${local.nginx_cpu}"
-  sidecar_memory = "${local.nginx_memory}"
-
-  app_mount_points = "${var.mount_points}"
-
-  execution_role_name = "${module.iam_roles.task_execution_role_name}"
-}
-
-module "iam_roles" {
-  source    = "github.com/wellcometrust/terraform.git//ecs/modules/task/modules/iam_roles?ref=v19.11.0"
-  task_name = "${local.full_name}"
-}
-
-resource "aws_ecs_task_definition" "task" {
-  family                = "${local.full_name}"
-  container_definitions = "${module.container_definition.rendered}"
-  execution_role_arn    = "${module.iam_roles.task_execution_role_arn}"
-  task_role_arn         = "${module.iam_roles.task_role_arn}"
-
-  network_mode = "awsvpc"
-
-  # For now, using EBS/EFS means we need to be on EC2 instance.
-  requires_compatibilities = ["EC2"]
-
-  placement_constraints {
-    type       = "memberOf"
-    expression = "attribute:efs.volume exists"
-  }
-
-  volume {
-    name      = "location-data"
-    host_path = "${local.efs_host_path}/location-data"
-  }
-
-  volume {
-    name      = "pipeline-data"
-    host_path = "${local.efs_host_path}/pipeline-data"
-  }
-
-  volume {
-    name      = "staging-data"
-    host_path = "${local.efs_host_path}/staging-data"
-  }
+  task_name = local.full_name
 
   cpu    = "${var.cpu + local.nginx_cpu}"
   memory = "${var.memory + local.nginx_memory}"
-}
 
-module "service" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/load_balanced?ref=v11.3.1"
+  app_container_image = var.container_image
+  app_cpu             = var.cpu
+  app_memory          = var.memory
+  app_mount_points    = var.mount_points
 
-  service_name       = "${local.full_name}"
-  task_desired_count = 1
+  app_env_vars        = var.env_vars
+  secret_app_env_vars = var.secret_env_vars
 
-  # The root paths return 302s which redirect to this login page.
-  healthcheck_path = "${var.healthcheck_path}"
-
-  container_name = "sidecar"
-  container_port = 80
-
-  task_definition_arn = "${aws_ecs_task_definition.task.arn}"
-
-  security_group_ids = [
-    "${local.interservice_security_group_id}",
-    "${local.service_egress_security_group_id}",
-    "${local.service_lb_security_group_id}",
-  ]
-
-  ecs_cluster_id = "${var.cluster_id}"
-
-  vpc_id  = "${local.vpc_id}"
-  subnets = "${local.network_private_subnets}"
-
-  namespace_id = "${var.namespace_id}"
+  sidecar_container_image = var.nginx_container_image
+  sidecar_container_port  = 80
+  sidecar_container_name  = "nginx"
+  sidecar_cpu             = local.nginx_cpu
+  sidecar_memory          = local.nginx_memory
 
   launch_type = "EC2"
 
+  efs_host_path = local.efs_host_path
+
+  aws_region = "eu-west-1"
+}
+
+module "service" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.0.0"
+
+  service_name = local.full_name
+  cluster_arn  = var.cluster_arn
+
+  desired_task_count = 1
+
+  task_definition_arn = module.task_definition.arn
+
+  subnets = local.network_private_subnets
+
+  namespace_id = var.namespace_id
+
+  security_group_ids = [
+    local.interservice_security_group_id,
+    local.service_egress_security_group_id,
+    local.service_lb_security_group_id,
+  ]
+
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
+
+  launch_type = "EC2"
+
+  target_group_arn = aws_alb_target_group.ecs_service.arn
+  container_name = "sidecar"
+  container_port = 80
 }
+
+resource "aws_alb_target_group" "ecs_service" {
+  # We use snake case in a lot of places, but ALB Target Group names can
+  # only contain alphanumerics and hyphens.
+  name = "${replace(local.full_name, "_", "-")}"
+
+  target_type = "ip"
+
+  protocol = "HTTP"
+  port     = 80
+  vpc_id   = "${local.vpc_id}"
+
+  # The root paths return 302s which redirect to this login page.
+  health_check {
+    protocol = "HTTP"
+    path     = "${var.healthcheck_path}"
+    matcher  = "200"
+  }
+}
+
 
 resource "aws_alb_listener_rule" "https" {
   listener_arn = "${var.load_balancer_https_listener_arn}"
 
   action {
     type             = "forward"
-    target_group_arn = "${module.service.target_group_arn}"
+    target_group_arn = "${aws_alb_target_group.ecs_service.arn}"
   }
 
   condition {

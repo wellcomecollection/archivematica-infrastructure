@@ -1,5 +1,5 @@
 output "ssh_controlled_ingress_sg" {
-  value = "${module.asg.ssh_controlled_ingress_sg}"
+  value = "${module.security_groups.ssh_controlled_ingress}"
 }
 
 output "efs_host_path" {

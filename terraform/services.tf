@@ -33,10 +33,10 @@ module "mcp_worker_service" {
     DJANGO_SETTINGS_MODULE                                         = "settings.common"
     NAILGUN_SERVER                                                 = "localhost"
     NAILGUN_PORT                                                   = "2113"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = "${module.rds_cluster.username}"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = "${module.rds_cluster.password}"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = "${module.rds_cluster.host}"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = "${module.rds_cluster.port}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = "${local.rds_username}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = "${local.rds_password}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = "${local.rds_host}"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = "${local.rds_port}"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                        = "MCP"
     ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = "${local.elasticsearch_url}"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
@@ -63,10 +63,10 @@ module "mcp_worker_service" {
   ]
 
   mcp_server_env_vars = {
-    ARCHIVEMATICA_MCPSERVER_CLIENT_USER     = "${module.rds_cluster.username}"
-    ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD = "${module.rds_cluster.password}"
-    ARCHIVEMATICA_MCPSERVER_CLIENT_HOST     = "${module.rds_cluster.host}"
-    ARCHIVEMATICA_MCPSERVER_CLIENT_PORT     = "${module.rds_cluster.port}"
+    ARCHIVEMATICA_MCPSERVER_CLIENT_USER     = "${local.rds_username}"
+    ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD = "${local.rds_password}"
+    ARCHIVEMATICA_MCPSERVER_CLIENT_HOST     = "${local.rds_host}"
+    ARCHIVEMATICA_MCPSERVER_CLIENT_PORT     = "${local.rds_port}"
     ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE = "MCP"
 
     ARCHIVEMATICA_MCPSERVER_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
@@ -103,7 +103,7 @@ module "gearman_service" {
     "--redis-port=${aws_elasticache_cluster.archivematica.cache_nodes.0.port}",
   ]
 
-  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
+  cluster_arn  = "${aws_ecs_cluster.archivematica.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
 
@@ -120,7 +120,7 @@ module "storage_service" {
     AM_GUNICORN_ACCESSLOG     = "/dev/null"
     AM_GUNICORN_RELOAD        = "true"
     AM_GUNICORN_RELOAD_ENGINE = "auto"
-    SS_DB_URL                 = "mysql://${module.rds_cluster.username}:${module.rds_cluster.password}@${module.rds_cluster.host}:${module.rds_cluster.port}/SS"
+    SS_DB_URL                 = "${local.rds_archivematica_url}/SS"
     SS_GNPUG_HOME_PATH        = "/var/archivematica/storage_service/.gnupg"
     SS_GUNICORN_BIND          = "0.0.0.0:${local.storage_service_port}"
     DJANGO_ALLOWED_HOSTS      = "*"
@@ -161,7 +161,7 @@ module "storage_service" {
 
   load_balancer_https_listener_arn = "${module.lb_storage_service.https_listener_arn}"
 
-  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
+  cluster_arn  = "${aws_ecs_cluster.archivematica.arn}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }
 
@@ -184,10 +184,10 @@ module "dashboard_service" {
     AM_GUNICORN_WORKERS                                    = 4
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER       = "${local.gearmand_hostname}:4730"
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "${local.elasticsearch_url}"
-    ARCHIVEMATICA_DASHBOARD_CLIENT_USER                    = "${module.rds_cluster.username}"
-    ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD                = "${module.rds_cluster.password}"
-    ARCHIVEMATICA_DASHBOARD_CLIENT_HOST                    = "${module.rds_cluster.host}"
-    ARCHIVEMATICA_DASHBOARD_CLIENT_PORT                    = "${module.rds_cluster.port}"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_USER                    = "${local.rds_username}"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD                = "${local.rds_password}"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_HOST                    = "${local.rds_host}"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_PORT                    = "${local.rds_port}"
     ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE                = "MCP"
     ARCHIVEMATICA_DASHBOARD_DJANGO_ALLOWED_HOSTS           = "*"
     AM_GUNICORN_BIND                                       = "0.0.0.0:9000"
@@ -220,6 +220,6 @@ module "dashboard_service" {
 
   load_balancer_https_listener_arn = "${module.lb_dashboard.https_listener_arn}"
 
-  cluster_id   = "${aws_ecs_cluster.archivematica.id}"
+  cluster_arn  = "${aws_ecs_cluster.archivematica.arn}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 }

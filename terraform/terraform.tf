@@ -13,7 +13,7 @@ terraform {
 data "terraform_remote_state" "storage_service_prod" {
   backend = "s3"
 
-  config {
+  config = {
     role_arn = "arn:aws:iam::975596993436:role/storage-read_only"
 
     bucket = "wellcomecollection-storage-infra"
@@ -25,7 +25,7 @@ data "terraform_remote_state" "storage_service_prod" {
 data "terraform_remote_state" "storage_service_staging" {
   backend = "s3"
 
-  config {
+  config = {
     role_arn = "arn:aws:iam::975596993436:role/storage-read_only"
 
     bucket = "wellcomecollection-storage-infra"
@@ -37,7 +37,7 @@ data "terraform_remote_state" "storage_service_staging" {
 data "terraform_remote_state" "workflow" {
   backend = "s3"
 
-  config {
+  config = {
     role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
 
     bucket = "wellcomecollection-workflow-infra"
@@ -49,7 +49,7 @@ data "terraform_remote_state" "workflow" {
 data "terraform_remote_state" "shared_infra" {
   backend = "s3"
 
-  config {
+  config = {
     role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
 
     bucket = "wellcomecollection-platform-infra"

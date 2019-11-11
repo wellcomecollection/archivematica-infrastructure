@@ -10,10 +10,10 @@ module "cluster" {
   region   = "${var.region}"
   key_name = "wellcomedigitalworkflow"
 
-  controlled_access_cidr_ingress = ["${local.admin_cidr_ingress}"]
+  controlled_access_cidr_ingress = "${local.admin_cidr_ingress}"
 
   efs_security_group_ids = ["${local.efs_security_group_id}"]
-  efs_id                 = "${module.efs.efs_id}"
+  efs_id                 = "${aws_efs_file_system.efs.id}"
 
   cluster_name = "${aws_ecs_cluster.archivematica.name}"
 

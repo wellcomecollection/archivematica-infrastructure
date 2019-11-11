@@ -8,7 +8,6 @@ variable "instance_type" {}
 variable "key_name" {}
 
 variable "controlled_access_cidr_ingress" {
-  type = "list"
 }
 
 variable "public_subnets" {

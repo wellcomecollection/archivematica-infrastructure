@@ -29,7 +29,7 @@ module "mcp_server_log_group" {
 data "template_file" "container_definition" {
   template = "${file("${path.module}/task_definition.json.template")}"
 
-  vars {
+  vars = {
     log_group_region = "eu-west-1"
     log_group_prefix = ""
 

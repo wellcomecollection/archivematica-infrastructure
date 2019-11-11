@@ -22,7 +22,7 @@ resource "aws_s3_bucket_policy" "archivematica_transfer" {
 }
 
 data "aws_iam_policy_document" "archivematica_transfer" {
-  "statement" {
+  statement {
     actions = [
       "s3:List*",
       "s3:Get*",

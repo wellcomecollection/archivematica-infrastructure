@@ -1,12 +1,12 @@
 module "s3_start_transfer_lambda" {
-  source      = "git::https://github.com/wellcometrust/terraform.git//lambda?ref=v1.0.3"
+  source      = "./modules/lambda"
   s3_bucket   = "wellcomecollection-workflow-infra"
   s3_key      = "lambdas/s3_start_transfer.zip"
   module_name = "s3_start_transfer"
 
   description     = "Start new Archivematica transfers for uploads to transfer bucket"
   name            = "s3_start_transfer"
-  alarm_topic_arn = "${data.terraform_remote_state.shared_infra.lambda_error_alarm_arn}"
+  alarm_topic_arn = "${data.terraform_remote_state.shared_infra.outputs.lambda_error_alarm_arn}"
 
   environment_variables = {
     "ARCHIVEMATICA_URL"         = "https://${module.dashboard_service.hostname}"

@@ -43,5 +43,5 @@ variable "mount_points" {
   default = []
 }
 
-variable "cluster_id" {}
+variable "cluster_arn" {}
 variable "namespace_id" {}

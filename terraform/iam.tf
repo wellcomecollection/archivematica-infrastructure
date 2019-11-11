@@ -77,8 +77,8 @@ data "aws_iam_policy_document" "archivematica_ingests_bucket_policy" {
       type = "AWS"
 
       identifiers = [
-        "${data.terraform_remote_state.storage_service_prod.unpacker_task_role_arn}",
-        "${data.terraform_remote_state.storage_service_staging.unpacker_task_role_arn}",
+        "${data.terraform_remote_state.storage_service_prod.outputs.unpacker_task_role_arn}",
+        "${data.terraform_remote_state.storage_service_staging.outputs.unpacker_task_role_arn}",
       ]
     }
   }

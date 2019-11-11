@@ -1,6 +1,6 @@
 resource "aws_elasticache_subnet_group" "archivematica" {
   name       = "archivematica-elasticache-subnet-group"
-  subnet_ids = ["${local.network_private_subnets}"]
+  subnet_ids = "${local.network_private_subnets}"
 }
 
 resource "aws_elasticache_cluster" "archivematica" {
