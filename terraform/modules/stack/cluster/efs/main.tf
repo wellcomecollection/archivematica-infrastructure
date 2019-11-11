@@ -1,21 +1,21 @@
 module "cloudformation_stack" {
   source = "../asg"
 
-  subnet_list        = "${var.subnets}"
-  asg_name           = "${var.asg_name}"
+  subnet_list        = var.subnets
+  asg_name           = var.asg_name
   launch_config_name = aws_launch_configuration.launch_config.name
 
-  asg_max     = "${var.asg_max}"
-  asg_desired = "${var.asg_desired}"
-  asg_min     = "${var.asg_min}"
+  asg_max     = var.asg_max
+  asg_desired = var.asg_desired
+  asg_min     = var.asg_min
 }
 
 resource "aws_launch_configuration" "launch_config" {
   security_groups = module.security_groups.instance_security_groups
 
-  key_name                    = "${var.key_name}"
-  image_id                    = "${var.image_id}"
-  instance_type               = "${var.instance_type}"
+  key_name                    = var.key_name
+  image_id                    = var.image_id
+  instance_type               = var.instance_type
   iam_instance_profile        = module.instance_profile.name
   user_data                   = data.template_file.userdata.rendered
   associate_public_ip_address = true
@@ -28,27 +28,27 @@ resource "aws_launch_configuration" "launch_config" {
 module "security_groups" {
   source = "../security_groups"
 
-  name   = "${var.asg_name}"
-  vpc_id = "${var.vpc_id}"
+  name   = var.asg_name
+  vpc_id = var.vpc_id
 
-  controlled_access_cidr_ingress    = "${var.controlled_access_cidr_ingress}"
-  controlled_access_security_groups = ["${var.ssh_ingress_security_groups}"]
-  custom_security_groups            = "${var.custom_security_groups}"
+  controlled_access_cidr_ingress    = var.controlled_access_cidr_ingress
+  controlled_access_security_groups = var.ssh_ingress_security_groups
+  custom_security_groups            = var.custom_security_groups
 }
 
 module "instance_profile" {
   source = "../instance_profile"
-  name   = "${var.asg_name}"
+  name   = var.asg_name
 }
 
 data "template_file" "userdata" {
-  template = "${file("${path.module}/efs.tpl")}"
+  template = file("${path.module}/efs.tpl")
 
   vars = {
-    cluster_name  = "${var.cluster_name}"
-    efs_fs_id     = "${var.efs_fs_id}"
-    efs_host_path = "${var.efs_host_path}"
-    region        = "${var.region}"
+    cluster_name  = var.cluster_name
+    efs_fs_id     = var.efs_fs_id
+    efs_host_path = var.efs_host_path
+    region        = var.region
   }
 }
 

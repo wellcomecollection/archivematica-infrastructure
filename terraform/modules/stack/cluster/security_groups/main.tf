@@ -1,7 +1,7 @@
 locals {
   base_security_groups = [
-    "${aws_security_group.full_egress.id}",
-    "${aws_security_group.ssh_controlled_ingress.id}",
+    aws_security_group.full_egress.id,
+    aws_security_group.ssh_controlled_ingress.id,
   ]
 
   instance_security_groups = concat(
@@ -11,8 +11,7 @@ locals {
 }
 
 resource "aws_security_group" "ssh_controlled_ingress" {
-  description = "controls direct access to application instances"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
   name        = "${var.name}_ssh_controlled_ingress_${random_id.sg_append.hex}"
 
   ingress {
@@ -21,6 +20,7 @@ resource "aws_security_group" "ssh_controlled_ingress" {
     to_port   = 22
 
     cidr_blocks = var.controlled_access_cidr_ingress
+    security_groups = var.controlled_access_security_groups
   }
 
   lifecycle {
@@ -29,9 +29,8 @@ resource "aws_security_group" "ssh_controlled_ingress" {
 }
 
 resource "aws_security_group" "full_egress" {
-  description = "controls direct access to application instances"
-  vpc_id      = "${var.vpc_id}"
-  name        = "${var.name}_full_egress_${random_id.sg_append.hex}"
+  vpc_id = var.vpc_id
+  name   = "${var.name}_full_egress_${random_id.sg_append.hex}"
 
   egress {
     from_port   = 0
@@ -47,7 +46,7 @@ resource "aws_security_group" "full_egress" {
 
 resource "random_id" "sg_append" {
   keepers = {
-    sg_id = "${var.name}"
+    sg_id = var.name
   }
 
   byte_length = 8
