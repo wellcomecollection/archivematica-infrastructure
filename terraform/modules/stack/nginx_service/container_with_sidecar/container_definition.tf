@@ -11,15 +11,7 @@ data "template_file" "container_definition" {
     app_container_image = var.app_container_image
     app_container_name  = var.app_container_name
 
-    app_port_mappings = jsonencode([
-      {
-        "containerPort" = var.app_container_port,
-
-        # TODO: I think we can safely drop both these arguments.
-        "hostPort" = var.app_container_port,
-        "protocol" = "tcp"
-      }
-    ])
+    app_port_mappings = jsonencode([])
 
     app_environment_vars        = module.app_env_vars.env_vars_string
     app_secret_environment_vars = module.app_secret_env_vars.env_vars_string
@@ -68,13 +60,13 @@ resource "aws_cloudwatch_log_group" "app_log_group" {
 }
 
 module "app_env_vars" {
-  source = "./env_vars"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/env_vars?ref=v1.0.0"
 
   env_vars = var.app_env_vars
 }
 
 module "app_secret_env_vars" {
-  source = "./secrets"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/secrets?ref=v1.0.0"
 
   secret_env_vars = var.secret_app_env_vars
 
@@ -90,13 +82,13 @@ resource "aws_cloudwatch_log_group" "sidecar_log_group" {
 }
 
 module "sidecar_env_vars" {
-  source = "./env_vars"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/env_vars?ref=v1.0.0"
 
   env_vars = var.sidecar_env_vars
 }
 
 module "sidecar_secret_env_vars" {
-  source = "./secrets"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/secrets?ref=v1.0.0"
 
   secret_env_vars = var.secret_sidecar_env_vars
 

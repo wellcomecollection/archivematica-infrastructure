@@ -15,8 +15,12 @@ variable "rds_port" {}
 
 variable "mcp_client_container_image" {}
 variable "mcp_server_container_image" {}
+variable "storage_service_container_image" {}
+variable "storage_service_nginx_container_image" {}
 
 variable "certificate_arn" {}
+
+variable "storage_service_hostname" {}
 
 variable "network_private_subnets" {}
 variable "network_public_subnets" {}

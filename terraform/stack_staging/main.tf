@@ -16,10 +16,14 @@ module "critical" {
   rds_host     = data.terraform_remote_state.critical.outputs.rds_host
   rds_port     = data.terraform_remote_state.critical.outputs.rds_port
 
-  mcp_client_container_image = module.mcp_client_repo_uri.value
-  mcp_server_container_image = module.mcp_server_repo_uri.value
+  mcp_client_container_image            = module.mcp_client_repo_uri.value
+  mcp_server_container_image            = module.mcp_server_repo_uri.value
+  storage_service_container_image       = module.storage_service_repo_uri.value
+  storage_service_nginx_container_image = module.storage_service_nginx_repo_uri.value
 
   certificate_arn = data.terraform_remote_state.infra.outputs.certificate_arn
+
+  storage_service_hostname = "archivematica-storage-service-stage.wellcomecollection.org"
 
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets
   network_public_subnets  = data.terraform_remote_state.workflow.outputs.public_subnets

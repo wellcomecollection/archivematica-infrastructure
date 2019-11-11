@@ -5,64 +5,6 @@ locals {
   storage_service_port = 8000
 }
 
-module "storage_service" {
-  source = "./modules/nginx_service"
-
-  name = "storage-service"
-
-  hostname         = "archivematica-storage-service.wellcomecollection.org"
-  healthcheck_path = "/login/"
-
-  env_vars = {
-    FORWARDED_ALLOW_IPS       = "*"
-    AM_GUNICORN_ACCESSLOG     = "/dev/null"
-    AM_GUNICORN_RELOAD        = "true"
-    AM_GUNICORN_RELOAD_ENGINE = "auto"
-    SS_DB_URL                 = "${local.rds_archivematica_url}/SS"
-    SS_GNPUG_HOME_PATH        = "/var/archivematica/storage_service/.gnupg"
-    SS_GUNICORN_BIND          = "0.0.0.0:${local.storage_service_port}"
-    DJANGO_ALLOWED_HOSTS      = "*"
-
-    # The volume mounts are owned by "root".  By default gunicorn runs with
-    # the 'archivematica' user, which can't access these mounts.
-    SS_GUNICORN_USER = "root"
-
-    SS_GUNICORN_GROUP = "root"
-  }
-
-  env_vars_length = 10
-
-  secret_env_vars = {
-    DJANGO_SECRET_KEY = "archivematica/storage_service_django_secret_key"
-  }
-
-  secret_env_vars_length = 1
-
-  container_image = "${module.storage_service_repo_uri.value}"
-
-  mount_points = [
-    {
-      sourceVolume  = "pipeline-data"
-      containerPath = "/var/archivematica/sharedDirectory"
-    },
-    {
-      sourceVolume  = "location-data"
-      containerPath = "/home"
-    },
-    {
-      sourceVolume  = "staging-data"
-      containerPath = "/var/archivematica/storage_service"
-    },
-  ]
-
-  nginx_container_image = "${module.storage_service_nginx_repo_uri.value}"
-
-  load_balancer_https_listener_arn = "${module.lb_storage_service.https_listener_arn}"
-
-  cluster_arn  = "${aws_ecs_cluster.archivematica.arn}"
-  namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
-}
-
 module "dashboard_service" {
   source = "./modules/nginx_service"
 

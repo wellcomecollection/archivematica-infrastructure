@@ -5,17 +5,9 @@ variable "env_vars" {
   default = {}
 }
 
-variable "env_vars_length" {
-  default = 0
-}
-
 variable "secret_env_vars" {
   type    = "map"
   default = {}
-}
-
-variable "secret_env_vars_length" {
-  default = 0
 }
 
 variable "load_balancer_https_listener_arn" {}
@@ -45,3 +37,13 @@ variable "mount_points" {
 
 variable "cluster_arn" {}
 variable "namespace_id" {}
+
+variable "vpc_id" {}
+
+variable "network_private_subnets" {
+  type = "list"
+}
+
+variable "interservice_security_group_id" {}
+variable "service_egress_security_group_id" {}
+variable "service_lb_security_group_id" {}

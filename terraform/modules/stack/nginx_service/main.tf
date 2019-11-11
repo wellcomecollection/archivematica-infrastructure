@@ -29,7 +29,7 @@ module "task_definition" {
 
   launch_type = "EC2"
 
-  efs_host_path = local.efs_host_path
+  efs_host_path = "/efs"
 
   aws_region = "eu-west-1"
 }
@@ -44,14 +44,14 @@ module "service" {
 
   task_definition_arn = module.task_definition.arn
 
-  subnets = local.network_private_subnets
+  subnets = var.network_private_subnets
 
   namespace_id = var.namespace_id
 
   security_group_ids = [
-    local.interservice_security_group_id,
-    local.service_egress_security_group_id,
-    local.service_lb_security_group_id,
+    var.interservice_security_group_id,
+    var.service_egress_security_group_id,
+    var.service_lb_security_group_id,
   ]
 
   deployment_minimum_healthy_percent = 100
@@ -60,40 +60,40 @@ module "service" {
   launch_type = "EC2"
 
   target_group_arn = aws_alb_target_group.ecs_service.arn
-  container_name = "sidecar"
-  container_port = 80
+  container_name   = "nginx"
+  container_port   = 80
 }
 
 resource "aws_alb_target_group" "ecs_service" {
   # We use snake case in a lot of places, but ALB Target Group names can
   # only contain alphanumerics and hyphens.
-  name = "${replace(local.full_name, "_", "-")}"
+  name = replace(local.full_name, "_", "-")
 
   target_type = "ip"
 
   protocol = "HTTP"
   port     = 80
-  vpc_id   = "${local.vpc_id}"
+  vpc_id   = var.vpc_id
 
   # The root paths return 302s which redirect to this login page.
   health_check {
     protocol = "HTTP"
-    path     = "${var.healthcheck_path}"
+    path     = var.healthcheck_path
     matcher  = "200"
   }
 }
 
 
 resource "aws_alb_listener_rule" "https" {
-  listener_arn = "${var.load_balancer_https_listener_arn}"
+  listener_arn = var.load_balancer_https_listener_arn
 
   action {
     type             = "forward"
-    target_group_arn = "${aws_alb_target_group.ecs_service.arn}"
+    target_group_arn = aws_alb_target_group.ecs_service.arn
   }
 
   condition {
     field  = "host-header"
-    values = ["${var.hostname}"]
+    values = [var.hostname]
   }
 }

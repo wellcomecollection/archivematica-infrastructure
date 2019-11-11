@@ -1,5 +1,10 @@
 locals {
   gearmand_hostname = "${module.gearman_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+
+  storage_service_host = "${module.storage_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
+  storage_service_port = 8000
+
+	rds_archivematica_url = "mysql://${var.rds_username}:${var.rds_password}@${var.rds_host}:${var.rds_port}"
 }
 
 module "gearman_service" {
@@ -102,6 +107,68 @@ module "mcp_worker_service" {
       containerPath = "/var/archivematica/sharedDirectory"
     },
   ]
+
+  network_private_subnets = var.network_private_subnets
+
+  interservice_security_group_id   = var.interservice_security_group_id
+  service_egress_security_group_id = var.service_egress_security_group_id
+  service_lb_security_group_id     = var.service_lb_security_group_id
+}
+
+module "storage_service" {
+  source = "./nginx_service"
+
+  name = "am-${var.namespace}-storage-service"
+
+  hostname         = var.storage_service_hostname
+  healthcheck_path = "/login/"
+
+  env_vars = {
+    FORWARDED_ALLOW_IPS       = "*"
+    AM_GUNICORN_ACCESSLOG     = "/dev/null"
+    AM_GUNICORN_RELOAD        = "true"
+    AM_GUNICORN_RELOAD_ENGINE = "auto"
+    SS_DB_URL                 = "${local.rds_archivematica_url}/SS"
+    SS_GNPUG_HOME_PATH        = "/var/archivematica/storage_service/.gnupg"
+    SS_GUNICORN_BIND          = "0.0.0.0:${local.storage_service_port}"
+    DJANGO_ALLOWED_HOSTS      = "*"
+
+    # The volume mounts are owned by "root".  By default gunicorn runs with
+    # the 'archivematica' user, which can't access these mounts.
+    SS_GUNICORN_USER = "root"
+
+    SS_GUNICORN_GROUP = "root"
+  }
+
+  secret_env_vars = {
+    DJANGO_SECRET_KEY = "archivematica/storage_service_django_secret_key"
+  }
+
+  container_image = var.storage_service_container_image
+
+  mount_points = [
+    {
+      sourceVolume  = "pipeline-data"
+      containerPath = "/var/archivematica/sharedDirectory"
+    },
+    {
+      sourceVolume  = "location-data"
+      containerPath = "/home"
+    },
+    {
+      sourceVolume  = "staging-data"
+      containerPath = "/var/archivematica/storage_service"
+    },
+  ]
+
+  nginx_container_image = var.storage_service_nginx_container_image
+
+  load_balancer_https_listener_arn = module.lb_storage_service.https_listener_arn
+
+  cluster_arn  = aws_ecs_cluster.archivematica.arn
+  namespace_id = aws_service_discovery_private_dns_namespace.archivematica.id
+
+  vpc_id = var.vpc_id
 
   network_private_subnets = var.network_private_subnets
 
