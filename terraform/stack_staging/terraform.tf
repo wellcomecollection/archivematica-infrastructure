@@ -22,6 +22,18 @@ data "terraform_remote_state" "workflow" {
   }
 }
 
+data "terraform_remote_state" "infra" {
+  backend = "s3"
+
+  config = {
+    role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
+
+    bucket = "wellcomecollection-workflow-infra"
+    key    = "terraform/archivematica-infra/infra.tfstate"
+    region = "eu-west-1"
+  }
+}
+
 data "terraform_remote_state" "critical" {
   backend = "s3"
 

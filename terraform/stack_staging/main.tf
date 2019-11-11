@@ -19,6 +19,8 @@ module "critical" {
   mcp_client_container_image = module.mcp_client_repo_uri.value
   mcp_server_container_image = module.mcp_server_repo_uri.value
 
+  certificate_arn = data.terraform_remote_state.infra.outputs.certificate_arn
+
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets
   network_public_subnets  = data.terraform_remote_state.workflow.outputs.public_subnets
   vpc_id                  = data.terraform_remote_state.workflow.outputs.vpc_id

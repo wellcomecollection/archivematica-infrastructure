@@ -1,6 +1,6 @@
 resource "aws_security_group" "external_lb_security_group" {
   name   = "${var.name}_external_traffic_lb_security_group"
-  vpc_id = "${var.vpc_id}"
+  vpc_id = var.vpc_id
 
   ingress {
     protocol  = "tcp"
