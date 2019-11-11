@@ -45,7 +45,7 @@ module "mcp_worker_service" {
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
   }
 
-  mcp_client_env_vars_length = 14
+  mcp_client_env_vars_length = 13
 
   mcp_client_secret_env_vars = {
     DJANGO_SECRET_KEY = "archivematica/mcp_client_django_secret_key"
@@ -72,7 +72,7 @@ module "mcp_worker_service" {
     ARCHIVEMATICA_MCPSERVER_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
   }
 
-  mcp_server_env_vars_length = 7
+  mcp_server_env_vars_length = 6
 
   mcp_server_secret_env_vars = {
     DJANGO_SECRET_KEY = "archivematica/mcp_server_django_secret_key"
