@@ -1,5 +1,5 @@
 locals {
-  full_name = "am-${var.name}"
+  full_name = "am-${var.namespace}-gearman"
 }
 
 module "task_definition" {
@@ -32,14 +32,14 @@ module "service" {
 
   task_definition_arn = module.task_definition.arn
 
-  subnets = local.network_private_subnets
+  subnets = var.network_private_subnets
 
   namespace_id = var.namespace_id
 
   security_group_ids = [
-    local.interservice_security_group_id,
-    local.service_egress_security_group_id,
-    local.service_lb_security_group_id,
+    var.interservice_security_group_id,
+    var.service_egress_security_group_id,
+    var.service_lb_security_group_id,
   ]
 
   deployment_minimum_healthy_percent = 100
