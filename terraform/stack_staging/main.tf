@@ -20,10 +20,13 @@ module "critical" {
   mcp_server_container_image            = module.mcp_server_repo_uri.value
   storage_service_container_image       = module.storage_service_repo_uri.value
   storage_service_nginx_container_image = module.storage_service_nginx_repo_uri.value
+  dashboard_container_image             = module.dashboard_repo_uri.value
+  dashboard_nginx_container_image       = module.dashboard_nginx_repo_uri.value
 
   certificate_arn = data.terraform_remote_state.infra.outputs.certificate_arn
 
   storage_service_hostname = "archivematica-storage-service-stage.wellcomecollection.org"
+  dashboard_hostname       = "archivematica-stage.wellcomecollection.org"
 
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets
   network_public_subnets  = data.terraform_remote_state.workflow.outputs.public_subnets

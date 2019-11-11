@@ -176,3 +176,66 @@ module "storage_service" {
   service_egress_security_group_id = var.service_egress_security_group_id
   service_lb_security_group_id     = var.service_lb_security_group_id
 }
+
+module "dashboard_service" {
+  source = "./nginx_service"
+
+  name = "am-${var.namespace}-dashboard"
+
+  hostname         = var.dashboard_hostname
+  healthcheck_path = "/administration/accounts/login/"
+
+  env_vars = {
+    FORWARDED_ALLOW_IPS                                    = "*"
+    AM_GUNICORN_ACCESSLOG                                  = "/dev/null"
+    AM_GUNICORN_RELOAD                                     = "true"
+    AM_GUNICORN_RELOAD_ENGINE                              = "auto"
+    # Multiple workers allow the dashboard to continue to serve web requests while
+    # large downloads are in progress (these will occupy a whole worker process)
+    # See https://github.com/wellcometrust/platform/issues/3954
+    AM_GUNICORN_WORKERS                                    = 4
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER       = "${local.gearmand_hostname}:4730"
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = var.elasticsearch_url
+    ARCHIVEMATICA_DASHBOARD_CLIENT_USER                    = var.rds_username
+    ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD                = var.rds_password
+    ARCHIVEMATICA_DASHBOARD_CLIENT_HOST                    = var.rds_host
+    ARCHIVEMATICA_DASHBOARD_CLIENT_PORT                    = var.rds_port
+    ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE                = "MCP"
+    ARCHIVEMATICA_DASHBOARD_DJANGO_ALLOWED_HOSTS           = "*"
+    AM_GUNICORN_BIND                                       = "0.0.0.0:9000"
+    WELLCOME_SS_URL                                        = "http://${local.storage_service_host}:${local.storage_service_port}"
+    WELLCOME_SITE_URL                                      = "http://localhost:9000"
+
+    # The volume mounts are owned by "root".  By default gunicorn runs with
+    # the 'archivematica' user, which can't access these mounts.
+    AM_GUNICORN_USER = "root"
+  }
+
+  secret_env_vars = {
+    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY = "archivematica/dashboard_django_secret_key"
+  }
+
+  container_image = var.dashboard_container_image
+
+  mount_points = [
+    {
+      sourceVolume  = "pipeline-data"
+      containerPath = "/var/archivematica/sharedDirectory"
+    },
+  ]
+
+  nginx_container_image = var.dashboard_nginx_container_image
+
+  load_balancer_https_listener_arn = module.lb_dashboard.https_listener_arn
+
+  cluster_arn  = aws_ecs_cluster.archivematica.arn
+  namespace_id = aws_service_discovery_private_dns_namespace.archivematica.id
+
+  vpc_id = var.vpc_id
+
+  network_private_subnets = var.network_private_subnets
+
+  interservice_security_group_id   = var.interservice_security_group_id
+  service_egress_security_group_id = var.service_egress_security_group_id
+  service_lb_security_group_id     = var.service_lb_security_group_id
+}
