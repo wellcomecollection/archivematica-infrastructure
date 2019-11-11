@@ -15,7 +15,6 @@ env:
   matrix:
     - "IMAGE=dashboard_nginx"
     - "IMAGE=storage_service_nginx"
-    - "IMAGE=fits_ngserver"
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_83630750896a_key -iv $encrypted_83630750896a_iv -in secrets.zip.enc -out secrets.zip -d

@@ -27,8 +27,3 @@ module "storage_service_nginx_repo_uri" {
   source     = "./modules/ssm_repo_uri"
   image_name = "archivematica_storage_service_nginx"
 }
-
-module "fits_ngserver_repo_uri" {
-  source     = "./modules/ssm_repo_uri"
-  image_name = "fits_ngserver"
-}

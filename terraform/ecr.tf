@@ -27,8 +27,3 @@ module "ecr_storage_service" {
   source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
   name   = "archivematica_storage_service"
 }
-
-module "ecr_fits_ngserver" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
-  name   = "fits_ngserver"
-}
