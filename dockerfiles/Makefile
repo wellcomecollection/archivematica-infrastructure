@@ -15,10 +15,3 @@ dashboard_nginx-publish: dashboard_nginx-build
 
 storage_service_nginx-publish: storage_service_nginx-build
 	$(call publish_service,archivematica_storage_service_nginx)
-
-
-fits_ngserver-build:
-	$(call build_image,fits_ngserver,dockerfiles/fits_ngserver/Dockerfile)
-
-fits_ngserver-publish: fits_ngserver-build
-	$(call publish_service,fits_ngserver)

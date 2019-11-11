@@ -11,7 +11,7 @@ module "mcp_worker_service" {
   cluster_id   = "${aws_ecs_cluster.archivematica.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.archivematica.id}"
 
-  fits_container_image = "${module.fits_ngserver_repo_uri.value}"
+  fits_container_image = "artefactual/fits-ngserver:0.8.4"
 
   fits_mount_points = [
     {
