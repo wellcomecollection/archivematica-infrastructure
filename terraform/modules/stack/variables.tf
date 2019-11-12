@@ -25,7 +25,13 @@ variable "dashboard_hostname" {}
 
 variable "ingests_bucket_arn" {}
 variable "transfer_source_bucket_arn" {}
+variable "transfer_source_bucket_name" {}
 variable "storage_service_bucket_arn" {}
+
+variable "archivematica_username" {}
+variable "archivematica_api_key" {}
+variable "archivematica_ss_username" {}
+variable "archivematica_ss_api_key" {}
 
 variable "network_private_subnets" {}
 variable "network_public_subnets" {}

@@ -33,3 +33,7 @@ output "ingests_bucket_arn" {
 output "transfer_source_bucket_arn" {
   value = aws_s3_bucket.archivematica_transfer_source.arn
 }
+
+output "transfer_source_bucket_name" {
+  value = aws_s3_bucket.archivematica_transfer_source.id
+}
