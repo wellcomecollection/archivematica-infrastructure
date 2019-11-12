@@ -22,4 +22,23 @@ To fix this:
       --password=$PASSWORD
     ```
 
+    Run the following MySQL command:
+
+    ```mysql
+    CREATE DATABASE SS;
+    CREATE DATABASE MCP;
+    ```
+
+4.  Exec into a running dashboard container, and run:
+
+    ```console
+    $ python /src/dashboard/src/manage.py migrate
+    ```
+
+5.  Exec into a running storage-service container, and run:
+
+    ```console
+    $ python /src/storage_service/manage.py migrate
+    ```
+
 Something, something Django migrations
