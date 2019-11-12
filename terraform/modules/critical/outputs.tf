@@ -25,3 +25,11 @@ output "rds_host" {
 output "rds_port" {
   value = aws_rds_cluster.archivematica.port
 }
+
+output "ingests_bucket_arn" {
+  value = aws_s3_bucket.archivematica_ingests.arn
+}
+
+output "transfer_source_bucket_arn" {
+  value = aws_s3_bucket.archivematica_transfer_source.arn
+}

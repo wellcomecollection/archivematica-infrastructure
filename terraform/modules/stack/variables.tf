@@ -23,6 +23,10 @@ variable "certificate_arn" {}
 variable "storage_service_hostname" {}
 variable "dashboard_hostname" {}
 
+variable "ingests_bucket_arn" {}
+variable "transfer_source_bucket_arn" {}
+variable "storage_service_bucket_arn" {}
+
 variable "network_private_subnets" {}
 variable "network_public_subnets" {}
 variable "vpc_id" {}

@@ -26,6 +26,10 @@ module "critical" {
   storage_service_hostname = "archivematica-storage-service-stage.wellcomecollection.org"
   dashboard_hostname       = "archivematica-stage.wellcomecollection.org"
 
+  ingests_bucket_arn         = data.terraform_remote_state.critical.outputs.ingests_bucket_arn
+  transfer_source_bucket_arn = data.terraform_remote_state.critical.outputs.transfer_source_bucket_arn
+  storage_service_bucket_arn = "arn:aws:s3:::wellcomecollection-storage"
+
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets
   network_public_subnets  = data.terraform_remote_state.workflow.outputs.public_subnets
   vpc_id                  = data.terraform_remote_state.workflow.outputs.vpc_id
