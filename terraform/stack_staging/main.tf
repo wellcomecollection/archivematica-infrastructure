@@ -9,8 +9,6 @@ module "critical" {
   redis_server = data.terraform_remote_state.critical.outputs.redis_server
   redis_port   = data.terraform_remote_state.critical.outputs.redis_port
 
-  elasticsearch_url = local.elasticsearch_url
-
   rds_username = data.terraform_remote_state.critical.outputs.rds_username
   rds_password = data.terraform_remote_state.critical.outputs.rds_password
   rds_host     = data.terraform_remote_state.critical.outputs.rds_host

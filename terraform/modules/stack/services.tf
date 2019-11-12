@@ -65,7 +65,6 @@ module "mcp_worker_service" {
     ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = var.rds_host
     ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = var.rds_port
     ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                        = "MCP"
-    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER                    = var.elasticsearch_url
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "localhost:3310"
@@ -73,7 +72,8 @@ module "mcp_worker_service" {
   }
 
   mcp_client_secret_env_vars = {
-    DJANGO_SECRET_KEY = "archivematica/mcp_client_django_secret_key"
+    DJANGO_SECRET_KEY                           = "archivematica/mcp_client_django_secret_key"
+    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER = "archivematica/${var.namespace}/elasticsearch_url"
   }
 
   mcp_client_container_image = var.mcp_client_container_image
@@ -186,25 +186,24 @@ module "dashboard_service" {
   healthcheck_path = "/administration/accounts/login/"
 
   env_vars = {
-    FORWARDED_ALLOW_IPS                                    = "*"
-    AM_GUNICORN_ACCESSLOG                                  = "/dev/null"
-    AM_GUNICORN_RELOAD                                     = "true"
-    AM_GUNICORN_RELOAD_ENGINE                              = "auto"
+    FORWARDED_ALLOW_IPS                              = "*"
+    AM_GUNICORN_ACCESSLOG                            = "/dev/null"
+    AM_GUNICORN_RELOAD                               = "true"
+    AM_GUNICORN_RELOAD_ENGINE                        = "auto"
     # Multiple workers allow the dashboard to continue to serve web requests while
     # large downloads are in progress (these will occupy a whole worker process)
     # See https://github.com/wellcometrust/platform/issues/3954
-    AM_GUNICORN_WORKERS                                    = 4
-    ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER       = "${local.gearmand_hostname}:4730"
-    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = var.elasticsearch_url
-    ARCHIVEMATICA_DASHBOARD_CLIENT_USER                    = var.rds_username
-    ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD                = var.rds_password
-    ARCHIVEMATICA_DASHBOARD_CLIENT_HOST                    = var.rds_host
-    ARCHIVEMATICA_DASHBOARD_CLIENT_PORT                    = var.rds_port
-    ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE                = "MCP"
-    ARCHIVEMATICA_DASHBOARD_DJANGO_ALLOWED_HOSTS           = "*"
-    AM_GUNICORN_BIND                                       = "0.0.0.0:9000"
-    WELLCOME_SS_URL                                        = "http://${local.storage_service_host}:${local.storage_service_port}"
-    WELLCOME_SITE_URL                                      = "http://localhost:9000"
+    AM_GUNICORN_WORKERS                              = 4
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER = "${local.gearmand_hostname}:4730"
+    ARCHIVEMATICA_DASHBOARD_CLIENT_USER              = var.rds_username
+    ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD          = var.rds_password
+    ARCHIVEMATICA_DASHBOARD_CLIENT_HOST              = var.rds_host
+    ARCHIVEMATICA_DASHBOARD_CLIENT_PORT              = var.rds_port
+    ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE          = "MCP"
+    ARCHIVEMATICA_DASHBOARD_DJANGO_ALLOWED_HOSTS     = "*"
+    AM_GUNICORN_BIND                                 = "0.0.0.0:9000"
+    WELLCOME_SS_URL                                  = "http://${local.storage_service_host}:${local.storage_service_port}"
+    WELLCOME_SITE_URL                                = "http://localhost:9000"
 
     # The volume mounts are owned by "root".  By default gunicorn runs with
     # the 'archivematica' user, which can't access these mounts.
@@ -212,7 +211,8 @@ module "dashboard_service" {
   }
 
   secret_env_vars = {
-    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY = "archivematica/dashboard_django_secret_key"
+    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY              = "archivematica/dashboard_django_secret_key"
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "archivematica/${var.namespace}/elasticsearch_url"
   }
 
   container_image = var.dashboard_container_image

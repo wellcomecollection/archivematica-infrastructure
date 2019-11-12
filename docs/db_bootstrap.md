@@ -31,14 +31,32 @@ To fix this:
 
 4.  Exec into a running dashboard container, and run:
 
-    ```console
-    $ python /src/dashboard/src/manage.py migrate
+    ```
+    python /src/dashboard/src/manage.py migrate
+
+    python /src/dashboard/src/manage.py install \
+        --username="admin" \
+        --password="PASSWORD" \
+        --email="wellcomedigitalworkflow@wellcome.ac.uk" \
+        --org-name="wellcome" \
+        --org-id="wellcome" \
+        --api-key="API_KEY" \
+        --ss-url="https://archivematica-storage-service-stage.wellcomecollection.org" \
+        --ss-user="admin" \
+        --ss-api-key="SS_API_KEY" \
+        --site-url="https://archivematica-stage.wellcomecollection.org"
     ```
 
 5.  Exec into a running storage-service container, and run:
 
-    ```console
-    $ python /src/storage_service/manage.py migrate
     ```
+    python /src/storage_service/manage.py migrate
 
-Something, something Django migrations
+    python /src/storage_service/manage.py \
+        create_user \
+        --username="admin" \
+        --password="PASSWORD" \
+        --email="wellcomedigitalworkflow@wellcome.ac.uk" \
+        --api-key="SS_API_KEY" \
+        --superuser
+    ```

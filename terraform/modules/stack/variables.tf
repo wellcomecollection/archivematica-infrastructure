@@ -6,8 +6,6 @@ variable "efs_security_group_id" {}
 variable "redis_server" {}
 variable "redis_port" {}
 
-variable "elasticsearch_url" {}
-
 variable "rds_username" {}
 variable "rds_password" {}
 variable "rds_host" {}
