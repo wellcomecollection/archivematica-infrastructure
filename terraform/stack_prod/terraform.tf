@@ -5,7 +5,7 @@ terraform {
     role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
 
     bucket = "wellcomecollection-workflow-infra"
-    key    = "terraform/archivematica-infra/stack_staging.tfstate"
+    key    = "terraform/archivematica-infra/stack_prod.tfstate"
     region = "eu-west-1"
   }
 }
@@ -17,7 +17,7 @@ data "terraform_remote_state" "critical" {
     role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
 
     bucket = "wellcomecollection-workflow-infra"
-    key    = "terraform/archivematica-infra/critical_staging.tfstate"
+    key    = "terraform/archivematica-infra/critical_prod.tfstate"
     region = "eu-west-1"
   }
 }
