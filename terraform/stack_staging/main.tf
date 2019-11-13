@@ -29,7 +29,7 @@ module "critical" {
   ingests_bucket_arn          = data.terraform_remote_state.critical.outputs.ingests_bucket_arn
   transfer_source_bucket_arn  = data.terraform_remote_state.critical.outputs.transfer_source_bucket_arn
   transfer_source_bucket_name = data.terraform_remote_state.critical.outputs.transfer_source_bucket_name
-  storage_service_bucket_arn  = "arn:aws:s3:::wellcomecollection-storage"
+  storage_service_bucket_arn  = "arn:aws:s3:::wellcomecollection-storage-staging"
 
   archivematica_username    = local.archivematica_username
   archivematica_api_key     = local.archivematica_api_key
