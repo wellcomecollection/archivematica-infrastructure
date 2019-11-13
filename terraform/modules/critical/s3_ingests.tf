@@ -1,6 +1,20 @@
+locals {
+  prod_ingests_bucket_name    = "wellcomecollection-archivematica-ingests"
+  staging_ingests_bucket_name = "wellcomecollection-archivematica-${var.namespace}-ingests"
+
+  ingests_bucket_name = "${var.namespace == "prod" ? local.prod_ingests_bucket_name : local.staging_ingests_bucket_name}"
+}
+
 resource "aws_s3_bucket" "archivematica_ingests" {
-  bucket = "wellcomecollection-archivematica-${var.namespace}-ingests"
-  acl    = "private"
+  bucket = local.ingests_bucket_name
+
+  lifecycle_rule {
+    expiration {
+      days = "30"
+    }
+
+    enabled = true
+  }
 }
 
 resource "aws_s3_bucket_policy" "allow_storage_service_unpacker_ingests_read" {
