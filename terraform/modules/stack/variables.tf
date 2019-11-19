@@ -50,3 +50,6 @@ variable "lambda_error_alarm_arn" {}
 variable "aws_region" {
   default = "eu-west-1"
 }
+
+variable "azure_tenant_id" {}
+variable "oidc_client_id" {}

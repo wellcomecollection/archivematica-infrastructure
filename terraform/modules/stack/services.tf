@@ -4,7 +4,7 @@ locals {
   storage_service_host = "${module.storage_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   storage_service_port = 8000
 
-	rds_archivematica_url = "mysql://${var.rds_username}:${var.rds_password}@${var.rds_host}:${var.rds_port}"
+  rds_archivematica_url = "mysql://${var.rds_username}:${var.rds_password}@${var.rds_host}:${var.rds_port}"
 }
 
 module "gearman_service" {
@@ -138,10 +138,16 @@ module "storage_service" {
     SS_GUNICORN_USER = "root"
 
     SS_GUNICORN_GROUP = "root"
+
+    SS_OIDC_AUTHENTICATION    = "true"
+    AZURE_TENANT_ID           = var.azure_tenant_id
+    OIDC_RP_CLIENT_ID         = var.oidc_client_id
+    OIDC_RP_SIGN_ALGO         = "RS256"
   }
 
   secret_env_vars = {
     DJANGO_SECRET_KEY = "archivematica/storage_service_django_secret_key"
+    OIDC_RP_CLIENT_SECRET = "archivematica/${var.namespace}/oidc_rp_client_secret"
   }
 
   container_image = var.storage_service_container_image
@@ -208,11 +214,17 @@ module "dashboard_service" {
     # The volume mounts are owned by "root".  By default gunicorn runs with
     # the 'archivematica' user, which can't access these mounts.
     AM_GUNICORN_USER = "root"
+
+    ARCHIVEMATICA_DASHBOARD_OIDC_AUTHENTICATION              = "true"
+    AZURE_TENANT_ID                                          = var.azure_tenant_id
+    OIDC_RP_CLIENT_ID                                        = var.oidc_client_id
+    OIDC_RP_SIGN_ALGO                                        = "RS256"
   }
 
   secret_env_vars = {
     ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY              = "archivematica/dashboard_django_secret_key"
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "archivematica/${var.namespace}/elasticsearch_url"
+    OIDC_RP_CLIENT_SECRET                                  = "archivematica/${var.namespace}/oidc_rp_client_secret"
   }
 
   container_image = var.dashboard_container_image
