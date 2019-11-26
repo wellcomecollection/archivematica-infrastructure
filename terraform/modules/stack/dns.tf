@@ -1,11 +1,11 @@
 data "aws_route53_zone" "zone" {
-	provider = "aws.routermaster"
+	provider = aws.routermaster
 
   name = "wellcomecollection.org."
 }
 
 resource "aws_route53_record" "dashboard" {
-	provider = "aws.routermaster"
+	provider = aws.routermaster
 
 	name = var.dashboard_hostname
 	type = "CNAME"
@@ -20,7 +20,7 @@ resource "aws_route53_record" "dashboard" {
 }
 
 resource "aws_route53_record" "storage_service" {
-	provider = "aws.routermaster"
+	provider = aws.routermaster
 
 	name = var.storage_service_hostname
 	type = "CNAME"

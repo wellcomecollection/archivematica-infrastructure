@@ -33,7 +33,7 @@ module "task_definition" {
 }
 
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.0.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.1.0"
 
   service_name = var.name
   cluster_arn  = var.cluster_arn

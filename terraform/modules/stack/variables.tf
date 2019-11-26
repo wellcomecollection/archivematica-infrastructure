@@ -42,7 +42,7 @@ variable "service_egress_security_group_id" {}
 variable "service_lb_security_group_id" {}
 
 variable "admin_cidr_ingress" {
-  type = "list"
+  type = list(string)
 }
 
 variable "lambda_error_alarm_arn" {}

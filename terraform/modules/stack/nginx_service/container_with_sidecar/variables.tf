@@ -16,17 +16,17 @@ variable "app_cpu" {}
 variable "app_memory" {}
 
 variable "app_mount_points" {
-  type    = "list"
+  type    = list(map(string))
   default = []
 }
 
 variable "app_env_vars" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
 variable "secret_app_env_vars" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
@@ -41,17 +41,17 @@ variable "sidecar_cpu" {}
 variable "sidecar_memory" {}
 
 variable "sidecar_mount_points" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
 variable "sidecar_env_vars" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
 variable "secret_sidecar_env_vars" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 

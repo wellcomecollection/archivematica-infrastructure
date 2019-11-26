@@ -1,12 +1,12 @@
 variable "namespace" {}
 
 variable "env_vars" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
 variable "secret_env_vars" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
@@ -17,7 +17,7 @@ variable "aws_region" {
 }
 
 variable "command" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
@@ -30,7 +30,7 @@ variable "memory" {
 }
 
 variable "mount_points" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
@@ -38,7 +38,7 @@ variable "cluster_arn" {}
 variable "namespace_id" {}
 
 variable "network_private_subnets" {
-  type = "list"
+  type = list(string)
 }
 
 variable "interservice_security_group_id" {}

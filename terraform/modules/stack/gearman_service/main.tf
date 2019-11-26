@@ -3,7 +3,7 @@ locals {
 }
 
 module "task_definition" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/single_container?ref=v1.0.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/single_container?ref=v1.1.0"
 
   task_name = local.full_name
 
@@ -23,7 +23,7 @@ module "task_definition" {
 }
 
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.0.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.1.0"
 
   service_name = local.full_name
   cluster_arn  = var.cluster_arn

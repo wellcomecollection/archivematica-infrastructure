@@ -93,12 +93,12 @@ resource "aws_ecs_task_definition" "task" {
     host_path = "/efs/staging-data"
   }
 
-  cpu    = "${var.fits_cpu + var.clamav_cpu + var.mcp_client_cpu + var.mcp_server_cpu}"
-  memory = "${var.fits_memory + var.clamav_memory + var.mcp_client_memory + var.mcp_server_memory}"
+  cpu    = var.fits_cpu + var.clamav_cpu + var.mcp_client_cpu + var.mcp_server_cpu
+  memory = var.fits_memory + var.clamav_memory + var.mcp_client_memory + var.mcp_server_memory
 }
 
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service//service?ref=v1.0.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service//service?ref=v1.1.0"
 
   service_name = local.full_name
 

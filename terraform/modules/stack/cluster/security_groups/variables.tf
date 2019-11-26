@@ -1,5 +1,5 @@
 variable "custom_security_groups" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
@@ -10,6 +10,6 @@ variable "controlled_access_cidr_ingress" {
 }
 
 variable "controlled_access_security_groups" {
-  type    = "list"
+  type    = list(string)
   default = []
 }

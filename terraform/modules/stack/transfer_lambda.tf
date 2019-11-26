@@ -29,12 +29,12 @@ resource "aws_lambda_permission" "allow_lambda" {
 }
 
 resource "aws_s3_bucket_notification" "bucket_notification" {
-  provider = "aws.digitisation"
+  provider = aws.digitisation
 
   bucket = var.transfer_source_bucket_name
 
   lambda_function {
-    lambda_function_arn = "${module.s3_start_transfer_lambda.arn}"
+    lambda_function_arn = module.s3_start_transfer_lambda.arn
     events              = ["s3:ObjectCreated:*"]
     filter_prefix       = "born-digital/"
     filter_suffix       = ""

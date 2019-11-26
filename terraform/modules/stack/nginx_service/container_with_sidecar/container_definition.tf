@@ -60,13 +60,13 @@ resource "aws_cloudwatch_log_group" "app_log_group" {
 }
 
 module "app_env_vars" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/env_vars?ref=v1.0.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/env_vars?ref=v1.1.0"
 
   env_vars = var.app_env_vars
 }
 
 module "app_secret_env_vars" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/secrets?ref=v1.0.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/secrets?ref=v1.1.0"
 
   secret_env_vars = var.secret_app_env_vars
 
@@ -82,13 +82,13 @@ resource "aws_cloudwatch_log_group" "sidecar_log_group" {
 }
 
 module "sidecar_env_vars" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/env_vars?ref=v1.0.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/env_vars?ref=v1.1.0"
 
   env_vars = var.sidecar_env_vars
 }
 
 module "sidecar_secret_env_vars" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/secrets?ref=v1.0.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/secrets?ref=v1.1.0"
 
   secret_env_vars = var.secret_sidecar_env_vars
 

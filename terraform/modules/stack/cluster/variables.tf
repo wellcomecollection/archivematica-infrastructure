@@ -11,15 +11,15 @@ variable "controlled_access_cidr_ingress" {
 }
 
 variable "public_subnets" {
-  type = "list"
+  type = list(string)
 }
 
 variable "private_subnets" {
-  type = "list"
+  type = list(string)
 }
 
 variable "efs_security_group_ids" {
-  type = "list"
+  type = list(string)
 }
 
 variable "efs_id" {}

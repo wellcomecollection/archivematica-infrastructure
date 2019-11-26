@@ -25,7 +25,7 @@ variable "instance_type" {
 }
 
 variable "subnets" {
-  type = "list"
+  type = list(string)
 }
 
 variable "vpc_id" {}
@@ -36,18 +36,18 @@ variable "image_id" {
 }
 
 variable "controlled_access_cidr_ingress" {
-  type        = "list"
+  type        = list(string)
   default     = []
   description = "CIDR for SSH access to EC2 instances"
 }
 
 variable "custom_security_groups" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
 variable "ssh_ingress_security_groups" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 

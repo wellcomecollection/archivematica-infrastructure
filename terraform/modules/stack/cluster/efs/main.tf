@@ -51,10 +51,3 @@ data "template_file" "userdata" {
     region        = var.region
   }
 }
-
-module "instance_policy" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/ec2/modules/instance_role_policy?ref=v11.3.1"
-
-  cluster_name               = "${var.cluster_name}"
-  instance_profile_role_name = "${module.instance_profile.role_name}"
-}

@@ -3,7 +3,7 @@ variable "name" {
 }
 
 variable "subnet_list" {
-  type = "list"
+  type = list(string)
 }
 
 variable "key_name" {
@@ -19,7 +19,7 @@ variable "controlled_access_cidr_ingress" {
 }
 
 variable "custom_security_groups" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
@@ -39,17 +39,17 @@ variable "image_id" {
 
 variable "asg_min" {
   description = "Minimum number of instances"
-  default     = "1"
+  default     = 1
 }
 
 variable "asg_desired" {
   description = "Desired number of instances"
-  default     = "1"
+  default     = 1
 }
 
 variable "asg_max" {
   description = "Max number of instances"
-  default     = "2"
+  default     = 2
 }
 
 variable "user_data" {
@@ -63,6 +63,6 @@ variable "associate_public_ip_address" {
 }
 
 variable "ssh_ingress_security_groups" {
-  type    = "list"
+  type    = list(string)
   default = []
 }

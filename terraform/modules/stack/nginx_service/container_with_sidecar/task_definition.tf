@@ -15,8 +15,8 @@ resource "aws_ecs_task_definition" "task" {
 
   requires_compatibilities = [var.launch_type]
 
-  cpu    = "${var.app_cpu + var.sidecar_cpu}"
-  memory = "${var.app_memory + var.sidecar_memory}"
+  cpu    = var.app_cpu + var.sidecar_cpu
+  memory = var.app_memory + var.sidecar_memory
 
   placement_constraints {
     type       = "memberOf"

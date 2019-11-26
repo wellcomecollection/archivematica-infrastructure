@@ -14,7 +14,7 @@ variable "fits_memory" {
 variable "fits_container_image" {}
 
 variable "fits_mount_points" {
-  type = "list"
+  type = list(map(string))
 }
 
 variable "clamav_cpu" {
@@ -28,7 +28,7 @@ variable "clamav_memory" {
 variable "clamav_container_image" {}
 
 variable "clamav_mount_points" {
-  type = "list"
+  type = list(map(string))
 }
 
 variable "mcp_client_cpu" {
@@ -42,17 +42,17 @@ variable "mcp_client_memory" {
 variable "mcp_client_container_image" {}
 
 variable "mcp_client_mount_points" {
-  type = "list"
+  type = list(map(string))
 }
 
 variable "mcp_client_env_vars" {
   description = "Environment variables to pass to the container"
-  type        = "map"
+  type        = map(string)
 }
 
 variable "mcp_client_secret_env_vars" {
   description = "Secure environment variables to pass to the container"
-  type        = "map"
+  type        = map(string)
 }
 
 variable "mcp_server_cpu" {
@@ -66,21 +66,21 @@ variable "mcp_server_memory" {
 variable "mcp_server_container_image" {}
 
 variable "mcp_server_mount_points" {
-  type = "list"
+  type = list(map(string))
 }
 
 variable "mcp_server_env_vars" {
   description = "Environment variables to pass to the container"
-  type        = "map"
+  type        = map(string)
 }
 
 variable "mcp_server_secret_env_vars" {
   description = "Secure environment variables to pass to the container"
-  type        = "map"
+  type        = map(string)
 }
 
 variable "network_private_subnets" {
-  type = "list"
+  type = list(string)
 }
 
 variable "interservice_security_group_id" {}

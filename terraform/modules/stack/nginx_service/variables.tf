@@ -1,12 +1,12 @@
 variable "name" {}
 
 variable "env_vars" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
 variable "secret_env_vars" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
@@ -31,7 +31,7 @@ variable "memory" {
 }
 
 variable "mount_points" {
-  type    = "list"
+  type    = list(map(string))
   default = []
 }
 
@@ -41,7 +41,7 @@ variable "namespace_id" {}
 variable "vpc_id" {}
 
 variable "network_private_subnets" {
-  type = "list"
+  type = list(string)
 }
 
 variable "interservice_security_group_id" {}
