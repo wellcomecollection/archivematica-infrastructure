@@ -18,7 +18,7 @@ locals {
 resource "aws_rds_cluster_instance" "archivematica" {
   count = 2
 
-  identifier           = "${local.cluster_identifier}-instance-${count.index}"
+  identifier           = "${aws_db_subnet_group.archivematica.cluster_identifier}-instance-${count.index}"
   cluster_identifier   = aws_rds_cluster.archivematica.id
   instance_class       = "db.r5.large"
   db_subnet_group_name = aws_db_subnet_group.archivematica.name
