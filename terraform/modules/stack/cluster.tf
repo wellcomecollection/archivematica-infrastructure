@@ -23,8 +23,8 @@ module "cluster" {
 
   # We want an instance with enough CPU/memory to run all the tasks *and* have
   # room to add new tasks, and with enough Elastic Network Interfaces to run
-  # at least three tasks at once.
+  # at least three tasks at once.  The ECS agent grabs one ENI, so we need >=5.
   #
   # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI
-  instance_type = "c5.2xlarge"
+  instance_type = "c5.4xlarge"
 }

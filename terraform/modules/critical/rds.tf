@@ -6,7 +6,7 @@ locals {
 }
 
 resource "aws_rds_cluster_instance" "archivematica" {
-  count = 2
+  count = 4
 
   identifier           = "archivematica-${var.namespace}-${count.index}"
   cluster_identifier   = aws_rds_cluster.archivematica.id

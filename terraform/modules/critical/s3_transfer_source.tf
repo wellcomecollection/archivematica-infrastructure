@@ -2,17 +2,17 @@ locals {
   prod_bucket_name    = "wellcomecollection-archivematica-transfer-source"
   staging_bucket_name = "wellcomecollection-archivematica-${var.namespace}-transfer-source"
 
-  bucket_name = "${var.namespace == "prod" ? local.prod_bucket_name : local.staging_bucket_name}"
+  bucket_name = var.namespace == "prod" ? local.prod_bucket_name : local.staging_bucket_name
 }
 
 resource "aws_s3_bucket" "archivematica_transfer_source" {
-  provider = "aws.digitisation"
+  provider = aws.digitisation
 
   bucket = local.bucket_name
 }
 
 resource "aws_s3_bucket_policy" "archivematica_transfer_source" {
-  provider = "aws.digitisation"
+  provider = aws.digitisation
 
   bucket = aws_s3_bucket.archivematica_transfer_source.id
   policy = data.aws_iam_policy_document.archivematica_transfer_source.json
