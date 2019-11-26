@@ -3,16 +3,29 @@ locals {
 
   rds_host = aws_rds_cluster.archivematica.endpoint
   rds_port = aws_rds_cluster.archivematica.port
+
+  prod_cluster_identifier    = "archivematica"
+  staging_cluster_identifier = "archivematica-${var.namespace}"
+
+  cluster_identifier = var.namespace == "prod" ? local.prod_cluster_identifier : local.staging_cluster_identifier
+
+  prod_database_name    = "archivematica"
+  staging_database_name = "archivematica_${var.namespace}"
+
+  database_name = var.namespace == "prod" ? local.prod_database_name : local.staging_database_name
 }
 
 resource "aws_rds_cluster_instance" "archivematica" {
-  count = 4
+  count = 2
 
-  identifier           = "archivematica-${var.namespace}-${count.index}"
+  identifier           = "archivematica-${var.namespace}-instance-${count.index}"
   cluster_identifier   = aws_rds_cluster.archivematica.id
-  instance_class       = "db.t2.small"
+  instance_class       = "db.r5.large"
   db_subnet_group_name = aws_db_subnet_group.archivematica.name
   publicly_accessible  = false
+
+  engine         = aws_rds_cluster.archivematica.engine
+  engine_version = aws_rds_cluster.archivematica.engine_version
 }
 
 resource "aws_db_subnet_group" "archivematica" {
@@ -21,11 +34,14 @@ resource "aws_db_subnet_group" "archivematica" {
 
 resource "aws_rds_cluster" "archivematica" {
   db_subnet_group_name   = aws_db_subnet_group.archivematica.name
-  cluster_identifier     = "archivematica-${var.namespace}"
-  database_name          = "archivematica_${var.namespace}"
+  cluster_identifier     = local.cluster_identifier
+  database_name          = local.database_name
   master_username        = var.rds_username
   master_password        = var.rds_password
   vpc_security_group_ids = [aws_security_group.database_sg.id]
+
+  engine         = "aurora-mysql"
+  engine_version = "5.7.mysql_aurora.2.07.0"
 }
 
 resource "aws_security_group" "database_sg" {
