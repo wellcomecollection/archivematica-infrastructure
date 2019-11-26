@@ -17,10 +17,14 @@ module "cluster" {
 
   cluster_name = "${aws_ecs_cluster.archivematica.name}"
 
-  asg_min     = 3
-  asg_desired = 3
-  asg_max     = 3
+  asg_min     = 1
+  asg_desired = 1
+  asg_max     = 1
 
-  # The constraint here isn't CPU or memory; it's Elastic Network Interfaces.
-  instance_type = "t2.xlarge"
+  # We want an instance with enough CPU/memory to run all the tasks *and* have
+  # room to add new tasks, and with enough Elastic Network Interfaces to run
+  # at least three tasks at once.
+  #
+  # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI
+  instance_type = "c5.2xlarge"
 }
