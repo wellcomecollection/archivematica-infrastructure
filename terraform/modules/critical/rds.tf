@@ -40,8 +40,25 @@ resource "aws_rds_cluster" "archivematica" {
   master_password        = var.rds_password
   vpc_security_group_ids = [aws_security_group.database_sg.id]
 
-  engine         = "aurora-mysql"
-  engine_version = "5.7.mysql_aurora.2.07.0"
+  # Be careful of changing these.  When I tried updating to MySQL 5.7
+  # (or a different flavour of 5.6), transfers would always fail at
+  # the "Scan for viruses" stage.
+  #
+  # Debugging showed that we were getting a repeated error inside
+  # the MCP client:
+  #
+  #     OperationalError: (2006, 'MySQL server has gone away')
+  #
+  # It could connect to the database if you opened an interactive shell,
+  # but something in the Archivematica process kept breaking.
+  #
+  # We should diagnose this further and understand why Archivematica
+  # doesn't work with MySQL 5.7, but I don't want to do that right now.
+  #
+  # Possibly related:
+  # https://www.archivematica.org/en/docs/archivematica-1.10/admin-manual/installation-setup/installation/installation/#dependencies
+  engine         = "aurora"
+  engine_version = "5.6.10a"
 }
 
 resource "aws_security_group" "database_sg" {

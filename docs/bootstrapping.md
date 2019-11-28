@@ -195,6 +195,8 @@ This step tells Archivematica how to write to the Wellcome Archival Storage.
 
 3.  Select the following options:
 
+    **Access Protocol:** Wellcome Storage Service
+
     **Path:** `/`
 
     **Staging path:** `/var/archivematica/storage-service` <br/>
@@ -260,6 +262,8 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 4.  Click "Create new location here".
 
     The purpose is **Transfer Source**.
+
+    Give it a description of "S3 transfer source" or similar.
 
     The relative path corresponds to the name of the drop directory (within the root path) into which files should be dropped and an automated transfer started on Archivematica. It must match the name of a workflow on Archivematica (with dashes replaced by underscores, e.g. born-digital directory will trigger a transfer using the born_digital flow)
 
