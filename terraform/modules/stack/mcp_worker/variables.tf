@@ -22,7 +22,7 @@ variable "clamav_cpu" {
 }
 
 variable "clamav_memory" {
-  default = 1536
+  default = 2048
 }
 
 variable "clamav_container_image" {}
@@ -32,11 +32,11 @@ variable "clamav_mount_points" {
 }
 
 variable "mcp_client_cpu" {
-  default = 512
+  default = 1024
 }
 
 variable "mcp_client_memory" {
-  default = 1024
+  default = 2048
 }
 
 variable "mcp_client_container_image" {}
