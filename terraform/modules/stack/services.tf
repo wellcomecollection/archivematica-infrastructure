@@ -69,6 +69,7 @@ module "mcp_worker_service" {
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "localhost:3310"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED               = true
   }
 
   mcp_client_secret_env_vars = {
@@ -91,6 +92,7 @@ module "mcp_worker_service" {
     ARCHIVEMATICA_MCPSERVER_CLIENT_HOST     = var.rds_host
     ARCHIVEMATICA_MCPSERVER_CLIENT_PORT     = var.rds_port
     ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE = "MCP"
+    ARCHIVEMATICA_MCPSERVER_SEARCH_ENABLED  = true
 
     ARCHIVEMATICA_MCPSERVER_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
   }
@@ -207,6 +209,7 @@ module "dashboard_service" {
     ARCHIVEMATICA_DASHBOARD_CLIENT_PORT              = var.rds_port
     ARCHIVEMATICA_DASHBOARD_CLIENT_DATABASE          = "MCP"
     ARCHIVEMATICA_DASHBOARD_DJANGO_ALLOWED_HOSTS     = "*"
+      ARCHIVEMATICA_DASHBOARD_SEARCH_ENABLED         = true
     AM_GUNICORN_BIND                                 = "0.0.0.0:9000"
     WELLCOME_SS_URL                                  = "http://${local.storage_service_host}:${local.storage_service_port}"
     WELLCOME_SITE_URL                                = "http://localhost:9000"
