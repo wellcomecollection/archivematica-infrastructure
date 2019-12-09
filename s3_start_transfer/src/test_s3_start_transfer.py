@@ -1,12 +1,10 @@
 # -*- encoding: utf-8 -*-
 
 import json
-
-import pytest
+import sys
 from unittest.mock import call, patch
 
-
-import sys
+import pytest
 
 import s3_start_transfer
 
@@ -181,5 +179,24 @@ class TestStartTransfer:
             "upload-bucket", "born-digital", "test-key"
         )
         mock_start_transfer.assert_called_with(
-            "test-key", mock_get_target_path.return_value, "born-digital"
+            name="test-key",
+            path=mock_get_target_path.return_value,
+            processing_config="born_digital"
         )
+
+
+@pytest.mark.parametrize("s3_key, processing_config", [
+    ("/born-digital/PPABC1.zip", "born_digital"),
+    ("/born-digital/lexie/PPABC1.zip", "born_digital"),
+    ("/born-digital-accessions/WT1234.zip", "accessions"),
+])
+def test_choose_processing_config(s3_key, processing_config):
+    assert s3_start_transfer.choose_processing_config(s3_key) == processing_config
+
+
+@pytest.mark.parametrize("s3_key", [
+    "/digitised/b12345678.zip",
+])
+def test_unrecognised_key_is_not_processing_config(s3_key):
+    with pytest.raises(ValueError, match="Unable to determine processing config"):
+        s3_start_transfer.choose_processing_config(s3_key)

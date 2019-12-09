@@ -175,25 +175,38 @@ def start_transfer(name, path, processing_config):
     return response_json["id"]
 
 
+def choose_processing_config(key):
+    if key.startswith("/born-digital/"):
+        return "born_digital"
+    elif key.startswith("/born-digital-accessions/"):
+        return "accessions"
+    else:
+        raise ValueError(
+            "Unable to determine processing config for key: %r" % key
+        )
+
+
 def main(event, context=None):
-    # Get the object from the event and show its content type
-    bucket = event["Records"][0]["s3"]["bucket"]["name"]
-    key = urllib.parse.unquote_plus(
-        event["Records"][0]["s3"]["object"]["key"], encoding="utf-8"
-    )
+    for record in event["Records"]:
+        # Get the object from the event and show its content type
+        bucket = record["s3"]["bucket"]["name"]
+        key = urllib.parse.unquote_plus(record["s3"]["object"]["key"], encoding="utf-8")
 
-    # Take the first part of the key as the bucket path, to be used
-    # as processing config
-    # e.g. /born-digital/subdir/myfile.zip => 'born-digital', 'subdir/myfile.zip'
-    directory, key_path = key.strip("/").split("/", 1)
+        processing_config = choose_processing_config(key)
 
-    # Identify the file's location on the AM storage service
-    target_path = get_target_path(bucket, directory, key_path)
+        directory, key_path = key.strip("/").split("/", 1)
 
-    target_name = os.path.basename(key)
-    transfer_id = start_transfer(target_name, target_path, directory)
+        # Identify the file's location on the AM storage service
+        target_path = get_target_path(bucket, directory, key_path)
 
-    print("Started transfer {}".format(transfer_id))
+        target_name = os.path.basename(key)
+        transfer_id = start_transfer(
+            name=target_name,
+            path=target_path,
+            processing_config=processing_config
+        )
+
+        print("Started transfer {}".format(transfer_id))
 
 
 if __name__ == "__main__":
