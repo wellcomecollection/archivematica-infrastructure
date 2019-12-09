@@ -8,10 +8,7 @@ import urllib.parse
 from collections import OrderedDict
 from os import fsencode
 
-try:
-    from botocore.vendored import requests
-except ImportError:
-    import requests
+import requests
 
 
 class StartTransferException(Exception):
@@ -176,9 +173,9 @@ def start_transfer(name, path, processing_config):
 
 
 def choose_processing_config(key):
-    if key.startswith("/born-digital/"):
+    if key.startswith("born-digital/"):
         return "born_digital"
-    elif key.startswith("/born-digital-accessions/"):
+    elif key.startswith("born-digital-accessions/"):
         return "accessions"
     else:
         raise ValueError(

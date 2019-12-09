@@ -167,7 +167,7 @@ class TestStartTransfer:
                 {
                     "s3": {
                         "bucket": {"name": "upload-bucket"},
-                        "object": {"key": "/born-digital/test-key"},
+                        "object": {"key": "born-digital/test-key"},
                     }
                 }
             ]
@@ -186,16 +186,16 @@ class TestStartTransfer:
 
 
 @pytest.mark.parametrize("s3_key, processing_config", [
-    ("/born-digital/PPABC1.zip", "born_digital"),
-    ("/born-digital/lexie/PPABC1.zip", "born_digital"),
-    ("/born-digital-accessions/WT1234.zip", "accessions"),
+    ("born-digital/PPABC1.zip", "born_digital"),
+    ("born-digital/lexie/PPABC1.zip", "born_digital"),
+    ("born-digital-accessions/WT1234.zip", "accessions"),
 ])
 def test_choose_processing_config(s3_key, processing_config):
     assert s3_start_transfer.choose_processing_config(s3_key) == processing_config
 
 
 @pytest.mark.parametrize("s3_key", [
-    "/digitised/b12345678.zip",
+    "digitised/b12345678.zip",
 ])
 def test_unrecognised_key_is_not_processing_config(s3_key):
     with pytest.raises(ValueError, match="Unable to determine processing config"):

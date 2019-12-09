@@ -269,6 +269,8 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
     The relative path corresponds to the name of the drop directory (within the root path) into which files should be dropped and an automated transfer started on Archivematica. It must match the name of a workflow on Archivematica (with dashes replaced by underscores, e.g. born-digital directory will trigger a transfer using the born_digital flow)
 
+    You need to create locations for `/born-digital` and `/born-digital-accessions`.
+
 
 
 <h2 id="step_8">
