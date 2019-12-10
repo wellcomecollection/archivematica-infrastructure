@@ -1,8 +1,21 @@
+locals {
+  efs_prod_name    = "archivematica"
+  efs_staging_name = "archivematica-${var.namespace}"
+
+  efs_name = var.namespace == "prod" ? local.efs_prod_name : local.efs_staging_name
+}
+
 data "aws_availability_zones" "available" {}
 
 resource "aws_efs_file_system" "efs" {
   creation_token   = "archivematica_${var.namespace}_efs"
   performance_mode = "generalPurpose"
+
+  tags = {
+    # The "Name" tag is used to population the description of EFS volumes
+    # in the AWS Console.
+    Name = local.efs_name
+  }
 }
 
 resource "aws_efs_mount_target" "mount_target" {
