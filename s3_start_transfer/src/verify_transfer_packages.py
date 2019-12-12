@@ -11,6 +11,7 @@ It needs two things from the package:
 
 """
 
+import inspect
 import os
 import textwrap
 
@@ -18,7 +19,57 @@ import textwrap
 class VerificationFailure(Exception):
     def __init__(self, message):
         super().__init__(textwrap.dedent(message).strip())
-    pass
+
+
+def verify_package(*, logger, zip_file, zip_name=None):
+    # Extract the zip file listing and the metadata.csv contents for this
+    # transfer package.
+    file_listing = zip_file.namelist()
+
+    try:
+        metadata_csv = zip_file.open("metadata/metadata.csv")
+    except KeyError:
+        metadata = None
+    else:
+        metadata = metadata_csv.read().decode("utf8")
+
+    verifications = [
+        verify_all_files_not_under_single_dir,
+        verify_all_files_not_under_objects_dir,
+    ]
+
+    if zip_name is None:
+        zip_name = repr(zip_file)
+
+    logger.write(
+        f"Running {len(verifications)} checks for {zip_name}"
+    )
+
+    for i, verify_function in enumerate(verifications, start=1):
+        logger.write(f"== Check {i}: {verify_function.__name__} ==")
+
+        # This slightly hacky code is to get around the fact that not all
+        # functions need both the file listing and the metadata, and rather
+        # than have them take unused arguments, we build their signature
+        # dynamically.  Dynamic programming, eh?
+        kwargs = {}
+
+        if "file_listing" in inspect.getfullargspec(verify_function).args:
+            kwargs["file_listing"] = file_listing
+
+        if "metadata" in inspect.getfullargspec(verify_function).args:
+            kwargs["metadata"] = metadata
+
+        try:
+            verify_function(**kwargs)
+        except VerificationFailure as err:
+            logger.write("Verification failure:\n")
+            logger.write(str(err) + "\n")
+            return False
+
+    logger.write("Verification success!")
+
+    return True
 
 
 def verify_all_files_not_under_single_dir(file_listing):
@@ -41,6 +92,7 @@ def verify_all_files_not_under_single_dir(file_listing):
                        ├── recipe.txt
                        └── metadata/
                              └── metadata.csv
+
             RIGHT:
 
                 transfer_package.zip
