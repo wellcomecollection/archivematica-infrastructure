@@ -2,11 +2,9 @@
 
 import datetime as dt
 import re
-import secrets
 
 import boto3
 import moto
-import pytest
 
 from log_handler import Logger, s3_logger
 
@@ -45,11 +43,6 @@ class TestLogger:
             timestamp, "@@ Logging starts at %Y-%m-%d %H:%M:%S @@"
         )
         assert (dt.datetime.now() - parsed_datetime).seconds < 5
-
-
-@pytest.fixture
-def bucket_name():
-    return f"bucket-{secrets.token_hex(5)}"
 
 
 class TestLoggingContext:
