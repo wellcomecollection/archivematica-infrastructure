@@ -3,6 +3,14 @@
 This Lambda notices uploads to the `wellcomecollection-archivematica-transfer-source` S3 bucket (and staging equivalent), and calls the Archivematica API to trigger a new transfer.
 
 
+## Running tests
+
+```console
+$ coverage run -m py.test src/test_*.py
+$ coverage report
+```
+
+
 
 ## Debugging notes
 
