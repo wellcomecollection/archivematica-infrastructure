@@ -1,8 +1,12 @@
 # -*- encoding: utf-8
 
+import pathlib
 import secrets
+import sys
 
 import pytest
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
 
 @pytest.fixture
