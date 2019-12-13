@@ -23,7 +23,7 @@ class VerificationFailure(Exception):
         super().__init__(textwrap.dedent(message).strip())
 
 
-def verify_package(*, logger, zip_file, zip_name=None):
+def verify_package(*, logger, zip_file):
     # Extract the zip file listing and the metadata.csv contents for this
     # transfer package.
     file_listing = zip_file.namelist()
@@ -35,8 +35,10 @@ def verify_package(*, logger, zip_file, zip_name=None):
     else:
         metadata = metadata_csv.read().decode("utf8")
 
-    # Replace any byte-order marks in the CSV, we don't need them
-    metadata = metadata.replace("\ufeff", "")
+        # Replace any byte-order marks in the CSV, we don't need them.
+        # These are sometimes written by Excel and the like, I think?
+        if "\ufeff" in metadata:
+            metadata = metadata.replace("\ufeff", "")
 
     verifications = [
         verify_all_files_not_under_single_dir,
@@ -46,11 +48,8 @@ def verify_package(*, logger, zip_file, zip_name=None):
         verify_metadata_csv_is_correct_format,
     ]
 
-    if zip_name is None:
-        zip_name = repr(zip_file)
-
     logger.write(
-        f"Running {len(verifications)} checks for {zip_name}"
+        f"Running {len(verifications)} checks for {zip_file}"
     )
 
     for i, verify_function in enumerate(verifications, start=1):

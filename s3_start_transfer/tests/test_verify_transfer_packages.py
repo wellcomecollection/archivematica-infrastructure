@@ -6,7 +6,9 @@ import zipfile
 
 import pytest
 
+from log_handler import Logger
 from verify_transfer_packages import (
+    verify_package,
     verify_all_files_not_under_single_dir,
     verify_all_files_not_under_objects_dir,
     verify_has_a_metadata_csv,
@@ -16,11 +18,36 @@ from verify_transfer_packages import (
 )
 
 
+def _get_zip_path(name):
+    return pathlib.Path(__file__).parent / "files" / name
+
+
 def _get_file_listing(name):
-    zip_path = pathlib.Path(__file__).parent / "files" / name
+    zip_path = _get_zip_path(name)
 
     with zipfile.ZipFile(zip_path) as zf:
         return zf.namelist()
+
+
+class TestVerifyPackage:
+    def test_errors_if_no_metadata_in_zip(self):
+        zip_path = _get_zip_path("no_metadata_csv.zip")
+
+        logger = Logger()
+
+        with zipfile.ZipFile(zip_path) as zf:
+            verify_package(logger=logger, zip_file=zf)
+
+    @pytest.mark.parametrize("name", [
+        "valid_transfer_package.zip",
+        "valid_transfer_package_with_byte_order_mark.zip",
+    ])
+    def test_handles_a_byte_order_mark_in_metadata_csv(self, name):
+        zip_path = _get_zip_path(name)
+
+        logger = Logger()
+        with zipfile.ZipFile(zip_path) as zf:
+            verify_package(logger=logger, zip_file=zf)
 
 
 class TestVerifyAllFilesNotUnderSingleDir:

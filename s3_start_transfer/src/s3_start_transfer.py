@@ -98,20 +98,11 @@ def main(event, context=None):
         run_transfer(s3, bucket=bucket, key=key)
 
 
-if __name__ == "__main__":
-    key = "born-digital-accessions/WT_B_9_2_2.zip"
-    main(
-        {
-            "Records": [
-                {
-                    "s3": {
-                        "bucket": {
-                            "name": "wellcomecollection-archivematica-transfer-source"
-                        },
-                        "object": {"key": key},
-                    }
-                }
-            ]
-        },
-        None,
+if __name__ == "__main__":  # pragma: no cover
+    s3 = boto3.resource("s3")
+
+    run_transfer(
+        s3,
+        bucket="wellcomecollection-archivematica-transfer-source",
+        key="born-digital-accessions/WT_B_9_2_2.zip"
     )
