@@ -1,4 +1,4 @@
-module "critical" {
+module "stack" {
   source = "../modules/stack"
 
   namespace = "prod"

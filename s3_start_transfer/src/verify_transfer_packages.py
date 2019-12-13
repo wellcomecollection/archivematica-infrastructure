@@ -35,11 +35,15 @@ def verify_package(*, logger, zip_file, zip_name=None):
     else:
         metadata = metadata_csv.read().decode("utf8")
 
+    # Replace any byte-order marks in the CSV, we don't need them
+    metadata = metadata.replace("\ufeff", "")
+
     verifications = [
         verify_all_files_not_under_single_dir,
         verify_all_files_not_under_objects_dir,
         verify_has_a_metadata_csv,
         verify_only_metadata_csv_in_metadata_dir,
+        verify_metadata_csv_is_correct_format,
     ]
 
     if zip_name is None:
