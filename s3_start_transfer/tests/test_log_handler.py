@@ -115,8 +115,6 @@ class TestLoggingContext:
             logger.write("Something else happened")
             raise ValueError("BOOM!")
 
-        log_file = self._get_log_file(s3, bucket=bucket_name)
-
         contents = self._get_log_file_contents(s3, bucket=bucket_name)
 
         assert re.match(

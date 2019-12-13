@@ -1,7 +1,5 @@
 # -*- encoding: utf-8 -*-
 
-import json
-import sys
 from unittest.mock import call, patch
 
 import pytest

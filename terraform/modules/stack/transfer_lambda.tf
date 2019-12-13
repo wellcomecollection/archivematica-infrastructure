@@ -39,3 +39,22 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
     filter_suffix       = ".zip"
   }
 }
+
+data "aws_iam_policy_document" "allow_writing_log_files" {
+  statement {
+    actions = [
+      "s3:Head*",
+      "s3:Get*",
+      "s3:Put*",
+    ]
+
+    resources = [
+      "${var.transfer_source_bucket_arn}/*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "allow_writing_log_files" {
+  role   = module.s3_start_transfer_lambda.role_name
+  policy = data.aws_iam_policy_document.allow_writing_log_files.json
+}
