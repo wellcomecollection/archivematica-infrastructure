@@ -43,6 +43,7 @@ class Logger:
         return dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def write(self, message):
+        print(message)
         self._lines.append(message)
 
     def text(self):

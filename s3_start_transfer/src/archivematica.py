@@ -135,7 +135,6 @@ def find_matching_path(locations, bucket, directory, key):
     :param key: Name of s3 key
     :returns: bytestring identifying the path
     """
-
     for location in locations:
         relative_path = location["relative_path"].strip("/")
 

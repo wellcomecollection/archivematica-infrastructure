@@ -204,10 +204,6 @@ class TestVerifyMetadataCsv:
         """
         dc.identifier,dc.title,filename
         LE/MON/1,The Citrus Archives,objects/
-        """,
-        """
-        \ufefffilename,dc.identifier
-        objects/,LE/MON/1
         """
     ])
     def test_valid_metadata_is_okay(self, metadata):

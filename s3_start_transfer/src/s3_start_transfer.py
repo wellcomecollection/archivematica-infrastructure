@@ -8,6 +8,7 @@ import zipfile
 
 import boto3
 
+import archivematica
 from archivematica import (
     choose_processing_config,
     get_target_path,
@@ -40,6 +41,52 @@ def _write_log(logger, bucket, key, result):
     )
 
 
+def run_transfer(s3, *, bucket, key):
+    logger = Logger()
+
+    # Run some verifications on the object before we sent it to Archivematica.
+    print(f"Running verifications on s3://{bucket}/{key}")
+    s3_object = s3.Object(bucket, key)
+    s3_file = S3File(s3_object=s3_object)
+
+    with zipfile.ZipFile(s3_file) as zf:
+        if not verify_package(logger=logger, zip_file=zf):
+            _write_log(logger, bucket=bucket, key=key, result="failed")
+            print(f"Verification error in s3://{bucket}/{key}")
+            return
+
+    # Now try to start a transfer in Archivematica.
+    try:
+        processing_config = choose_processing_config(key)
+
+        directory, key_path = key.strip("/").split("/", 1)
+
+        # Identify the file's location on the AM storage service
+        target_path = archivematica.get_target_path(
+            bucket=bucket,
+            directory=directory,
+            key=key_path
+        )
+
+        target_name = os.path.basename(key)
+        transfer_id = archivematica.start_transfer(
+            name=target_name,
+            path=target_path,
+            processing_config=processing_config
+        )
+    except Exception as err:
+        logger.write(f"Error starting transfer: {err}")
+        logger.write("Ask somebody to check the CloudWatch logs for more info")
+        _write_log(logger, bucket=bucket, key=key, result="failed")
+
+        print(f"Error starting transfer for s3://{bucket}/{key}")
+    else:
+        logger.write("Started successful transfer!")
+        _write_log(logger, bucket=bucket, key=key, result="success")
+
+        print("Started transfer {}".format(transfer_id))
+
+
 def main(event, context=None):
     s3 = boto3.resource("s3")
 
@@ -48,45 +95,7 @@ def main(event, context=None):
         bucket = record["s3"]["bucket"]["name"]
         key = urllib.parse.unquote_plus(record["s3"]["object"]["key"], encoding="utf-8")
 
-        logger = Logger()
-
-        # Run some verifications on the object before we sent it to Archivematica.
-        print(f"Running verifications on s3://{bucket}/{key}")
-        s3_object = s3.Object(bucket, key)
-        s3_file = S3File(s3_object=s3_object)
-
-        with zipfile.ZipFile(s3_file) as zf:
-            if not verify_package(logger=logger, zip_file=zf):
-                _write_log(logger, bucket=bucket, key=key, result="failed")
-                print(f"Verification error in s3://{bucket}/{key}")
-                continue
-
-        # Now try to start a transfer in Archivematica.
-        try:
-            processing_config = choose_processing_config(key)
-
-            directory, key_path = key.strip("/").split("/", 1)
-
-            # Identify the file's location on the AM storage service
-            target_path = get_target_path(bucket, directory, key_path)
-
-            target_name = os.path.basename(key)
-            transfer_id = start_transfer(
-                name=target_name,
-                path=target_path,
-                processing_config=processing_config
-            )
-        except Exception as err:
-            logger.write(f"Error starting transfer: {err}")
-            logger.write("Ask somebody to check the CloudWatch logs for more info")
-            _write_log(logger, bucket=bucket, key=key, result="failed")
-
-            print(f"Error starting transfer for s3://{bucket}/{key}")
-        else:
-            logger.write("Started successful transfer!")
-            _write_log(logger, bucket=bucket, key=key, result="success")
-
-            print("Started transfer {}".format(transfer_id))
+        run_transfer(s3, bucket=bucket, key=key)
 
 
 if __name__ == "__main__":
