@@ -2,6 +2,7 @@
 
 from unittest.mock import call, patch
 
+import requests
 import pytest
 
 import s3_start_transfer
@@ -124,7 +125,7 @@ class TestStartTransfer:
                 "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
             )
 
-    @patch.object(s3_start_transfer.requests, "get")
+    @patch.object(requests, "get")
     def test_ss_api_get(self, mock_get, monkeypatch):
         monkeypatch.setenv(
             "ARCHIVEMATICA_SS_URL", "http://archivematica-ss.example.com"
@@ -142,7 +143,7 @@ class TestStartTransfer:
             headers={"Authorization": "ApiKey ss_username:ss_api_key"},
         )
 
-    @patch.object(s3_start_transfer.requests, "post")
+    @patch.object(requests, "post")
     def test_am_api_post_json(self, mock_post, monkeypatch):
         monkeypatch.setenv("ARCHIVEMATICA_URL", "http://archivematica.example.com")
         monkeypatch.setenv("ARCHIVEMATICA_USERNAME", "am_username")

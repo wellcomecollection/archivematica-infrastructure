@@ -11,7 +11,9 @@ It needs two things from the package:
 
 """
 
+import csv
 import inspect
+import io
 import os
 import textwrap
 
@@ -36,6 +38,8 @@ def verify_package(*, logger, zip_file, zip_name=None):
     verifications = [
         verify_all_files_not_under_single_dir,
         verify_all_files_not_under_objects_dir,
+        verify_has_a_metadata_csv,
+        verify_only_metadata_csv_in_metadata_dir,
     ]
 
     if zip_name is None:
@@ -63,11 +67,11 @@ def verify_package(*, logger, zip_file, zip_name=None):
         try:
             verify_function(**kwargs)
         except VerificationFailure as err:
-            logger.write("Verification failure:\n")
+            logger.write("Check failed:\n")
             logger.write(str(err) + "\n")
             return False
 
-    logger.write("Verification success!")
+    logger.write("All checks complete!")
 
     return True
 
@@ -136,6 +140,179 @@ def verify_all_files_not_under_objects_dir(file_listing):
                   │     └── dog.png
                   └── metadata/
                         └── metadata.csv
+
+            """
+        )
+
+
+def verify_has_a_metadata_csv(file_listing):
+    if "metadata/metadata.csv" not in file_listing:
+        raise VerificationFailure(
+            """
+            Your transfer package must have a file ``metadata/metadata.csv``
+            that describes the objects in the bag.
+
+            Add a metadata file, recompress your transfer package, then
+            upload it again.
+
+            Example metadata.csv:
+
+                filename,dc.identifier
+                objects/,LE/MON/1
+
+            """
+        )
+
+
+def verify_only_metadata_csv_in_metadata_dir(file_listing):
+    metadata_files = {
+        f
+        for f in file_listing
+        if f.startswith("metadata/")
+    }
+
+    unexpected_metadata_files = metadata_files - {"metadata/", "metadata/metadata.csv"}
+
+    if unexpected_metadata_files:
+        raise VerificationFailure(
+            """
+            Your transfer package has unexpected files in the ``metadata/`` folder.
+            The only file in ``metadata/`` should be ``metadata/metadata.csv``.
+
+            Move the other files to a different directory, recompress your transfer
+            package, then upload it again.
+
+            WRONG:
+
+                transfer_package.zip
+                  └── metadata/
+                        ├── cat.jpg
+                        └── metadata.csv
+
+            RIGHT:
+
+                transfer_package.zip
+                  ├── pictures/
+                  │     └── cat.jpg
+                  └── metadata/
+                        └── metadata.csv
+
+            (This is based on Wellcome's Archivematica workflow in winter 2019.
+
+            This check is meant to prevent accidental mistakes.  If this is
+            blocking a legitimate transfer -- you definitely want other things
+            in metadata.csv -- you can trigger a transfer manually from the
+            Archivematica dashboard, or talk to the devs if you want to permanently
+            remove this check.)
+
+            """
+        )
+
+
+def verify_metadata_csv_is_correct_format(metadata):
+    reader = io.StringIO(metadata)
+
+    csv_reader = csv.DictReader(reader)
+    rows = list(csv_reader)
+
+    if len(rows) != 1:
+        raise VerificationFailure(
+            f"""
+            Your metadata.csv should only contain a single row, but the
+            CSV in your transfer package contains {len(rows)} rows.
+
+            Please upload a new transfer package with a single row in metadata.csv.
+
+            WRONG:
+
+                filename,dc.identifier
+                objects/lemon.png,LE/MON/1
+                objects/lemon_curd.jpg,LE/MON/2
+
+            RIGHT:
+
+                filename,dc.identifier
+                objects/,LE/MON
+
+            (This is a Wellcome policy decision, because we have a 1-to-1
+            association between Archivematica transfer packages and item level
+            records, so the metadata in metadata.csv comes from the item record.
+
+            If you want multiple rows in metadata.csv, you can trigger a transfer
+            manually from the Archivematica dashboard, or talk to the devs if you
+            want to permanently remove this check.)
+            """
+        )
+
+    metadata_row = rows[0]
+
+    if ("filename" not in metadata_row or "dc.identifier" not in metadata_row):
+        raise VerificationFailure(
+            """
+            Your metadata.csv is missing one of the mandatory columns ('filename'
+            and 'dc.identifier'.)  Please add these columns to your metadata.csv,
+            then upload a new transfer package.
+
+            You can have other columns beside these two, but you must *always*
+            have both of these columns.
+
+            WRONG:
+
+                filename
+                objects/
+
+            RIGHT:
+
+                filename,dc.identifier
+                objects/,LE/MON
+
+            RIGHT:
+
+                filename,dc.identifier,dc.title
+                objects/,LE/MON,The Citrus Archives
+
+            """
+        )
+
+    if metadata_row["filename"] != "objects/":
+        raise VerificationFailure(
+            f"""
+            Your metadata.csv has an incorrect value in the 'filename' column.
+            The value in this column should be 'objects/'.
+
+            Please correct this value, and upload a new transfer package.
+
+            WRONG:
+
+                filename,dc.identifier
+                {metadata_row['filename']!r},LE/MON
+
+            RIGHT:
+
+                filename,dc.identifier
+                objects/,LE/MON
+
+            """
+        )
+
+    if not metadata_row["dc.identifier"]:
+        raise VerificationFailure(
+            f"""
+            You have supplied an empty value in the 'dc.identifier' field of
+            your metadata.csv.
+
+            Please write a non-empty value in this field, and upload a new
+            transfer package.
+
+            WRONG:
+
+                filename,dc.identifier,dc.title
+                objects/,,The Citrus Archives
+
+            RIGHT:
+
+                filename,dc.identifier,dc.title
+                objects/,LE/MON,The Citrus Archives
 
             """
         )

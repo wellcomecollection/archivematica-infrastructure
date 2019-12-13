@@ -58,6 +58,8 @@ def main(event, context=None):
         with zipfile.ZipFile(s3_file) as zf:
             if not verify_package(logger=logger, zip_file=zf):
                 _write_log(logger, bucket=bucket, key=key, result="failed")
+                print(f"Verification error in transfer {transfer_id}")
+                continue
 
         # Now try to start a transfer in Archivematica.
         try:
@@ -78,11 +80,13 @@ def main(event, context=None):
             logger.write(f"Error starting transfer: {err}")
             logger.write("Ask somebody to check the CloudWatch logs for more info")
             _write_log(logger, bucket=bucket, key=key, result="failed")
+
+            print(f"Error starting transfer {transfer_id}")
         else:
             logger.write("Started successful transfer!")
             _write_log(logger, bucket=bucket, key=key, result="success")
 
-        print("Started transfer {}".format(transfer_id))
+            print("Started transfer {}".format(transfer_id))
 
 
 if __name__ == "__main__":
