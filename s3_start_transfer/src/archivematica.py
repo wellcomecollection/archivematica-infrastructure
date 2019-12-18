@@ -18,7 +18,7 @@ class StoragePathException(Exception):
     pass
 
 
-def am_api_post_json(url, data):
+def am_api_post_json(api_path, data):
     """
     POST json to the Archivematica API
     :param api_path: URL path to request (without hostname, e.g. /api/v2/location/)
@@ -28,14 +28,16 @@ def am_api_post_json(url, data):
     am_url = os.environ["ARCHIVEMATICA_URL"]
     am_user = os.environ["ARCHIVEMATICA_USERNAME"]
     am_api_key = os.environ["ARCHIVEMATICA_API_KEY"]
-    am_headers = {"Authorization": "ApiKey {0}:{1}".format(am_user, am_api_key)}
+    am_headers = {
+        "Authorization": f"ApiKey {am_user}:{am_api_key}"
+    }
 
-    url = "{0}{1}".format(am_url, url)
-    print("URL: %s; Data: %s" % (url, data))
+    url = f"{am_url}{api_path}"
+    print(f"URL: {url}; Data: {data}")
     response = requests.post(url, json=data, headers=am_headers)
-    print("Response: %s" % response)
+    print(f"Response: {response}")
     response_json = response.json()
-    print("Response JSON: %s" % response_json)
+    print("Response JSON: {response_json}")
     return response_json
 
 
