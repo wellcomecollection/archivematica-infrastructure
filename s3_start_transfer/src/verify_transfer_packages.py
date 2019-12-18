@@ -198,7 +198,7 @@ def verify_only_metadata_csv_in_metadata_dir(file_listing):
         )
 
 
-def verify_metadata_csv_is_correct_format(metadata):
+def verify_metadata_csv_has_dc_identifier(metadata):
     reader = io.StringIO(metadata)
 
     csv_reader = csv.DictReader(reader)

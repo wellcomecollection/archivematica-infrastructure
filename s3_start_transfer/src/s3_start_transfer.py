@@ -49,7 +49,7 @@ def run_transfer(s3, *, bucket, key):
         verify_all_files_not_under_objects_dir,
         verify_has_a_metadata_csv,
         verify_only_metadata_csv_in_metadata_dir,
-        verify_metadata_csv_is_correct_format,
+        verify_metadata_csv_has_dc_identifier,
     ]
 
     with zipfile.ZipFile(s3_file) as zf:

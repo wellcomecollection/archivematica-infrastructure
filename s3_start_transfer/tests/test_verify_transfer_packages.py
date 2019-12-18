@@ -13,7 +13,7 @@ from verify_transfer_packages import (
     verify_all_files_not_under_objects_dir,
     verify_has_a_metadata_csv,
     verify_only_metadata_csv_in_metadata_dir,
-    verify_metadata_csv_is_correct_format,
+    verify_metadata_csv_has_dc_identifier,
     VerificationFailure,
 )
 
@@ -35,7 +35,7 @@ class TestVerifyPackage:
         verify_all_files_not_under_objects_dir,
         verify_has_a_metadata_csv,
         verify_only_metadata_csv_in_metadata_dir,
-        verify_metadata_csv_is_correct_format,
+        verify_metadata_csv_has_dc_identifier,
     ]
 
     def test_errors_if_no_metadata_in_zip(self):
@@ -144,7 +144,7 @@ class TestVerifyOnlyMetadataCsvInMetadataDir:
         verify_only_metadata_csv_in_metadata_dir(file_listing=file_listing)
 
 
-class TestVerifyMetadataCsv:
+class TestVerifyMetadataCsvHasDcIdentifier:
     @pytest.mark.parametrize(
         "metadata, row_count",
         [
@@ -163,7 +163,7 @@ class TestVerifyMetadataCsv:
         metadata = textwrap.dedent(metadata).strip()
 
         with pytest.raises(VerificationFailure) as err:
-            verify_metadata_csv_is_correct_format(metadata=metadata)
+            verify_metadata_csv_has_dc_identifier(metadata=metadata)
 
         assert str(err.value).startswith(
             f"Your metadata.csv should only contain a single row, but the\n"
@@ -191,7 +191,7 @@ class TestVerifyMetadataCsv:
         metadata = textwrap.dedent(metadata).strip()
 
         with pytest.raises(VerificationFailure) as err:
-            verify_metadata_csv_is_correct_format(metadata=metadata)
+            verify_metadata_csv_has_dc_identifier(metadata=metadata)
 
         assert str(err.value).startswith(
             "Your metadata.csv is missing one of the mandatory columns ('filename'\n"
@@ -203,7 +203,7 @@ class TestVerifyMetadataCsv:
         metadata = f"""filename,dc.identifier\n{filename},LE/MON"""
 
         with pytest.raises(VerificationFailure) as err:
-            verify_metadata_csv_is_correct_format(metadata=metadata)
+            verify_metadata_csv_has_dc_identifier(metadata=metadata)
 
         assert str(err.value).startswith(
             "Your metadata.csv has an incorrect value in the 'filename' column.\n"
@@ -227,7 +227,7 @@ class TestVerifyMetadataCsv:
         metadata = textwrap.dedent(metadata).strip()
 
         with pytest.raises(VerificationFailure) as err:
-            verify_metadata_csv_is_correct_format(metadata=metadata)
+            verify_metadata_csv_has_dc_identifier(metadata=metadata)
 
         assert str(err.value).startswith(
             "You have supplied an empty value in the 'dc.identifier' field of\n"
@@ -254,4 +254,4 @@ class TestVerifyMetadataCsv:
     def test_valid_metadata_is_okay(self, metadata):
         metadata = textwrap.dedent(metadata).strip()
 
-        verify_metadata_csv_is_correct_format(metadata=metadata)
+        verify_metadata_csv_has_dc_identifier(metadata=metadata)
