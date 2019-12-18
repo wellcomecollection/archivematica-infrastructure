@@ -49,15 +49,15 @@ def ss_api_get(api_path, params=None):
     ss_url = os.environ["ARCHIVEMATICA_SS_URL"]
     ss_user = os.environ["ARCHIVEMATICA_SS_USERNAME"]
     ss_api_key = os.environ["ARCHIVEMATICA_SS_API_KEY"]
-    ss_headers = {"Authorization": "ApiKey {0}:{1}".format(ss_user, ss_api_key)}
+    ss_headers = {"Authorization": f"ApiKey {ss_user}:{ss_api_key}"}
 
     params = params or {}
-    url = "{0}{1}".format(ss_url, api_path)
-    print("URL: %s; Params: %s" % (url, params))
+    url = f"{ss_url}{api_path}"
+    print(f"URL: {url}; Params: {params}")
     response = requests.get(url, params=params, headers=ss_headers)
-    print("Response: %s" % response)
+    print(f"Response: {response}")
     response_json = response.json()
-    print("Response JSON: %s" % response_json)
+    print(f"Response JSON: {response_json}")
     return response_json
 
 

@@ -41,7 +41,7 @@ class TestStartTransfer:
         mock_am_post.return_value = {"id": "my-transfer-id"}
 
         assert (
-            s3_start_transfer.start_transfer(
+            archivematica.start_transfer(
                 "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
             )
             == "my-transfer-id"
