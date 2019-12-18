@@ -9,11 +9,7 @@ import zipfile
 import boto3
 
 import archivematica
-from archivematica import (
-    choose_processing_config,
-    get_target_path,
-    start_transfer
-)
+from archivematica import choose_processing_config
 from big_s3 import S3File
 from log_handler import Logger
 from verify_transfer_packages import verify_package

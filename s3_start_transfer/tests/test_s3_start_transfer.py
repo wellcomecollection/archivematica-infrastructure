@@ -1,11 +1,10 @@
 # -*- encoding: utf-8 -*-
 
 import re
-from unittest.mock import call, patch
+from unittest.mock import patch
 
 import boto3
 from moto import mock_s3
-import requests
 import pytest
 
 import archivematica
@@ -48,8 +47,7 @@ class TestStartTransfer:
         assert (
             s3_start_transfer.start_transfer(
                 "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
-            )
-            == "my-transfer-id"
+            ) == "my-transfer-id"
         )
 
         mock_am_post.assert_called_once_with(
@@ -207,7 +205,7 @@ def test_main_runs_all_events(bucket_name):
         },
     ]}
 
-    with patch.object(archivematica, "get_target_path") as mock_get_target_path:
+    with patch.object(archivematica, "get_target_path"):
         with patch.object(archivematica, "start_transfer") as mock_start_transfer:
             s3_start_transfer.main(event=event)
 

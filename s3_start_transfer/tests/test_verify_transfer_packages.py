@@ -116,7 +116,6 @@ class TestVerifyHasMetadataCsv:
         verify_has_a_metadata_csv(file_listing=file_listing)
 
 
-
 class TestVerifyOnlyMetadataCsvInMetadataDir:
     @pytest.mark.parametrize("name", [
         "extra_files_in_metadata_dir.zip",
