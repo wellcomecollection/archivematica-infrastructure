@@ -145,7 +145,7 @@ def find_matching_path(locations, bucket, directory, key):
     raise StoragePathException("Unable to find location for %s:%s" % (bucket, key))
 
 
-def start_transfer(name, path, processing_config):
+def start_transfer(name, path, processing_config, accession_number=None):
     """
     Start an Archivematica transfer using the automated workflow
 
@@ -155,6 +155,7 @@ def start_transfer(name, path, processing_config):
     :returns: transfer uuid
     """
     # Archivematica processing configs don't support dashes, so replace with underscores
+    # See https://wiki.archivematica.org/Archivematica_API#Package
     data = {
         "name": name,
         "type": "zipfile",
@@ -162,6 +163,10 @@ def start_transfer(name, path, processing_config):
         "processing_config": processing_config.replace("-", "_"),
         "auto_approve": True,
     }
+
+    if accession_number is not None:
+        data["accession"] = accession_number
+
     response_json = am_api_post_json("/api/v2beta/package", data)
     if "error" in response_json:
         raise StartTransferException(
@@ -174,6 +179,6 @@ def choose_processing_config(key):
     if key.startswith("born-digital/"):
         return "born_digital"
     elif key.startswith("born-digital-accessions/"):
-        return "accessions"
+        return "b_dig_accessions"
     else:
         raise ValueError("Unable to determine processing config for key: %r" % key)

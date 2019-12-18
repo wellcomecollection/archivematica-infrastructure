@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 from unittest.mock import call, patch
+import uuid
 
 import pytest
 import requests
@@ -26,14 +27,16 @@ def test_am_api_post_json(mock_post, monkeypatch):
 
 @patch.object(archivematica, "am_api_post_json")
 def test_start_transfer(mock_am_post):
-    mock_am_post.return_value = {"id": "my-transfer-id"}
+    transfer_uuid = str(uuid.uuid4())
+    mock_am_post.return_value = {"id": transfer_uuid}
 
-    assert (
-        archivematica.start_transfer(
-            "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
-        )
-        == "my-transfer-id"
+    actual_transfer_uuid = archivematica.start_transfer(
+        name="test1.zip",
+        path=b"space1-uuid:/test1.zip",
+        processing_config="born-digital"
     )
+
+    assert actual_transfer_uuid == transfer_uuid
 
     mock_am_post.assert_called_once_with(
         "/api/v2beta/package",
@@ -43,6 +46,30 @@ def test_start_transfer(mock_am_post):
             "path": "c3BhY2UxLXV1aWQ6L3Rlc3QxLnppcA==",
             "processing_config": "born_digital",
             "auto_approve": True,
+        },
+    )
+
+
+@patch.object(archivematica, "am_api_post_json")
+def test_start_transfer_with_accession(mock_am_post):
+    transfer_uuid = str(uuid.uuid4())
+
+    actual_transfer_uuid = archivematica.start_transfer(
+        name="test1.zip",
+        path=b"space1-uuid:/test1.zip",
+        processing_config="b_dig_accessions",
+        accession_number="1234"
+    )
+
+    mock_am_post.assert_called_once_with(
+        "/api/v2beta/package",
+        {
+            "name": "test1.zip",
+            "type": "zipfile",
+            "path": "c3BhY2UxLXV1aWQ6L3Rlc3QxLnppcA==",
+            "processing_config": "b_dig_accessions",
+            "auto_approve": True,
+            "accession": "1234",
         },
     )
 
@@ -138,3 +165,15 @@ def test_start_transfer_raises_upon_error(mock_am_post):
         archivematica.start_transfer(
             "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
         )
+
+
+@pytest.mark.parametrize(
+    "s3_key, processing_config",
+    [
+        ("born-digital/PPABC1.zip", "born_digital"),
+        ("born-digital/lexie/PPABC1.zip", "born_digital"),
+        ("born-digital-accessions/WT1234.zip", "b_dig_accessions"),
+    ],
+)
+def test_choose_processing_config(s3_key, processing_config):
+    assert archivematica.choose_processing_config(s3_key) == processing_config

@@ -23,15 +23,11 @@ class VerificationFailure(Exception):
         super().__init__(textwrap.dedent(message).strip())
 
 
-def verify_package(*, logger, zip_file, verifications):
-    # Extract the zip file listing and the metadata.csv contents for this
-    # transfer package.
-    file_listing = zip_file.namelist()
-
+def extract_metadata(zip_file):
     try:
         metadata_csv = zip_file.open("metadata/metadata.csv")
     except KeyError:
-        metadata = None
+        return None
     else:
         metadata = metadata_csv.read().decode("utf8")
 
@@ -39,6 +35,16 @@ def verify_package(*, logger, zip_file, verifications):
         # These are sometimes written by Excel and the like, I think?
         if "\ufeff" in metadata:
             metadata = metadata.replace("\ufeff", "")
+
+        return metadata
+
+
+def verify_package(*, logger, zip_file, verifications):
+    # Extract the zip file listing and the metadata.csv contents for this
+    # transfer package.
+    file_listing = zip_file.namelist()
+
+    metadata = extract_metadata(zip_file)
 
     logger.write(f"Running {len(verifications)} checks for {zip_file}")
 
@@ -302,6 +308,124 @@ def verify_metadata_csv_has_dc_identifier(metadata):
 
                 filename,dc.identifier,dc.title
                 objects/,LE/MON,The Citrus Archives
+
+            """
+        )
+
+
+def verify_metadata_csv_has_accession_fields(metadata):
+    reader = io.StringIO(metadata)
+
+    csv_reader = csv.DictReader(reader)
+    rows = list(csv_reader)
+
+    if len(rows) != 1:
+        raise VerificationFailure(
+            f"""
+            Your metadata.csv should only contain a single row, but the
+            CSV in your transfer package contains {len(rows)} rows.
+
+            Please upload a new transfer package with a single row in metadata.csv.
+
+            WRONG:
+
+                filename,collection_reference,accession_number
+                objects/lemon.png,LEMON,1
+                objects/lemon_curd.jpg,LEMON,1
+
+            RIGHT:
+
+                filename,collection_reference,accession_number
+                objects/,LEMON,1
+
+            (This is a Wellcome policy decision, because we have a 1-to-1
+            association between Archivematica transfer packages and item level
+            records, so the metadata in metadata.csv comes from the item record.
+
+            If you want multiple rows in metadata.csv, you can trigger a transfer
+            manually from the Archivematica dashboard, or talk to the devs if you
+            want to permanently remove this check.)
+            """
+        )
+
+    metadata_row = rows[0]
+
+    if (
+        "filename" not in metadata_row or
+        "collection_reference" not in metadata_row or
+        "accession_number" not in metadata_row
+    ):
+        raise VerificationFailure(
+            """
+            Your metadata.csv is missing one of the mandatory columns ('filename'
+            'collection_reference', and 'accession_number'.)  Please add these
+            columns to your metadata.csv, then upload a new transfer package.
+
+            You can have other columns beside these three, but you must *always*
+            have all of these columns.
+
+            WRONG:
+
+                filename
+                objects/
+
+            RIGHT:
+
+                filename,collection_reference,accession_number
+                objects/,LEMON,1
+
+            RIGHT:
+
+                filename,collection_reference,accession_number,dc.title
+                objects/,LEMON,1,The Citrus Archives
+
+            """
+        )
+
+    if metadata_row["filename"] != "objects/":
+        raise VerificationFailure(
+            f"""
+            Your metadata.csv has an incorrect value in the 'filename' column.
+            The value in this column should be 'objects/'.
+
+            Please correct this value, and upload a new transfer package.
+
+            WRONG:
+
+                filename,collection_reference,accession_number
+                {metadata_row['filename']!r},LEMON,1
+
+            RIGHT:
+
+                filename,collection_reference,accession_number
+                objects/,LEMON,1
+
+            """
+        )
+
+    if not metadata_row["accession_number"] or not metadata_row["collection_reference"]:
+        raise VerificationFailure(
+            f"""
+            You have supplied an empty value in the 'accession_number' or
+            'collection_reference' fields of your metadata.csv.
+
+            Please write a non-empty value in these fields, and upload a new
+            transfer package.
+
+            WRONG:
+
+                filename,collection_reference,accession_number
+                objects/,,1
+
+            WRONG:
+
+                filename,collection_reference,accession_number
+                objects/,LEMON,
+
+            RIGHT:
+
+                filename,collection_reference,accession_number
+                objects/,LEMON,1
 
             """
         )
