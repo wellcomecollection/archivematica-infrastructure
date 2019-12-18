@@ -12,7 +12,7 @@ import archivematica
 from archivematica import choose_processing_config
 from big_s3 import S3File
 from log_handler import Logger
-from verify_transfer_packages import verify_package
+from verify_transfer_packages import *
 
 
 def _write_log(logger, bucket, key, result):
@@ -44,8 +44,16 @@ def run_transfer(s3, *, bucket, key):
     s3_object = s3.Object(bucket, key)
     s3_file = S3File(s3_object=s3_object)
 
+    verifications = [
+        verify_all_files_not_under_single_dir,
+        verify_all_files_not_under_objects_dir,
+        verify_has_a_metadata_csv,
+        verify_only_metadata_csv_in_metadata_dir,
+        verify_metadata_csv_is_correct_format,
+    ]
+
     with zipfile.ZipFile(s3_file) as zf:
-        if not verify_package(logger=logger, zip_file=zf):
+        if not verify_package(logger=logger, zip_file=zf, verifications=verifications):
             _write_log(logger, bucket=bucket, key=key, result="failed")
             print(f"Verification error in s3://{bucket}/{key}")
             return

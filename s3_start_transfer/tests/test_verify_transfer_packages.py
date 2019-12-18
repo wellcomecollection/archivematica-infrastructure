@@ -30,13 +30,21 @@ def _get_file_listing(name):
 
 
 class TestVerifyPackage:
+    verifications = [
+        verify_all_files_not_under_single_dir,
+        verify_all_files_not_under_objects_dir,
+        verify_has_a_metadata_csv,
+        verify_only_metadata_csv_in_metadata_dir,
+        verify_metadata_csv_is_correct_format,
+    ]
+
     def test_errors_if_no_metadata_in_zip(self):
         zip_path = _get_zip_path("no_metadata_csv.zip")
 
         logger = Logger()
 
         with zipfile.ZipFile(zip_path) as zf:
-            verify_package(logger=logger, zip_file=zf)
+            verify_package(logger=logger, zip_file=zf, verifications=self.verifications)
 
     @pytest.mark.parametrize(
         "name",
@@ -50,7 +58,7 @@ class TestVerifyPackage:
 
         logger = Logger()
         with zipfile.ZipFile(zip_path) as zf:
-            verify_package(logger=logger, zip_file=zf)
+            verify_package(logger=logger, zip_file=zf, verifications=self.verifications)
 
 
 class TestVerifyAllFilesNotUnderSingleDir:

@@ -23,7 +23,7 @@ class VerificationFailure(Exception):
         super().__init__(textwrap.dedent(message).strip())
 
 
-def verify_package(*, logger, zip_file):
+def verify_package(*, logger, zip_file, verifications):
     # Extract the zip file listing and the metadata.csv contents for this
     # transfer package.
     file_listing = zip_file.namelist()
@@ -39,14 +39,6 @@ def verify_package(*, logger, zip_file):
         # These are sometimes written by Excel and the like, I think?
         if "\ufeff" in metadata:
             metadata = metadata.replace("\ufeff", "")
-
-    verifications = [
-        verify_all_files_not_under_single_dir,
-        verify_all_files_not_under_objects_dir,
-        verify_has_a_metadata_csv,
-        verify_only_metadata_csv_in_metadata_dir,
-        verify_metadata_csv_is_correct_format,
-    ]
 
     logger.write(f"Running {len(verifications)} checks for {zip_file}")
 
