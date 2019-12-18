@@ -48,9 +48,7 @@ def verify_package(*, logger, zip_file):
         verify_metadata_csv_is_correct_format,
     ]
 
-    logger.write(
-        f"Running {len(verifications)} checks for {zip_file}"
-    )
+    logger.write(f"Running {len(verifications)} checks for {zip_file}")
 
     for i, verify_function in enumerate(verifications, start=1):
         logger.write(f"== Check {i}: {verify_function.__name__} ==")
@@ -168,11 +166,7 @@ def verify_has_a_metadata_csv(file_listing):
 
 
 def verify_only_metadata_csv_in_metadata_dir(file_listing):
-    metadata_files = {
-        f
-        for f in file_listing
-        if f.startswith("metadata/")
-    }
+    metadata_files = {f for f in file_listing if f.startswith("metadata/")}
 
     unexpected_metadata_files = metadata_files - {"metadata/", "metadata/metadata.csv"}
 
@@ -249,7 +243,7 @@ def verify_metadata_csv_is_correct_format(metadata):
 
     metadata_row = rows[0]
 
-    if ("filename" not in metadata_row or "dc.identifier" not in metadata_row):
+    if "filename" not in metadata_row or "dc.identifier" not in metadata_row:
         raise VerificationFailure(
             """
             Your metadata.csv is missing one of the mandatory columns ('filename'

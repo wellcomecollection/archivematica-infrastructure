@@ -17,7 +17,7 @@ class TestLogger:
             r"Hello!\n"
             r"My favourite colour is red\n"
             r"@@ Logging ends at \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} @@",
-            logger.text()
+            logger.text(),
         )
 
         logger.write("I will write some more text")
@@ -27,7 +27,7 @@ class TestLogger:
             r"My favourite colour is red\n"
             r"I will write some more text\n"
             r"@@ Logging ends at \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} @@",
-            logger.text()
+            logger.text(),
         )
 
     def test_timestamp_is_recent(self):

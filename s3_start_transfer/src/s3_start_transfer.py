@@ -27,13 +27,12 @@ def _write_log(logger, bucket, key, result):
         Bucket=bucket,
         Key=log_key,
         Body=logger.text(),
-
         # The object is uploaded by a Lambda running in the workflow account,
         # but the transfer bucket is owned by the digitisation bucket.
         #
         # Give full control to the digitisation account, so people in that
         # account (e.g. archivists) can download/clean up the files.
-        ACL="bucket-owner-full-control"
+        ACL="bucket-owner-full-control",
     )
 
 
@@ -59,16 +58,12 @@ def run_transfer(s3, *, bucket, key):
 
         # Identify the file's location on the AM storage service
         target_path = archivematica.get_target_path(
-            bucket=bucket,
-            directory=directory,
-            key=key_path
+            bucket=bucket, directory=directory, key=key_path
         )
 
         target_name = os.path.basename(key)
         transfer_id = archivematica.start_transfer(
-            name=target_name,
-            path=target_path,
-            processing_config=processing_config
+            name=target_name, path=target_path, processing_config=processing_config
         )
     except Exception as err:
         logger.write(f"Error starting transfer: {err}")
@@ -100,5 +95,5 @@ if __name__ == "__main__":  # pragma: no cover
     run_transfer(
         s3,
         bucket="wellcomecollection-archivematica-transfer-source",
-        key="born-digital-accessions/WT_B_9_2_2.zip"
+        key="born-digital-accessions/WT_B_9_2_2.zip",
     )

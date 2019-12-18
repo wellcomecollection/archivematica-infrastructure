@@ -27,9 +27,7 @@ import datetime as dt
 
 class Logger:
     def __init__(self):
-        self._lines = [
-            f"@@ Logging starts at {self._timestamp()} @@"
-        ]
+        self._lines = [f"@@ Logging starts at {self._timestamp()} @@"]
 
     def _timestamp(self):
         return dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

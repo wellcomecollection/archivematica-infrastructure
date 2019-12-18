@@ -26,9 +26,7 @@ def test_am_api_post_json(mock_post, monkeypatch):
 
 @patch.object(requests, "get")
 def test_ss_api_get(mock_get, monkeypatch):
-    monkeypatch.setenv(
-        "ARCHIVEMATICA_SS_URL", "http://archivematica-ss.example.com"
-    )
+    monkeypatch.setenv("ARCHIVEMATICA_SS_URL", "http://archivematica-ss.example.com")
     monkeypatch.setenv("ARCHIVEMATICA_SS_USERNAME", "ss_username")
     monkeypatch.setenv("ARCHIVEMATICA_SS_API_KEY", "ss_api_key")
     mock_get.return_value.json.return_value = {"c": "d"}
@@ -71,8 +69,7 @@ def test_get_target_path(mock_ss_get):
     mock_ss_get.assert_has_calls(
         [
             call(
-                "/api/v2/location/",
-                {"space__access_protocol": "S3", "purpose": "TS"},
+                "/api/v2/location/", {"space__access_protocol": "S3", "purpose": "TS"},
             ),
             call("/api/v2/space/1"),
             call("/api/v2/space/2"),
@@ -82,16 +79,8 @@ def test_get_target_path(mock_ss_get):
 
 def test_find_matching_path():
     locations = [
-        {
-            "relative_path": "/path-a/",
-            "s3_bucket": "bucket01",
-            "uuid": "space1-uuid",
-        },
-        {
-            "relative_path": "/path-b/",
-            "s3_bucket": "bucket02",
-            "uuid": "space2-uuid",
-        },
+        {"relative_path": "/path-a/", "s3_bucket": "bucket01", "uuid": "space1-uuid",},
+        {"relative_path": "/path-b/", "s3_bucket": "bucket02", "uuid": "space2-uuid",},
     ]
 
     assert (
@@ -102,11 +91,7 @@ def test_find_matching_path():
 
 def test_find_matching_path_no_path_match():
     locations = [
-        {
-            "relative_path": "/path-a/",
-            "s3_bucket": "bucket01",
-            "uuid": "space1-uuid",
-        }
+        {"relative_path": "/path-a/", "s3_bucket": "bucket01", "uuid": "space1-uuid",}
     ]
 
     with pytest.raises(archivematica.StoragePathException):
@@ -115,11 +100,7 @@ def test_find_matching_path_no_path_match():
 
 def test_find_matching_path_no_bucket_match():
     locations = [
-        {
-            "relative_path": "/path-a/",
-            "s3_bucket": "bucket01",
-            "uuid": "space1-uuid",
-        }
+        {"relative_path": "/path-a/", "s3_bucket": "bucket01", "uuid": "space1-uuid",}
     ]
 
     with pytest.raises(archivematica.StoragePathException):

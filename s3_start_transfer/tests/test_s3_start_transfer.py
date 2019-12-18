@@ -28,11 +28,7 @@ def _find_log_object(s3, *, bucket_name):
     bucket_objects = list(bucket.objects.all())
     assert len(bucket_objects) == 2
 
-    log_objects = [
-        s3_obj
-        for s3_obj in bucket_objects
-        if s3_obj.key.endswith(".log")
-    ]
+    log_objects = [s3_obj for s3_obj in bucket_objects if s3_obj.key.endswith(".log")]
     assert len(log_objects) == 1
     log_key = log_objects[0].key
 
@@ -47,7 +43,8 @@ class TestStartTransfer:
         assert (
             s3_start_transfer.start_transfer(
                 "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
-            ) == "my-transfer-id"
+            )
+            == "my-transfer-id"
         )
 
         mock_am_post.assert_called_once_with(
@@ -76,14 +73,12 @@ class TestStartTransfer:
         s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
 
         mock_get_target_path.assert_called_with(
-            bucket=bucket_name,
-            directory="born-digital",
-            key="transfer_package.zip"
+            bucket=bucket_name, directory="born-digital", key="transfer_package.zip"
         )
         mock_start_transfer.assert_called_with(
             name="transfer_package.zip",
             path=mock_get_target_path.return_value,
-            processing_config="born_digital"
+            processing_config="born_digital",
         )
 
     @mock_s3
@@ -105,7 +100,7 @@ class TestStartTransfer:
         # Example: born-digital/transfer_package.zip.success.2019-12-13_14-46-09.log
         assert re.match(
             r"^born-digital/transfer_package\.zip\.success\.\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.log$",
-            log_object.key
+            log_object.key,
         )
 
         log_text = log_object.get()["Body"].read()
@@ -125,7 +120,7 @@ class TestStartTransfer:
         # Example: born-digital/transfer_package.zip.failed.2019-12-13_14-46-09.log
         assert re.match(
             r"^born-digital/transfer_package\.zip\.failed\.\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.log$",
-            log_object.key
+            log_object.key,
         )
 
         log_text = log_object.get()["Body"].read()
@@ -165,7 +160,7 @@ class TestStartTransfer:
         # Example: born-digital/transfer_package.zip.failed.2019-12-13_14-46-09.log
         assert re.match(
             r"^born-digital/transfer_package\.zip\.failed\.\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.log$",
-            log_object.key
+            log_object.key,
         )
 
         log_text = log_object.get()["Body"].read()
@@ -180,30 +175,32 @@ def test_main_runs_all_events(bucket_name):
         s3,
         bucket_name=bucket_name,
         filename="valid_transfer_package.zip",
-        key="born-digital/transfer_package1.zip"
+        key="born-digital/transfer_package1.zip",
     )
 
     _write_transfer_package(
         s3,
         bucket_name=bucket_name,
         filename="valid_transfer_package.zip",
-        key="born-digital/transfer_package2.zip"
+        key="born-digital/transfer_package2.zip",
     )
 
-    event = {"Records": [
-        {
-            "s3": {
-                "bucket": {"name": bucket_name},
-                "object": {"key": "born-digital%2Ftransfer_package1.zip"},
-            }
-        },
-        {
-            "s3": {
-                "bucket": {"name": bucket_name},
-                "object": {"key": "born-digital%2Ftransfer_package2.zip"},
-            }
-        },
-    ]}
+    event = {
+        "Records": [
+            {
+                "s3": {
+                    "bucket": {"name": bucket_name},
+                    "object": {"key": "born-digital%2Ftransfer_package1.zip"},
+                }
+            },
+            {
+                "s3": {
+                    "bucket": {"name": bucket_name},
+                    "object": {"key": "born-digital%2Ftransfer_package2.zip"},
+                }
+            },
+        ]
+    }
 
     with patch.object(archivematica, "get_target_path"):
         with patch.object(archivematica, "start_transfer") as mock_start_transfer:
@@ -212,18 +209,19 @@ def test_main_runs_all_events(bucket_name):
             assert mock_start_transfer.call_count == 2
 
 
-@pytest.mark.parametrize("s3_key, processing_config", [
-    ("born-digital/PPABC1.zip", "born_digital"),
-    ("born-digital/lexie/PPABC1.zip", "born_digital"),
-    ("born-digital-accessions/WT1234.zip", "accessions"),
-])
+@pytest.mark.parametrize(
+    "s3_key, processing_config",
+    [
+        ("born-digital/PPABC1.zip", "born_digital"),
+        ("born-digital/lexie/PPABC1.zip", "born_digital"),
+        ("born-digital-accessions/WT1234.zip", "accessions"),
+    ],
+)
 def test_choose_processing_config(s3_key, processing_config):
     assert s3_start_transfer.choose_processing_config(s3_key) == processing_config
 
 
-@pytest.mark.parametrize("s3_key", [
-    "digitised/b12345678.zip",
-])
+@pytest.mark.parametrize("s3_key", ["digitised/b12345678.zip",])
 def test_unrecognised_key_is_not_processing_config(s3_key):
     with pytest.raises(ValueError, match="Unable to determine processing config"):
         s3_start_transfer.choose_processing_config(s3_key)

@@ -14,7 +14,7 @@ from verify_transfer_packages import (
     verify_has_a_metadata_csv,
     verify_only_metadata_csv_in_metadata_dir,
     verify_metadata_csv_is_correct_format,
-    VerificationFailure
+    VerificationFailure,
 )
 
 
@@ -38,10 +38,13 @@ class TestVerifyPackage:
         with zipfile.ZipFile(zip_path) as zf:
             verify_package(logger=logger, zip_file=zf)
 
-    @pytest.mark.parametrize("name", [
-        "valid_transfer_package.zip",
-        "valid_transfer_package_with_byte_order_mark.zip",
-    ])
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "valid_transfer_package.zip",
+            "valid_transfer_package_with_byte_order_mark.zip",
+        ],
+    )
     def test_handles_a_byte_order_mark_in_metadata_csv(self, name):
         zip_path = _get_zip_path(name)
 
@@ -61,10 +64,9 @@ class TestVerifyAllFilesNotUnderSingleDir:
             "All the files in your transfer package must be in the top level,"
         )
 
-    @pytest.mark.parametrize("name", [
-        "valid_transfer_package.zip",
-        "multi_top_level_dir.zip",
-    ])
+    @pytest.mark.parametrize(
+        "name", ["valid_transfer_package.zip", "multi_top_level_dir.zip",]
+    )
     def test_valid_transfer_package_is_okay(self, name):
         file_listing = _get_file_listing(name)
         verify_all_files_not_under_single_dir(file_listing=file_listing)
@@ -82,20 +84,18 @@ class TestVerifyAllFilesNotUnderObjectsDir:
             "``objects/`` (even though that's the prefix in ``metadata.csv``)."
         )
 
-    @pytest.mark.parametrize("name", [
-        "valid_transfer_package.zip",
-        "multi_top_level_dir.zip"
-    ])
+    @pytest.mark.parametrize(
+        "name", ["valid_transfer_package.zip", "multi_top_level_dir.zip"]
+    )
     def test_valid_transfer_package_is_okay(self, name):
         file_listing = _get_file_listing(name)
         verify_all_files_not_under_objects_dir(file_listing=file_listing)
 
 
 class TestVerifyHasMetadataCsv:
-    @pytest.mark.parametrize("name", [
-        "no_metadata_csv.zip",
-        "metadata_at_top_level.zip",
-    ])
+    @pytest.mark.parametrize(
+        "name", ["no_metadata_csv.zip", "metadata_at_top_level.zip",]
+    )
     def test_no_metadata_csv_is_exception(self, name):
         file_listing = _get_file_listing(name)
 
@@ -107,19 +107,16 @@ class TestVerifyHasMetadataCsv:
             "that describes the objects in the bag."
         )
 
-    @pytest.mark.parametrize("name", [
-        "valid_transfer_package.zip",
-        "multi_top_level_dir.zip"
-    ])
+    @pytest.mark.parametrize(
+        "name", ["valid_transfer_package.zip", "multi_top_level_dir.zip"]
+    )
     def test_valid_transfer_package_is_okay(self, name):
         file_listing = _get_file_listing(name)
         verify_has_a_metadata_csv(file_listing=file_listing)
 
 
 class TestVerifyOnlyMetadataCsvInMetadataDir:
-    @pytest.mark.parametrize("name", [
-        "extra_files_in_metadata_dir.zip",
-    ])
+    @pytest.mark.parametrize("name", ["extra_files_in_metadata_dir.zip",])
     def test_extra_files_in_metadata_dir_is_exception(self, name):
         file_listing = _get_file_listing(name)
 
@@ -131,24 +128,29 @@ class TestVerifyOnlyMetadataCsvInMetadataDir:
             "The only file in ``metadata/`` should be ``metadata/metadata.csv``."
         )
 
-    @pytest.mark.parametrize("name", [
-        "valid_transfer_package.zip",
-        "multi_top_level_dir.zip"
-    ])
+    @pytest.mark.parametrize(
+        "name", ["valid_transfer_package.zip", "multi_top_level_dir.zip"]
+    )
     def test_valid_transfer_package_is_okay(self, name):
         file_listing = _get_file_listing(name)
         verify_only_metadata_csv_in_metadata_dir(file_listing=file_listing)
 
 
 class TestVerifyMetadataCsv:
-    @pytest.mark.parametrize("metadata, row_count", [
-        ("""
+    @pytest.mark.parametrize(
+        "metadata, row_count",
+        [
+            (
+                """
         filename,dc.identifier
         objects/lemon.png,LE/MON/1
         objects/lemon_curd.jpg,LE/MON/2
-        """, 2),
-        ("""filename,dc.identifier""", 0),
-    ])
+        """,
+                2,
+            ),
+            ("""filename,dc.identifier""", 0),
+        ],
+    )
     def test_only_contains_one_row(self, metadata, row_count):
         metadata = textwrap.dedent(metadata).strip()
 
@@ -160,20 +162,23 @@ class TestVerifyMetadataCsv:
             f"CSV in your transfer package contains {row_count} rows."
         )
 
-    @pytest.mark.parametrize("metadata", [
-        """
+    @pytest.mark.parametrize(
+        "metadata",
+        [
+            """
         filename,dc.title
         objects/,The Citrus Archives
         """,
-        """
+            """
         dc.identifier,dc.title
         LE/MON/1,The Citrus Archives
         """,
-        """
+            """
         dc.title
         The Citrus Archives
         """,
-    ])
+        ],
+    )
     def test_checks_for_mandatory_columns(self, metadata):
         metadata = textwrap.dedent(metadata).strip()
 
@@ -197,16 +202,19 @@ class TestVerifyMetadataCsv:
             "The value in this column should be 'objects/'."
         )
 
-    @pytest.mark.parametrize("metadata", [
-        """
+    @pytest.mark.parametrize(
+        "metadata",
+        [
+            """
         filename,dc.identifier
         objects/,
         """,
-        """
+            """
         filename,dc.identifier,dc.title
         objects/,,The Citrus Archives
         """,
-    ])
+        ],
+    )
     def test_checks_dc_identifier_is_non_empty(self, metadata):
         metadata = textwrap.dedent(metadata).strip()
 
@@ -218,20 +226,23 @@ class TestVerifyMetadataCsv:
             "your metadata.csv."
         )
 
-    @pytest.mark.parametrize("metadata", [
-        """
+    @pytest.mark.parametrize(
+        "metadata",
+        [
+            """
         filename,dc.identifier
         objects/,LE/MON/1
         """,
-        """
+            """
         dc.identifier,filename
         LE/MON/1,objects/
         """,
-        """
+            """
         dc.identifier,dc.title,filename
         LE/MON/1,The Citrus Archives,objects/
-        """
-    ])
+        """,
+        ],
+    )
     def test_valid_metadata_is_okay(self, metadata):
         metadata = textwrap.dedent(metadata).strip()
 

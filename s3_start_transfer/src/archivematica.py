@@ -28,9 +28,7 @@ def am_api_post_json(api_path, data):
     am_url = os.environ["ARCHIVEMATICA_URL"]
     am_user = os.environ["ARCHIVEMATICA_USERNAME"]
     am_api_key = os.environ["ARCHIVEMATICA_API_KEY"]
-    am_headers = {
-        "Authorization": f"ApiKey {am_user}:{am_api_key}"
-    }
+    am_headers = {"Authorization": f"ApiKey {am_user}:{am_api_key}"}
 
     url = f"{am_url}{api_path}"
     print(f"URL: {url}; Data: {data}")
@@ -178,6 +176,4 @@ def choose_processing_config(key):
     elif key.startswith("born-digital-accessions/"):
         return "accessions"
     else:
-        raise ValueError(
-            "Unable to determine processing config for key: %r" % key
-        )
+        raise ValueError("Unable to determine processing config for key: %r" % key)
