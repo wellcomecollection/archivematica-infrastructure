@@ -24,6 +24,29 @@ def test_am_api_post_json(mock_post, monkeypatch):
     )
 
 
+@patch.object(archivematica, "am_api_post_json")
+def test_start_transfer(mock_am_post):
+    mock_am_post.return_value = {"id": "my-transfer-id"}
+
+    assert (
+        archivematica.start_transfer(
+            "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
+        )
+        == "my-transfer-id"
+    )
+
+    mock_am_post.assert_called_once_with(
+        "/api/v2beta/package",
+        {
+            "name": "test1.zip",
+            "type": "zipfile",
+            "path": "c3BhY2UxLXV1aWQ6L3Rlc3QxLnppcA==",
+            "processing_config": "born_digital",
+            "auto_approve": True,
+        },
+    )
+
+
 @patch.object(requests, "get")
 def test_ss_api_get(mock_get, monkeypatch):
     monkeypatch.setenv("ARCHIVEMATICA_SS_URL", "http://archivematica-ss.example.com")
