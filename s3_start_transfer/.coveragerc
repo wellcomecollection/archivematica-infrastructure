@@ -1,0 +1,11 @@
+[run]
+branch = True
+include =
+    src/*.py
+    tests/*.py
+
+[report]
+show_missing = true
+fail_under = 100
+exclude_lines =
+    pragma: no cover

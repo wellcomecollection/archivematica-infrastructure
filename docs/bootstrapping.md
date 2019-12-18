@@ -225,6 +225,8 @@ This step tells Archivematica how to write to the Wellcome Archival Storage.
 
     (This will be concatenated onto the space path to produce a full path to which files should be uploaded. This does not correspond to a filesystem path, but maps to a location on the eventual storage. e.g. `/born-digital/` will map to the `born-digital` space in the Archival Storage.)
 
+5.  Repeat step 4, creating a location for `/born-digital-accessions`.
+
 Here's what a successfully configured space looks like:
 
 ![](storage_space.png)
@@ -267,6 +269,8 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
     The relative path corresponds to the name of the drop directory (within the root path) into which files should be dropped and an automated transfer started on Archivematica. It must match the name of a workflow on Archivematica (with dashes replaced by underscores, e.g. born-digital directory will trigger a transfer using the born_digital flow)
 
+    You need to create locations for `/born-digital` and `/born-digital-accessions`.
+
 
 
 <h2 id="step_8">
@@ -278,4 +282,6 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 2.  Select "Administration" in the top tab bar.
     Select "Processing configuration" in the sidebar.
 
-3.  Edit the default processing config, using the options on this page: <https://github.com/wellcomecollection/docs/tree/master/rfcs/014-born_digital_workflow#processing>
+3.  Create a "born_digital" and "accessions" config, using the options on this page: <https://github.com/wellcomecollection/docs/tree/master/rfcs/014-born_digital_workflow#processing>
+
+    They should point at the AIP storage in the `born-digital` and `born-digital-accessions` spaces, respectively.
