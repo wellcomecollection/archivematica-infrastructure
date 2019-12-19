@@ -4,11 +4,11 @@ variable "cluster_arn" {}
 variable "namespace_id" {}
 
 variable "fits_cpu" {
-  default = 768
+  default = 2048
 }
 
 variable "fits_memory" {
-  default = 1024
+  default = 3072
 }
 
 variable "fits_container_image" {}
@@ -32,7 +32,7 @@ variable "clamav_mount_points" {
 }
 
 variable "mcp_client_cpu" {
-  default = 1024
+  default = 1280
 }
 
 variable "mcp_client_memory" {

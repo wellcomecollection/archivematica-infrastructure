@@ -149,7 +149,7 @@ def verify_has_a_metadata_csv(file_listing):
         raise VerificationFailure(
             """
             Your transfer package must have a file ``metadata/metadata.csv``
-            that describes the objects in the bag.
+            that describes the objects in the package.
 
             Add a metadata file, recompress your transfer package, then
             upload it again.
