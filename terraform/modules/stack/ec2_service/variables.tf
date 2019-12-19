@@ -1,20 +1,31 @@
 variable "namespace" {}
+variable "name" {}
 
 variable "cluster_arn" {}
 variable "namespace_id" {}
 
-variable "cpu" {
-  default = 2048
+variable "cpu" {}
+
+variable "memory" {}
+
+variable "env_vars" {
+  type    = map(string)
+  default = {}
 }
 
-variable "memory" {
-  default = 3072
+variable "secret_env_vars" {
+  type    = map(string)
+  default = {}
 }
 
 variable "container_image" {}
 
 variable "mount_points" {
   type = list(map(string))
+}
+
+variable "desired_task_count" {
+  default = 1
 }
 
 variable "network_private_subnets" {

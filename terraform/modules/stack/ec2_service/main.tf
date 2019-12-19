@@ -1,8 +1,13 @@
 locals {
-  full_name = "am-${var.namespace}-fits2"
+  full_name = "am-${var.namespace}-${var.name}"
 }
 
-resource "aws_cloudwatch_log_group" "fits" {
+module "iam_roles" {
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/iam_role?ref=v1.0.0"
+  task_name = "am-${local.full_name}"
+}
+
+resource "aws_cloudwatch_log_group" "log_group" {
   name = "ecs/${local.full_name}"
 
   retention_in_days = 7
@@ -18,8 +23,10 @@ data "template_file" "container_definition" {
     cpu             = var.cpu
     memory          = var.memory
     container_image = var.container_image
-    log_group_name  = aws_cloudwatch_log_group.fits.name
+    log_group_name  = aws_cloudwatch_log_group.log_group.name
     mount_points    = jsonencode(var.mount_points)
+    env_vars        = module.env_vars.env_vars_string
+    secrets         = module.secrets.env_vars_string
   }
 }
 
@@ -54,7 +61,7 @@ module "service" {
 
   cluster_arn = var.cluster_arn
 
-  desired_task_count = 1
+  desired_task_count = var.desired_task_count
 
   task_definition_arn = aws_ecs_task_definition.task.arn
 

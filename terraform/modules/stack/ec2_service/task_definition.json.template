@@ -6,6 +6,8 @@
     "image": "${container_image}",
     "name": "fits",
     "networkMode": "awsvpc",
+    "environment": ${env_vars},
+    "secrets": ${secrets},
     "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
