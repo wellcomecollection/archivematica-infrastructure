@@ -1,0 +1,19 @@
+[
+  {
+    "cpu": ${cpu},
+    "memory": ${memory},
+    "essential": true,
+    "image": "${container_image}",
+    "name": "fits",
+    "networkMode": "awsvpc",
+    "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "${log_group_name}",
+            "awslogs-region": "${log_group_region}"
+        }
+    },
+    "mountPoints": ${mount_points},
+    "user": "root"
+  }
+]

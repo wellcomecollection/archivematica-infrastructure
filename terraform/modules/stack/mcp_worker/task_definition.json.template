@@ -1,22 +1,5 @@
 [
   {
-    "cpu": ${fits_cpu},
-    "memory": ${fits_memory},
-    "essential": true,
-    "image": "${fits_container_image}",
-    "name": "fits",
-    "networkMode": "awsvpc",
-    "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-            "awslogs-group": "${fits_log_group_name}",
-            "awslogs-region": "${log_group_region}"
-        }
-    },
-    "mountPoints": ${fits_mount_points},
-    "user": "root"
-  },
-  {
     "cpu": ${clamav_cpu},
     "memory": ${clamav_memory},
     "essential": true,
@@ -89,7 +72,7 @@
     },
     "mountPoints": ${mcp_client_mount_points},
     "user": "root"
-  }
+  },
   {
     "cpu": ${mcp_server_cpu},
     "memory": ${mcp_server_memory},

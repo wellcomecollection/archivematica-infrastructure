@@ -1,4 +1,5 @@
 locals {
+  fits_hostname     = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   gearmand_hostname = "${module.gearman_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
 
   storage_service_host = "${module.storage_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
@@ -22,6 +23,30 @@ module "gearman_service" {
 
   cluster_arn  = aws_ecs_cluster.archivematica.id
   namespace_id = aws_service_discovery_private_dns_namespace.archivematica.id
+
+  network_private_subnets = var.network_private_subnets
+
+  interservice_security_group_id   = var.interservice_security_group_id
+  service_egress_security_group_id = var.service_egress_security_group_id
+  service_lb_security_group_id     = var.service_lb_security_group_id
+}
+
+module "fits_service" {
+  source = "./fits_service"
+
+  namespace = var.namespace
+
+  cluster_arn  = aws_ecs_cluster.archivematica.arn
+  namespace_id = aws_service_discovery_private_dns_namespace.archivematica.id
+
+  container_image = "artefactual/fits-ngserver:0.8.4"
+
+  mount_points = [
+    {
+      sourceVolume  = "pipeline-data"
+      containerPath = "/var/archivematica/sharedDirectory"
+    },
+  ]
 
   network_private_subnets = var.network_private_subnets
 
@@ -58,7 +83,7 @@ module "mcp_worker_service" {
 
   mcp_client_env_vars = {
     DJANGO_SETTINGS_MODULE                                         = "settings.common"
-    NAILGUN_SERVER                                                 = "localhost"
+    NAILGUN_SERVER                                                 = local.fits_hostname
     NAILGUN_PORT                                                   = "2113"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = var.rds_username
     ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = var.rds_password
