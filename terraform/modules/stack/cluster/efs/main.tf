@@ -1,3 +1,12 @@
+resource "aws_ebs_volume" "ebs" {
+  availability_zone = "eu-west-1a"
+  size              = 750
+
+  tags = {
+    Name = var.asg_name
+  }
+}
+
 module "cloudformation_stack" {
   source = "../asg"
 
@@ -19,6 +28,12 @@ resource "aws_launch_configuration" "launch_config" {
   iam_instance_profile        = module.instance_profile.name
   user_data                   = data.template_file.userdata.rendered
   associate_public_ip_address = true
+
+  ebs_block_device {
+    volume_size = aws_ebs_volume.ebs.size
+    device_name = "/dev/xvdb"
+    volume_type = "standard"
+  }
 
   lifecycle {
     create_before_destroy = true
@@ -42,12 +57,12 @@ module "instance_profile" {
 }
 
 data "template_file" "userdata" {
-  template = file("${path.module}/efs.tpl")
+  template = file("${path.module}/ebs.tpl")
 
   vars = {
     cluster_name  = var.cluster_name
-    efs_fs_id     = var.efs_fs_id
-    efs_host_path = var.efs_host_path
+    ebs_volume_id = aws_ebs_volume.ebs.id
+    ebs_host_path = "/ebs"
     region        = var.region
   }
 }

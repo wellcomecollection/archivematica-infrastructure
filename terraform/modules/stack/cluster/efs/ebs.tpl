@@ -4,17 +4,19 @@ MIME-Version: 1.0
 --==BOUNDARY==
 Content-Type: text/cloud-boothook; charset="us-ascii"
 
-# Install nfs-utils
+# Install nfs-utils.
+# Maybe needed to get ecs.capability.secrets.ssm.environment-variables???
 cloud-init-per once yum_update yum update -y
 cloud-init-per once install_efs_utils yum install -y amazon-efs-utils
 
-# Create /efs folder
-cloud-init-per once mkdir_efs mkdir -p ${efs_host_path}
+# Create /ebs folder
+cloud-init-per once mkdir_ebs mkdir -p ${ebs_host_path}
 
-# Add /efs to fstab.  We mount the shared filesystem as 'sync' so changes
-# propagate between instances.
-# See https://github.com/wellcometrust/platform/issues/3548
-cloud-init-per once mount_efs echo -e '${efs_fs_id}:/ ${efs_host_path} efs defaults,_netdev,sync 0 0' >> /etc/fstab
+# Format ebs volume
+cloud-init-per once format_ebs mkfs -t ext4 ${ebs_volume_id}
+
+# Add /ebs to fstab
+cloud-init-per once mount_ebs echo -e '${ebs_volume_id} ${ebs_host_path} ext4 defaults,nofail 0 2' >> /etc/fstab
 
 # Mount all
 mount -a
@@ -27,7 +29,7 @@ Content-Type: text/x-shellscript; charset="us-ascii"
 cat << EOF > /etc/ecs/ecs.config
 
 ECS_CLUSTER=${cluster_name}
-ECS_INSTANCE_ATTRIBUTES={"efs.volume":"${efs_fs_id}"}
+ECS_INSTANCE_ATTRIBUTES={"ebs.volume":"${ebs_volume_id}"}
 
 EOF
 --==BOUNDARY==--

@@ -20,21 +20,21 @@ resource "aws_ecs_task_definition" "task" {
 
   placement_constraints {
     type       = "memberOf"
-    expression = "attribute:efs.volume exists"
+    expression = "attribute:ebs.volume exists"
   }
 
   volume {
     name      = "location-data"
-    host_path = "${var.efs_host_path}/location-data"
+    host_path = "/ebs/location-data"
   }
 
   volume {
     name      = "pipeline-data"
-    host_path = "${var.efs_host_path}/pipeline-data"
+    host_path = "/ebs/pipeline-data"
   }
 
   volume {
     name      = "staging-data"
-    host_path = "${var.efs_host_path}/staging-data"
+    host_path = "/ebs/staging-data"
   }
 }

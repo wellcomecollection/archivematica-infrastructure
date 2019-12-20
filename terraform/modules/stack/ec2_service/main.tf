@@ -42,12 +42,12 @@ resource "aws_ecs_task_definition" "task" {
 
   placement_constraints {
     type       = "memberOf"
-    expression = "attribute:efs.volume exists"
+    expression = "attribute:ebs.volume exists"
   }
 
   volume {
     name      = "pipeline-data"
-    host_path = "/efs/pipeline-data"
+    host_path = "/ebs/pipeline-data"
   }
 
   cpu    = var.cpu

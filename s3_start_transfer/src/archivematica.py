@@ -35,7 +35,7 @@ def am_api_post_json(api_path, data):
     response = requests.post(url, json=data, headers=am_headers)
     print(f"Response: {response}")
     response_json = response.json()
-    print("Response JSON: {response_json}")
+    print(f"Response JSON: {response_json}")
     return response_json
 
 

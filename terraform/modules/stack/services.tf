@@ -74,7 +74,7 @@ module "clamav_service" {
     },
   ]
 
-  cpu    = 1024
+  cpu    = 2048
   memory = 2048
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
@@ -116,8 +116,8 @@ module "mcp_server_service" {
     },
   ]
 
-  cpu    = 512
-  memory = 1024
+  cpu    = 2048
+  memory = 2048
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
   namespace    = var.namespace
