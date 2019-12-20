@@ -1,8 +1,11 @@
 # -*- encoding: utf-8
 
+import csv
 import datetime as dt
+import io
 import os
 import os.path
+import traceback
 import urllib.parse
 import zipfile
 
@@ -12,7 +15,7 @@ import archivematica
 from archivematica import choose_processing_config
 from big_s3 import S3File
 from log_handler import Logger
-from verify_transfer_packages import verify_package
+from verify_transfer_packages import *
 
 
 def _write_log(logger, bucket, key, result):
@@ -36,19 +39,64 @@ def _write_log(logger, bucket, key, result):
     )
 
 
-def run_transfer(s3, *, bucket, key):
-    logger = Logger()
-
-    # Run some verifications on the object before we sent it to Archivematica.
+def verify_s3_package(*, s3, logger, bucket, key):
     print(f"Running verifications on s3://{bucket}/{key}")
     s3_object = s3.Object(bucket, key)
     s3_file = S3File(s3_object=s3_object)
 
+    verifications = [
+        verify_all_files_not_under_single_dir,
+        verify_all_files_not_under_objects_dir,
+        verify_has_a_metadata_csv,
+        verify_only_metadata_csv_in_metadata_dir,
+    ]
+
+    if key.startswith("born-digital-accessions/"):
+        verifications.append(verify_metadata_csv_has_accession_fields)
+    else:
+        verifications.append(verify_metadata_csv_has_dc_identifier)
+
     with zipfile.ZipFile(s3_file) as zf:
-        if not verify_package(logger=logger, zip_file=zf):
+        if not verify_package(logger=logger, zip_file=zf, verifications=verifications):
             _write_log(logger, bucket=bucket, key=key, result="failed")
-            print(f"Verification error in s3://{bucket}/{key}")
-            return
+            raise VerificationFailure("One of the verifications failed!")
+
+
+def get_accession_number(*, s3, logger, bucket, key):
+    print(f"Extracting accession number from s3://{bucket}/{key}")
+    s3_object = s3.Object(bucket, key)
+    s3_file = S3File(s3_object=s3_object)
+
+    with zipfile.ZipFile(s3_file) as zf:
+        metadata = extract_metadata(zf)
+        assert metadata is not None
+
+        reader = io.StringIO(metadata)
+
+        csv_reader = csv.DictReader(reader)
+        rows = list(csv_reader)
+
+        assert len(rows) == 1
+        return rows[0].get("accession_number")
+
+
+
+def run_transfer(s3, *, bucket, key):
+    logger = Logger()
+
+    # Run some verifications on the object before we sent it to Archivematica.
+    try:
+        verify_s3_package(s3=s3, logger=logger, bucket=bucket, key=key)
+    except VerificationFailure:
+        print(f"Verification error in s3://{bucket}/{key}")
+        return
+
+    accession_number = get_accession_number(
+        s3=s3,
+        logger=logger,
+        bucket=bucket,
+        key=key
+    )
 
     # Now try to start a transfer in Archivematica.
     try:
@@ -63,7 +111,10 @@ def run_transfer(s3, *, bucket, key):
 
         target_name = os.path.basename(key)
         transfer_id = archivematica.start_transfer(
-            name=target_name, path=target_path, processing_config=processing_config
+            name=target_name,
+            path=target_path,
+            processing_config=processing_config,
+            accession_number=accession_number
         )
     except Exception as err:
         logger.write(f"Error starting transfer: {err}")
@@ -86,7 +137,12 @@ def main(event, context=None):
         bucket = record["s3"]["bucket"]["name"]
         key = urllib.parse.unquote_plus(record["s3"]["object"]["key"], encoding="utf-8")
 
-        run_transfer(s3, bucket=bucket, key=key)
+        try:
+            run_transfer(s3, bucket=bucket, key=key)
+        except Exception:
+            print(traceback.format_exc())
+            print("Error thrown, skipping to next record...")
+            continue
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -1,0 +1,12 @@
+module "env_vars" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/env_vars?ref=v1.1.0"
+
+  env_vars = var.env_vars
+}
+
+module "secrets" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/modules/secrets?ref=v1.1.0"
+
+  secret_env_vars     = var.secret_env_vars
+  execution_role_name = module.iam_roles.task_execution_role_name
+}

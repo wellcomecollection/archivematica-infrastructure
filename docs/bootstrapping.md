@@ -282,6 +282,6 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 2.  Select "Administration" in the top tab bar.
     Select "Processing configuration" in the sidebar.
 
-3.  Create a "born_digital" and "accessions" config, using the options on this page: <https://github.com/wellcomecollection/docs/tree/master/rfcs/014-born_digital_workflow#processing>
+3.  Create a "born_digital" and "b_dig_accessions" config, using the options on this page: <https://github.com/wellcomecollection/docs/tree/master/rfcs/014-born_digital_workflow#processing>
 
     They should point at the AIP storage in the `born-digital` and `born-digital-accessions` spaces, respectively.
