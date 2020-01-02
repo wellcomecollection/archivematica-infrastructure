@@ -45,8 +45,10 @@ def verify_s3_package(*, s3, logger, bucket, key):
     s3_file = S3File(s3_object=s3_object)
 
     verifications = [
-        verify_all_files_not_under_single_dir,
-        verify_all_files_not_under_objects_dir,
+        # These checks require us to build the entire list, which takes a long
+        # time and times out on big transfers, so for now we skip them.
+        # verify_all_files_not_under_single_dir,
+        # verify_all_files_not_under_objects_dir,
         verify_has_a_metadata_csv,
         verify_only_metadata_csv_in_metadata_dir,
     ]
