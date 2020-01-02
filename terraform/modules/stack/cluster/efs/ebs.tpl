@@ -19,7 +19,7 @@ cloud-init-per once format_ebs mkfs -t ext4 ${ebs_volume_id}
 cloud-init-per once mount_ebs echo -e '${ebs_volume_id} ${ebs_host_path} ext4 defaults,nofail 0 2' >> /etc/fstab
 
 # Mount all
-mount -a
+mount --all
 
 --==BOUNDARY==
 Content-Type: text/x-shellscript; charset="us-ascii"

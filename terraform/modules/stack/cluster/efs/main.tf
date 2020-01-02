@@ -61,7 +61,7 @@ data "template_file" "userdata" {
 
   vars = {
     cluster_name  = var.cluster_name
-    ebs_volume_id = aws_ebs_volume.ebs.id
+    ebs_volume_id = "/dev/xvdb"
     ebs_host_path = "/ebs"
     region        = var.region
   }
