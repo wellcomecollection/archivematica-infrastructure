@@ -21,13 +21,9 @@ variable "command" {
   default = []
 }
 
-variable "cpu" {
-  default = 512
-}
+variable "cpu" {}
 
-variable "memory" {
-  default = 1024
-}
+variable "memory" {}
 
 variable "mount_points" {
   type    = list(string)

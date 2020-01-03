@@ -44,8 +44,6 @@ data "template_file" "container_definition" {
     sidecar_cpu    = var.sidecar_cpu
     sidecar_memory = var.sidecar_memory
 
-    sidecar_mount_points = jsonencode(var.sidecar_mount_points)
-
     app_user     = var.app_user
     sidecar_user = var.sidecar_user
   }

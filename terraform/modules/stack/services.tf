@@ -22,6 +22,9 @@ module "gearman_service" {
     "--redis-port=${var.redis_port}",
   ]
 
+  cpu    = 512
+  memory = 1024
+
   cluster_arn  = aws_ecs_cluster.archivematica.id
   namespace_id = aws_service_discovery_private_dns_namespace.archivematica.id
 
@@ -46,8 +49,8 @@ module "fits_service" {
     },
   ]
 
-  cpu    = 2048
-  memory = 3072
+  cpu    = 3072
+  memory = 4096
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
   namespace    = var.namespace
@@ -164,7 +167,7 @@ module "mcp_client_service" {
     },
   ]
 
-  cpu    = 2048
+  cpu    = 3072
   memory = 3072
 
   desired_task_count = 1
@@ -187,6 +190,9 @@ module "storage_service" {
 
   hostname         = var.storage_service_hostname
   healthcheck_path = "/login/"
+
+  cpu    = 1024
+  memory = 1024
 
   env_vars = {
     FORWARDED_ALLOW_IPS       = "*"
@@ -255,6 +261,9 @@ module "dashboard_service" {
 
   hostname         = var.dashboard_hostname
   healthcheck_path = "/administration/accounts/login/"
+
+  cpu    = 1024
+  memory = 1024
 
   env_vars = {
     FORWARDED_ALLOW_IPS                              = "*"

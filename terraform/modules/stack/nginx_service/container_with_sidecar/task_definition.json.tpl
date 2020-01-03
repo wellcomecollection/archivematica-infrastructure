@@ -16,8 +16,7 @@
             "awslogs-stream-prefix": "${log_group_prefix}"
         }
     },
-    "user": "${sidecar_user}",
-    "mountPoints": ${sidecar_mount_points}
+    "user": "${sidecar_user}"
   },
   {
     "essential": true,

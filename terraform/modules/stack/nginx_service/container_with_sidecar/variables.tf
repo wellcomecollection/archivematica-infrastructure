@@ -40,11 +40,6 @@ variable "sidecar_container_name" {
 variable "sidecar_cpu" {}
 variable "sidecar_memory" {}
 
-variable "sidecar_mount_points" {
-  type    = list(string)
-  default = []
-}
-
 variable "sidecar_env_vars" {
   type    = map(string)
   default = {}
