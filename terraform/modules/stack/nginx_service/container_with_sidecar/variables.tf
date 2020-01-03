@@ -68,6 +68,3 @@ variable "launch_type" {
 }
 
 variable "aws_region" {}
-
-variable "efs_host_path" {
-}

@@ -27,8 +27,6 @@ module "task_definition" {
 
   launch_type = "EC2"
 
-  efs_host_path = "/efs"
-
   aws_region = "eu-west-1"
 }
 

@@ -1,8 +1,5 @@
 variable "namespace" {}
 
-variable "efs_id" {}
-variable "efs_security_group_id" {}
-
 variable "redis_server" {}
 variable "redis_port" {}
 

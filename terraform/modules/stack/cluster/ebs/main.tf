@@ -48,7 +48,6 @@ module "security_groups" {
 
   controlled_access_cidr_ingress    = var.controlled_access_cidr_ingress
   controlled_access_security_groups = var.ssh_ingress_security_groups
-  custom_security_groups            = var.custom_security_groups
 }
 
 module "instance_profile" {

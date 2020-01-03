@@ -18,9 +18,4 @@ variable "private_subnets" {
   type = list(string)
 }
 
-variable "efs_security_group_ids" {
-  type = list(string)
-}
-
-variable "efs_id" {}
 variable "cluster_name" {}

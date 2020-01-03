@@ -12,9 +12,6 @@ module "cluster" {
 
   controlled_access_cidr_ingress = var.admin_cidr_ingress
 
-  efs_security_group_ids = [var.efs_security_group_id]
-  efs_id                 = var.efs_id
-
   cluster_name = "${aws_ecs_cluster.archivematica.name}"
 
   asg_min     = 1

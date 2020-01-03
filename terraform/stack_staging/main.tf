@@ -3,9 +3,6 @@ module "stack" {
 
   namespace = "staging"
 
-  efs_id                = data.terraform_remote_state.critical.outputs.efs_id
-  efs_security_group_id = data.terraform_remote_state.critical.outputs.efs_security_group_id
-
   redis_server = data.terraform_remote_state.critical.outputs.redis_server
   redis_port   = data.terraform_remote_state.critical.outputs.redis_port
 

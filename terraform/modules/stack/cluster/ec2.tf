@@ -1,5 +1,5 @@
 module "cluster_hosts" {
-  source = "./efs"
+  source = "./ebs"
 
   cluster_name = var.cluster_name
   vpc_id       = var.vpc_id
@@ -7,13 +7,11 @@ module "cluster_hosts" {
   asg_name = var.name
 
   ssh_ingress_security_groups = module.bastion_host.ssh_controlled_ingress_sg
-  custom_security_groups      = var.efs_security_group_ids
 
   subnets  = var.private_subnets
   key_name = "wellcomedigitalworkflow"
 
-  efs_fs_id = var.efs_id
-  region    = var.region
+  region = var.region
 
   asg_min     = var.asg_min
   asg_desired = var.asg_desired

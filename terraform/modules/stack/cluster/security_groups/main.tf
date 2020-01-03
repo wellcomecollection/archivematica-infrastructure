@@ -1,15 +1,3 @@
-locals {
-  base_security_groups = [
-    aws_security_group.full_egress.id,
-    aws_security_group.ssh_controlled_ingress.id,
-  ]
-
-  instance_security_groups = concat(
-    local.base_security_groups,
-    var.custom_security_groups
-  )
-}
-
 resource "aws_security_group" "ssh_controlled_ingress" {
   vpc_id      = var.vpc_id
   name        = "${var.name}_ssh_controlled_ingress_${random_id.sg_append.hex}"
