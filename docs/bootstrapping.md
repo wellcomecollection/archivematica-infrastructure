@@ -132,6 +132,7 @@ To fix this:
     ```
 
     It might take a couple of attempts before this finishes successfully.
+    The dashboard can't start until the database is set up correctly, which means it fails load balancer healthchecks -- ECS will be continually restarting the container until you successfully run the database migrations.
 
 4.  Look for a Docker container running the storage service.
     Similar to above:
