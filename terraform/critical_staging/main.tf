@@ -3,6 +3,11 @@ module "critical" {
 
   namespace = "staging"
 
+  providers = {
+    aws              = aws
+    aws.digitisation = aws.digitisation
+  }
+
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets
 
   vpc_id = data.terraform_remote_state.workflow.outputs.vpc_id
