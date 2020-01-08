@@ -1,12 +1,14 @@
 locals {
   nginx_cpu    = 128
   nginx_memory = 256
+
+  full_name = "${var.namespace}-${var.name}"
 }
 
 module "task_definition" {
   source = "./container_with_sidecar"
 
-  task_name = var.name
+  task_name = local.full_name
 
   cpu    = "${var.cpu + local.nginx_cpu}"
   memory = "${var.memory + local.nginx_memory}"
@@ -63,7 +65,7 @@ module "service" {
 resource "aws_alb_target_group" "ecs_service" {
   # We use snake case in a lot of places, but ALB Target Group names can
   # only contain alphanumerics and hyphens.
-  name = replace(var.name, "_", "-")
+  name = replace(local.full_name, "_", "-")
 
   target_type = "ip"
 
@@ -76,6 +78,11 @@ resource "aws_alb_target_group" "ecs_service" {
     protocol = "HTTP"
     path     = var.healthcheck_path
     matcher  = "200"
+    timeout  = var.healthcheck_timeout
+
+    # AWLC:
+    # Error: Error modifying Target Group: ValidationError: Health check interval must be greater than the timeout.
+    interval = max(var.healthcheck_timeout * 2, 30)
   }
 }
 

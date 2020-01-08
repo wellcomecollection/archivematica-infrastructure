@@ -119,7 +119,7 @@ module "mcp_server_service" {
     },
   ]
 
-  cpu    = 2048
+  cpu    = 1024
   memory = 2048
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
@@ -153,6 +153,15 @@ module "mcp_client_service" {
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "${local.clamav_hostname}:3310"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
+
+    # This is a workaround for a persistent issue we saw where the MCP client
+    # would timeout trying to connect to the storage service at the "Store AIP"
+    # step of ingesting a large AIP (~2.7GB was the package we were using to
+    # repro, but I suspect this wasn't the absolute threshhold).
+    #
+    # We've bumped the timeout to prevent this from happening, based on
+    # discussion in this issue: https://github.com/archivematica/Issues/issues/114
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_STORAGE_SERVICE_CLIENT_QUICK_TIMEOUT = 600
   }
 
   secret_env_vars = {
@@ -167,8 +176,8 @@ module "mcp_client_service" {
     },
   ]
 
-  cpu    = 3072
-  memory = 3072
+  cpu    = 4096
+  memory = 4096
 
   desired_task_count = 1
 
@@ -186,10 +195,14 @@ module "mcp_client_service" {
 module "storage_service" {
   source = "./nginx_service"
 
-  name = "am-${var.namespace}-storage-service"
+  namespace = "am-${var.namespace}"
+  name      = "storage-service"
 
   hostname         = var.storage_service_hostname
   healthcheck_path = "/login/"
+
+  # AWLC: why?
+  healthcheck_timeout = 30
 
   cpu    = 1024
   memory = 1024
@@ -257,12 +270,13 @@ module "storage_service" {
 module "dashboard_service" {
   source = "./nginx_service"
 
-  name = "am-${var.namespace}-dashboard"
+  namespace = "am-${var.namespace}"
+  name      = "dashboard"
 
   hostname         = var.dashboard_hostname
   healthcheck_path = "/administration/accounts/login/"
 
-  cpu    = 1024
+  cpu    = 512
   memory = 1024
 
   env_vars = {

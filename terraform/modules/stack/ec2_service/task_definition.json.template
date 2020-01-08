@@ -4,7 +4,7 @@
     "memory": ${memory},
     "essential": true,
     "image": "${container_image}",
-    "name": "fits",
+    "name": "app",
     "networkMode": "awsvpc",
     "environment": ${env_vars},
     "secrets": ${secrets},
