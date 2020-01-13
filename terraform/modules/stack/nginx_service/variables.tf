@@ -14,6 +14,11 @@ variable "secret_env_vars" {
 variable "load_balancer_https_listener_arn" {}
 
 variable "healthcheck_path" {}
+variable "healthcheck_timeout" {
+  type    = number
+  default = 5
+}
+
 variable "hostname" {}
 
 variable "container_image" {}

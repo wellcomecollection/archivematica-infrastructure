@@ -192,6 +192,16 @@ module "storage_service" {
   hostname         = var.storage_service_hostname
   healthcheck_path = "/login/"
 
+  # When the storage service is doing a CPU-intensive task (for example,
+  # tar-gzipping an AIP before uploading it to the Wellcome Storage), it can
+  # be slow to respond to requests.
+  #
+  # If it's too slow, the load balancer gets timeouts on healthcheck requests,
+  # it assumes the task is unhealthy and stops the container, causing the ingest
+  # to fail.  This timeout seems to make it less likely to get restarted when
+  # it's doing something CPU-intensive.
+  healthcheck_timeout = 30
+
   cpu    = 1024
   memory = 1024
 

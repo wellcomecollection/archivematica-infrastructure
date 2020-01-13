@@ -78,6 +78,17 @@ resource "aws_alb_target_group" "ecs_service" {
     protocol = "HTTP"
     path     = var.healthcheck_path
     matcher  = "200"
+
+    # The default interval between healthchecks is 30 seconds.  If the interval
+    # between checks is less than the timeout, you get an error from ECS:
+    #
+    #     Error modifying Target Group: ValidationError: Health check interval
+    #     must be greater than the timeout.
+    #
+    # The interval is less important than the timeout, so just default it to
+    # double the interval if the caller specifies a long timeout.
+    timeout  = var.healthcheck_timeout
+    interval = max(var.healthcheck_timeout * 2, 30)
   }
 }
 
