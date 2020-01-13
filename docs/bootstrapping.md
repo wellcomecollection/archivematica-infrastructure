@@ -200,7 +200,7 @@ This step tells Archivematica how to write to the Wellcome Archival Storage.
 
     **Path:** `/`
 
-    **Staging path:** `/var/archivematica/storage-service` <br/>
+    **Staging path:** `/var/archivematica/sharedDirectory/wellcome-storage-service` <br/>
     Used as a temporary area for transfers to/from the remote service
 
     **Token url / Api root url / App client id / App client secret** <br/>
@@ -254,7 +254,7 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
     **Path:** `/`
 
-    **Staging path:** `/var/archivematica/s3_ingests` <br/>
+    **Staging path:** `/var/archivematica/sharedDirectory/s3_ingests` <br/>
     Used as a temporary area for transfers to/from S3
 
     **S3 Bucket:** <br/>
