@@ -1,3 +1,4 @@
+variable "namespace" {}
 variable "name" {}
 
 variable "env_vars" {

@@ -186,7 +186,8 @@ module "mcp_client_service" {
 module "storage_service" {
   source = "./nginx_service"
 
-  name = "am-${var.namespace}-storage-service"
+  namespace = "am-${var.namespace}"
+  name      = "storage-service"
 
   hostname         = var.storage_service_hostname
   healthcheck_path = "/login/"
@@ -257,7 +258,8 @@ module "storage_service" {
 module "dashboard_service" {
   source = "./nginx_service"
 
-  name = "am-${var.namespace}-dashboard"
+  namespace = "am-${var.namespace}"
+  name      = "dashboard"
 
   hostname         = var.dashboard_hostname
   healthcheck_path = "/administration/accounts/login/"
