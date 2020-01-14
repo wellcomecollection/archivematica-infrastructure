@@ -37,21 +37,6 @@ variable "image_id" {
   default = "ami-9cbe9be5"
 }
 
-variable "asg_min" {
-  description = "Minimum number of instances"
-  default     = 1
-}
-
-variable "asg_desired" {
-  description = "Desired number of instances"
-  default     = 1
-}
-
-variable "asg_max" {
-  description = "Max number of instances"
-  default     = 2
-}
-
 variable "user_data" {
   description = "User data for ec2 container hosts"
   default     = " "

@@ -38,3 +38,7 @@ output "transfer_source_bucket_arn" {
 output "transfer_source_bucket_name" {
   value = module.critical.transfer_source_bucket_name
 }
+
+output "ebs_volume_id" {
+  value = module.critical.ebs_volume_id
+}

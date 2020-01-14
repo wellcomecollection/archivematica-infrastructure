@@ -1,10 +1,8 @@
-module "cluster_hosts" {
-  source = "./ebs"
+module "container_host" {
+  source = "./container_host"
 
   cluster_name = var.cluster_name
   vpc_id       = var.vpc_id
-
-  asg_name = var.name
 
   ssh_ingress_security_groups = module.bastion_host.ssh_controlled_ingress_sg
 
@@ -13,15 +11,13 @@ module "cluster_hosts" {
 
   region = var.region
 
-  asg_min     = var.asg_min
-  asg_desired = var.asg_desired
-  asg_max     = var.asg_max
-
   instance_type = var.instance_type
+
+  ebs_volume_id = var.ebs_volume_id
 }
 
 module "bastion_host" {
-  source = "./bastion"
+  source = "./bastion_host"
 
   vpc_id = var.vpc_id
 

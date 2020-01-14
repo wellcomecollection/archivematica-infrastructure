@@ -10,13 +10,11 @@ module "cluster" {
   region   = var.aws_region
   key_name = "wellcomedigitalworkflow"
 
+  ebs_volume_id = var.ebs_volume_id
+
   controlled_access_cidr_ingress = var.admin_cidr_ingress
 
   cluster_name = "${aws_ecs_cluster.archivematica.name}"
-
-  asg_min     = 1
-  asg_desired = 1
-  asg_max     = 1
 
   # We want an instance with enough CPU/memory to run all the tasks *and* have
   # room to add new tasks, and with enough Elastic Network Interfaces to run

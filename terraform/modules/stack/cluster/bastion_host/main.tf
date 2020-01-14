@@ -1,11 +1,11 @@
 module "cloudformation_stack" {
-  source = "../asg"
+  source = "./asg"
 
   asg_name = var.name
 
-  asg_max     = var.asg_max
-  asg_desired = var.asg_desired
-  asg_min     = var.asg_min
+  asg_max     = 2
+  asg_desired = 1
+  asg_min     = 1
 
   subnet_list        = var.subnet_list
   launch_config_name = aws_launch_configuration.launch_config.name

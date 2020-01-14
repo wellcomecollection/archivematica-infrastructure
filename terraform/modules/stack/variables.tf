@@ -8,6 +8,8 @@ variable "rds_password" {}
 variable "rds_host" {}
 variable "rds_port" {}
 
+variable "ebs_volume_id" {}
+
 variable "mcp_client_container_image" {}
 variable "mcp_server_container_image" {}
 variable "storage_service_container_image" {}

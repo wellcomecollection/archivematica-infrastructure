@@ -29,3 +29,7 @@ output "transfer_source_bucket_arn" {
 output "transfer_source_bucket_name" {
   value = aws_s3_bucket.archivematica_transfer_source.id
 }
+
+output "ebs_volume_id" {
+  value = aws_ebs_volume.ebs.id
+}
