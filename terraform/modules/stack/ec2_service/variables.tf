@@ -35,3 +35,13 @@ variable "network_private_subnets" {
 variable "interservice_security_group_id" {}
 variable "service_egress_security_group_id" {}
 variable "service_lb_security_group_id" {}
+
+variable "deployment_minimum_healthy_percent" {
+  type    = number
+  default = 100
+}
+
+variable "deployment_maximum_percent" {
+  type    = number
+  default = 200
+}

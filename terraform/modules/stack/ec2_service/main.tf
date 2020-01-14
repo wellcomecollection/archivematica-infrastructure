@@ -75,8 +75,8 @@ module "service" {
     var.service_lb_security_group_id,
   ]
 
-  deployment_minimum_healthy_percent = 100
-  deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
+  deployment_maximum_percent         = var.deployment_maximum_percent
 
   launch_type = "EC2"
 }

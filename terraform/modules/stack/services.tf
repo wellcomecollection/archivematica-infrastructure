@@ -1,3 +1,50 @@
+# Currently we run the Archivematica tasks on a c5.4xlarge instance, which
+# has ~16 vCPUs available, or 16384 CPU units (16 × 1024).
+#
+# We need to balance the following factors:
+#
+#   * minimising idle CPU (because the MCP client in particular is very CPU-hungry,
+#     and the more CPU we can allocate, the faster transfers will go through)
+#
+#   * being able to deploy tasks automatically
+#
+# The dashboard and storage service are both user-facing apps, so they should
+# have zero-downtime deployments.  We need to leave enough CPU idle that we can
+# spin up new instances of those tasks.
+#
+# For the other tasks, we can allow a brief period of downtime while we're
+# deploying new versions, and so claim back some extra CPU.  This setting:
+#
+#     deployment_minimum_healthy_percent = 0
+#
+# will tell ECS that it's okay to scale back to zero when deploying new tasks,
+# and then we don't need so much idling CPU.
+#
+# Our CPU allocations need to satisfy the following constraint:
+#
+#     (fits_cpu + clamav_cpu + mcp_server_cpu + mcp_client_cpu) +
+#     (dashboard_cpu + storage_service_cpu) + 128 * 3 +
+#     max(dashboard_cpu, storage_service_cpu)
+#      <= 16384
+#
+# (Because we allocate 128 CPU units to our nginx containers.  We have to count
+# the two running instances, and the third instance creating during a deployment.)
+#
+# For more information, see:
+# https://github.com/wellcomecollection/docs/blob/master/research/2020-01-14-ecs-scaling-big-tasks.md
+#
+# Note: a c5.4xlarge has 32GB of memory, which gives us way more headroom and
+# isn't a deployment bottleneck.  We don't need to manage it as carefully.
+
+locals {
+  fits_cpu       = 3 * 1024
+  clamav_cpu     = 2 * 1024
+  mcp_server_cpu = 1 * 1024
+  mcp_client_cpu = 6 * 1024
+  dashboard_cpu       = 512
+  storage_service_cpu = 1600
+}
+
 locals {
   fits_hostname     = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   clamav_hostname   = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
@@ -49,8 +96,12 @@ module "fits_service" {
     },
   ]
 
-  cpu    = 3072
+  cpu    = local.fits_cpu
   memory = 4096
+
+  # See comment at top of the file about deployments.
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
   namespace    = var.namespace
@@ -77,8 +128,12 @@ module "clamav_service" {
     },
   ]
 
-  cpu    = 2048
+  cpu    = local.clamav_cpu
   memory = 2048
+
+  # See comment at top of the file about deployments.
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
   namespace    = var.namespace
@@ -119,8 +174,12 @@ module "mcp_server_service" {
     },
   ]
 
-  cpu    = 1024
+  cpu    = local.mcp_server_cpu
   memory = 2048
+
+  # See comment at top of the file about deployments.
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
   namespace    = var.namespace
@@ -176,8 +235,12 @@ module "mcp_client_service" {
     },
   ]
 
-  cpu    = 4096
-  memory = 4096
+  cpu    = local.mcp_client_cpu
+  memory = 6 * 1024
+
+  # See comment at top of the file about deployments.
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
 
   desired_task_count = 1
 
@@ -211,7 +274,7 @@ module "storage_service" {
   # it's doing something CPU-intensive.
   healthcheck_timeout = 30
 
-  cpu    = 1280
+  cpu    = local.storage_service_cpu
   memory = 2048
 
   env_vars = {
@@ -283,7 +346,7 @@ module "dashboard_service" {
   hostname         = var.dashboard_hostname
   healthcheck_path = "/administration/accounts/login/"
 
-  cpu    = 512
+  cpu    = local.dashboard_cpu
   memory = 1024
 
   env_vars = {
