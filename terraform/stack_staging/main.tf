@@ -11,6 +11,8 @@ module "stack" {
   rds_host     = data.terraform_remote_state.critical.outputs.rds_host
   rds_port     = data.terraform_remote_state.critical.outputs.rds_port
 
+  ebs_volume_id = data.terraform_remote_state.critical.outputs.ebs_volume_id
+
   mcp_client_container_image            = module.mcp_client_repo_uri.value
   mcp_server_container_image            = module.mcp_server_repo_uri.value
   storage_service_container_image       = module.storage_service_repo_uri.value
