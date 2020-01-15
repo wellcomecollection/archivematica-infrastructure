@@ -35,7 +35,7 @@ module "task_definition" {
 module "service" {
   source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.1.0"
 
-  service_name = var.name
+  service_name = local.full_name
   cluster_arn  = var.cluster_arn
 
   desired_task_count = 1

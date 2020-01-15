@@ -57,7 +57,7 @@ resource "aws_ecs_task_definition" "task" {
 module "service" {
   source = "git::github.com/wellcomecollection/terraform-aws-ecs-service//service?ref=v1.1.0"
 
-  service_name = var.name
+  service_name = local.full_name
 
   cluster_arn = var.cluster_arn
 
