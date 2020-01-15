@@ -12,6 +12,8 @@
 # have zero-downtime deployments.  We need to leave enough CPU idle that we can
 # spin up new instances of those tasks.
 #
+# Gearman and ClamAV run in Fargate, so we don't need to worry about them.
+#
 # For the other tasks, we can allow a brief period of downtime while we're
 # deploying new versions, and so claim back some extra CPU.  This setting:
 #
@@ -22,7 +24,7 @@
 #
 # Our CPU allocations need to satisfy the following constraint:
 #
-#     (fits_cpu + clamav_cpu + mcp_server_cpu + mcp_client_cpu) +
+#     (fits_cpu + mcp_server_cpu + mcp_client_cpu) +
 #     (dashboard_cpu + storage_service_cpu) + 128 * 3 +
 #     max(dashboard_cpu, storage_service_cpu)
 #      <= 16384
@@ -38,10 +40,9 @@
 
 locals {
   fits_cpu       = 3 * 1024
-  clamav_cpu     = 2 * 1024
   mcp_server_cpu = 1 * 1024
-  mcp_client_cpu = 6 * 1024
-  dashboard_cpu       = 512
+  mcp_client_cpu = 16384 - (3 * 1024 + 1 * 1024 + 1024 + 1600 + 3 * 128 + 1600)
+  dashboard_cpu       = 1024
   storage_service_cpu = 1600
 }
 
@@ -57,8 +58,9 @@ locals {
 }
 
 module "gearman_service" {
-  source = "./gearman_service"
+  source = "./fargate_service"
 
+  name      = "gearman"
   namespace = var.namespace
 
   container_image = "artefactual/gearmand:1.1.17-alpine"
@@ -115,25 +117,14 @@ module "fits_service" {
 }
 
 module "clamav_service" {
-  source = "./ec2_service"
+  source = "./fargate_service"
 
   name = "clamav"
 
   container_image = "artefactual/clamav:latest"
 
-  mount_points = [
-    {
-      sourceVolume  = "pipeline-data"
-      containerPath = "/var/archivematica/sharedDirectory"
-    },
-  ]
-
-  cpu    = local.clamav_cpu
-  memory = 2048
-
-  # See comment at top of the file about deployments.
-  deployment_minimum_healthy_percent = 0
-  deployment_maximum_percent         = 100
+  cpu    = 2 * 1024
+  memory = 4 * 1024
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
   namespace    = var.namespace
@@ -212,6 +203,11 @@ module "mcp_client_service" {
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "${local.clamav_hostname}:3310"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
+
+    # This causes MCP client to stream files to ClamAV, rather than passing
+    # it a path.  This means ClamAV doesn't need access to the shared
+    # filesystem, and can run in Fargate, not on EC2.
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_PASS_BY_STREAM = true
 
     # This is a workaround for a persistent issue we saw where the MCP client
     # would timeout trying to connect to the storage service at the "Store AIP"

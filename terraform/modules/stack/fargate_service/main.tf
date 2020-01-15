@@ -1,5 +1,5 @@
 locals {
-  full_name = "am-${var.namespace}-gearman"
+  full_name = "am-${var.namespace}-${var.name}"
 }
 
 module "task_definition" {
