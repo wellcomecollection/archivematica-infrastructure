@@ -37,4 +37,9 @@ resource "aws_ecs_task_definition" "task" {
     name      = "staging-data"
     host_path = "/ebs/staging-data"
   }
+
+  volume {
+    name      = "tmp-data"
+    host_path = "/ebs/tmp/${var.task_name}"
+  }
 }

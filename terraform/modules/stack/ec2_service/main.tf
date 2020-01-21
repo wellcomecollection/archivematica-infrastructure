@@ -50,6 +50,11 @@ resource "aws_ecs_task_definition" "task" {
     host_path = "/ebs/pipeline-data"
   }
 
+  volume {
+    name      = "tmp-data"
+    host_path = "/ebs/tmp/${var.name}"
+  }
+
   cpu    = var.cpu
   memory = var.memory
 }

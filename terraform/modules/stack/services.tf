@@ -96,6 +96,10 @@ module "fits_service" {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
     },
+    {
+      sourceVolume  = "tmp-data",
+      containerPath = "/tmp"
+    },
   ]
 
   cpu    = local.fits_cpu
@@ -163,6 +167,10 @@ module "mcp_server_service" {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
     },
+    {
+      sourceVolume  = "tmp-data",
+      containerPath = "/tmp"
+    },
   ]
 
   cpu    = local.mcp_server_cpu
@@ -229,6 +237,10 @@ module "mcp_client_service" {
       sourceVolume  = "pipeline-data"
       containerPath = "/var/archivematica/sharedDirectory"
     },
+    {
+      sourceVolume  = "tmp-data",
+      containerPath = "/tmp"
+    },
   ]
 
   cpu    = local.mcp_client_cpu
@@ -268,7 +280,7 @@ module "storage_service" {
   # it assumes the task is unhealthy and stops the container, causing the ingest
   # to fail.  This timeout seems to make it less likely to get restarted when
   # it's doing something CPU-intensive.
-  healthcheck_timeout = 30
+  healthcheck_timeout = 120
 
   cpu    = local.storage_service_cpu
   memory = 2048
@@ -314,6 +326,10 @@ module "storage_service" {
     {
       sourceVolume  = "staging-data"
       containerPath = "/var/archivematica/storage_service"
+    },
+    {
+      sourceVolume  = "tmp-data",
+      containerPath = "/tmp"
     },
   ]
 
