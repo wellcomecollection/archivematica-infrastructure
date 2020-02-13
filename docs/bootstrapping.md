@@ -105,47 +105,22 @@ To fix this:
 
 1.  SSH into the EC2 container hosts.
 
-2.  Look for a Docker container running the dashboard.
-    You can get the ID of the container (if it's running on this host) by running:
+2.  Run the Django migrations in the dashboard:
 
     ```
-    docker ps | grep dashboard | grep app | awk '{print $1}'
-    ```
-
-    This container will be frequently restarting, so it will appear and disappear.
-    You might want to run this command in a loop on all the container hosts until it gets started:
-
-    ```
-    while true; do docker ps | grep dashboard | grep app | awk '{print $1}'; sleep 1; done
-    ```
-
-3.  Exec into a running dashboard container:
-
-    ```
-    docker exec -it DASHBOARD_CONTAINER_ID bash
-    ```
-
-    and run the following commands:
-
-    ```
-    python /src/dashboard/src/manage.py migrate
+    docker exec -it $(docker ps | grep dashboard | grep app | awk '{print $1}') python /src/dashboard/src/manage.py migrate
     ```
 
     It might take a couple of attempts before this finishes successfully.
     The dashboard can't start until the database is set up correctly, which means it fails load balancer healthchecks -- ECS will be continually restarting the container until you successfully run the database migrations.
 
-4.  Look for a Docker container running the storage service.
+3.  Look for a Docker container running the storage service.
     Similar to above:
 
     ```
-    docker ps | grep storage-service | grep app | awk '{print $1}'
+    docker exec -it $(docker ps | grep storage-service | grep app | awk '{print $1}') python /src/storage_service/manage.py migrate
     ```
 
-    Exec into the container and run the Django migrations:
-
-    ```
-    python /src/storage_service/manage.py migrate
-    ```
 
 
 <h2 id="step_5">
@@ -154,10 +129,11 @@ To fix this:
 
 When you see the dashboard and storage service are both running (you get a login page if you visit their URLs), you can create the initial users.
 
-Use the instructions from the previous step to exec into the storage service container and run:
+Create a storage service user:
 
 ```
-python /src/storage_service/manage.py \
+docker exec -it $(docker ps | grep storage-service | grep app | awk '{print $1}') \
+    python /src/storage_service/manage.py \
     create_user \
     --username="admin" \
     --password="PASSWORD" \
@@ -166,10 +142,11 @@ python /src/storage_service/manage.py \
     --superuser
 ```
 
-Use the instructions from the previous step to exec into the dashboard container and run:
+Create a dashboard user:
 
 ```
-python /src/dashboard/src/manage.py install \
+docker exec -it $(docker ps | grep dashboard | grep app | awk '{print $1}') \
+    python /src/dashboard/src/manage.py install \
     --username="admin" \
     --password="PASSWORD" \
     --email="wellcomedigitalworkflow@wellcome.ac.uk" \
@@ -226,8 +203,6 @@ This step tells Archivematica how to write to the Wellcome Archival Storage.
 
     (This will be concatenated onto the space path to produce a full path to which files should be uploaded. This does not correspond to a filesystem path, but maps to a location on the eventual storage. e.g. `/born-digital/` will map to the `born-digital` space in the Archival Storage.)
 
-5.  Repeat step 4, creating a location for `/born-digital-accessions`.
-
 Here's what a successfully configured space looks like:
 
 ![](storage_space.png)
@@ -254,7 +229,7 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
     **Path:** `/`
 
-    **Staging path:** `/var/archivematica/sharedDirectory/s3_ingests` <br/>
+    **Staging path:** `/var/archivematica/sharedDirectory/s3_transfers` <br/>
     Used as a temporary area for transfers to/from S3
 
     **S3 Bucket:** <br/>
@@ -282,6 +257,14 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
 2.  Select "Administration" in the top tab bar.
     Select "Processing configuration" in the sidebar.
+
+3.  Set the following settings in the "Default" and "Automated" configurations:
+
+    <table>
+      <tr>
+        <td>Select compression algorithm</td><th>Gzipped tar</th>
+      </tr>
+    </table>
 
 3.  Create a "born_digital" and "b_dig_accessions" config, using the options on this page: <https://github.com/wellcomecollection/docs/tree/master/rfcs/014-born_digital_workflow#processing>
 

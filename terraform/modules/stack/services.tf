@@ -225,6 +225,12 @@ module "mcp_client_service" {
     # We've bumped the timeout to prevent this from happening, based on
     # discussion in this issue: https://github.com/archivematica/Issues/issues/114
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_STORAGE_SERVICE_CLIENT_QUICK_TIMEOUT = 600
+
+    # This means we don't capture stdout/stderr from client script subprocesses.
+    # This is an attempt to reduce the amount of data we have to write to
+    # the database during transfers with lots of files, and reduce the
+    # number of times we get the error (2006, ‘MySQL server has gone away’).
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
   }
 
   secret_env_vars = {
@@ -301,6 +307,11 @@ module "storage_service" {
 
     SS_GUNICORN_GROUP = "root"
 
+    # Multiple workers allow the dashboard to continue to serve web requests while
+    # large downloads are in progress (these will occupy a whole worker process)
+    # See https://github.com/wellcometrust/platform/issues/3954
+    SS_GUNICORN_WORKERS = 4
+
     SS_OIDC_AUTHENTICATION    = "true"
     AZURE_TENANT_ID           = var.azure_tenant_id
     OIDC_RP_CLIENT_ID         = var.oidc_client_id
@@ -366,10 +377,6 @@ module "dashboard_service" {
     AM_GUNICORN_ACCESSLOG                            = "/dev/null"
     AM_GUNICORN_RELOAD                               = "true"
     AM_GUNICORN_RELOAD_ENGINE                        = "auto"
-    # Multiple workers allow the dashboard to continue to serve web requests while
-    # large downloads are in progress (these will occupy a whole worker process)
-    # See https://github.com/wellcometrust/platform/issues/3954
-    AM_GUNICORN_WORKERS                              = 4
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_GEARMAN_SERVER = "${local.gearmand_hostname}:4730"
     ARCHIVEMATICA_DASHBOARD_CLIENT_USER              = var.rds_username
     ARCHIVEMATICA_DASHBOARD_CLIENT_PASSWORD          = var.rds_password
@@ -380,6 +387,11 @@ module "dashboard_service" {
     AM_GUNICORN_BIND                                 = "0.0.0.0:9000"
     WELLCOME_SS_URL                                  = "http://${local.storage_service_host}:${local.storage_service_port}"
     WELLCOME_SITE_URL                                = "http://localhost:9000"
+
+    # Multiple workers allow the dashboard to continue to serve web requests while
+    # large downloads are in progress (these will occupy a whole worker process)
+    # See https://github.com/wellcometrust/platform/issues/3954
+    AM_GUNICORN_WORKERS = 4
 
     # The volume mounts are owned by "root".  By default gunicorn runs with
     # the 'archivematica' user, which can't access these mounts.

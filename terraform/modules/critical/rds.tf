@@ -15,21 +15,28 @@ locals {
   database_name = var.namespace == "prod" ? local.prod_database_name : local.staging_database_name
 }
 
-resource "aws_rds_cluster_instance" "archivematica" {
-  count = 2
-
-  identifier           = "${aws_rds_cluster.archivematica.cluster_identifier}-instance-${count.index}"
-  cluster_identifier   = aws_rds_cluster.archivematica.id
-  instance_class       = "db.r5.large"
-  db_subnet_group_name = aws_db_subnet_group.archivematica.name
-  publicly_accessible  = false
-
-  engine         = aws_rds_cluster.archivematica.engine
-  engine_version = aws_rds_cluster.archivematica.engine_version
-}
-
 resource "aws_db_subnet_group" "archivematica" {
   subnet_ids = var.network_private_subnets
+}
+
+# This tweaks the MySQL settings to make Archivematica happier with transfers
+# that contain lots of files.
+#
+# We don't set it as high as 1GB, because if we set it too high all transfers
+# start to slow down -- but it's higher than the Aurora default, which is 4MB.
+#
+# See https://github.com/archivematica/Issues/issues/956
+#     https://github.com/wellcomecollection/platform/issues/4233
+#
+resource "aws_db_parameter_group" "archivematica" {
+  name   = "archivematica-${var.namespace}"
+  family = "aurora5.6"
+
+  parameter {
+    apply_method = "pending-reboot"
+    name         = "max_allowed_packet"
+    value        = 100 * 1024 * 1024
+  }
 }
 
 resource "aws_rds_cluster" "archivematica" {
@@ -59,6 +66,23 @@ resource "aws_rds_cluster" "archivematica" {
   # https://www.archivematica.org/en/docs/archivematica-1.10/admin-manual/installation-setup/installation/installation/#dependencies
   engine         = "aurora"
   engine_version = "5.6.10a"
+}
+
+resource "aws_rds_cluster_instance" "archivematica" {
+  count = 2
+
+  identifier           = "${aws_rds_cluster.archivematica.cluster_identifier}-instance-${count.index}"
+  cluster_identifier   = aws_rds_cluster.archivematica.id
+  instance_class       = "db.r5.large"
+  db_subnet_group_name = aws_db_subnet_group.archivematica.name
+  publicly_accessible  = false
+
+  engine         = aws_rds_cluster.archivematica.engine
+  engine_version = aws_rds_cluster.archivematica.engine_version
+
+  apply_immediately = false
+
+  db_parameter_group_name = aws_db_parameter_group.archivematica.name
 }
 
 resource "aws_security_group" "database_sg" {
