@@ -249,14 +249,32 @@ module "mcp_client_service" {
     },
   ]
 
-  cpu    = local.mcp_client_cpu
-  memory = 6 * 1024
+  # The c5.4xlarge instances we use have 8 Elastic Network Interfaces, which
+  # means they can run up to 8 of our ECS tasks simultaneously (because each
+  # task needs an ENI).
+  #
+  # Those ENI slots are allocated as follows:
+  #
+  #   - ECS agent
+  #   - Dashboard
+  #   - Storage service
+  #   - MCP server
+  #   - Fits
+  #   - (Spare slot)
+  #
+  # The spare slot is to allow the dashboard/storage service to spin up a second
+  # task during deployments.
+  #
+  # That leaves two slots for the MCP client to run, and more clients
+  # = better concurrency.
+  desired_task_count = 2
+
+  cpu    = local.mcp_client_cpu / 2
+  memory = 3 * 1024
 
   # See comment at top of the file about deployments.
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 100
-
-  desired_task_count = 1
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
   namespace    = var.namespace

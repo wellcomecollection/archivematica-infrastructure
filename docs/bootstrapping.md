@@ -258,13 +258,27 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 2.  Select "Administration" in the top tab bar.
     Select "Processing configuration" in the sidebar.
 
-3.  Set the following settings in the "Default" and "Automated" configurations:
+3.  Set the following settings in the "Default" configuration:
 
     <table>
       <tr>
+        <td>Assign UUIDs to directories</td><th>No</th>
+        <td>Generate transfer structure report</td><th>No</th>
+        <td>Perform file format identification (Transfer)</td><th>No</th>
+        <td>Examine contents</td><th>Examine contents</th>
+        <td>Perform file format identification (Ingest)</td><th>No, use existing data</th>
+        <td>Bind PIDs</td><th>No</th>
+        <td>Document empty directories</td><th>No</th>
+        <td>Transcribe files (OCR)</td><th>No</th>
+        <td>Perform file format identification (Submission documentation & metadata)</td><th>No</th>
         <td>Select compression algorithm</td><th>Gzipped tar</th>
+        <td>Select compression level</td><th>1 - fastest mode</th>
+        <td>Store AIP location</td><th>Wellcome AIP storage</th>
+        <td>Upload DIP</td><th>Do not upload DIP</th>
       </tr>
     </table>
+
+    All other fields should be "None".
 
 3.  Create a "born_digital" and "b_dig_accessions" config, using the options on this page: <https://github.com/wellcomecollection/docs/tree/master/rfcs/014-born_digital_workflow#processing>
 
