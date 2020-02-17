@@ -265,8 +265,12 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
         <td>Assign UUIDs to directories</td><th>No</th>
         <td>Generate transfer structure report</td><th>No</th>
         <td>Perform file format identification (Transfer)</td><th>No</th>
+        <td>Perform policy checks on originals</td><th>No</th>
         <td>Examine contents</td><th>Examine contents</th>
         <td>Perform file format identification (Ingest)</td><th>No, use existing data</th>
+        <td>Generate thumbnails</td><th>No</th>
+        <td>Perform policy checks on preservation derivatives</td><th>No</th>
+        <td>Perform policy checks on access derivatives</td><th>No</th>
         <td>Bind PIDs</td><th>No</th>
         <td>Document empty directories</td><th>No</th>
         <td>Transcribe files (OCR)</td><th>No</th>
@@ -280,6 +284,28 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
     All other fields should be "None".
 
-3.  Create a "born_digital" and "b_dig_accessions" config, using the options on this page: <https://github.com/wellcomecollection/docs/tree/master/rfcs/014-born_digital_workflow#processing>
+4.  Create a "born_digital" config, with the settings above and additionally:
 
-    They should point at the AIP storage in the `born-digital` and `born-digital-accessions` spaces, respectively.
+    <table>
+      <tr>
+        <td>Extract packages</td><th>No</th>
+        <td>Perform policy checks on originals</td><th>No</th>
+        <td>Create SIP(s)</td><th>Create single SIP and continue processing</th>
+        <td>Normalize</td><th>Do not normalize</th>
+        <td>Add metadata if desired</td><th>Continue</th>
+        <td>Store AIP</td><th>Yes</th>
+      </tr>
+    </table>
+
+5.  Create a "b_dig_accessions" config, with the default settings above and additionally:
+
+    <table>
+      <tr>
+        <td>Extract packages</td><th>No</th>
+        <td>Perform policy checks on originals</td><th>No</th>
+        <td>Create SIP(s)</td><th>Create single SIP and continue processing</th>
+        <td>Normalize</td><th>Do not normalize</th>
+        <td>Add metadata if desired</td><th>Continue</th>
+        <td>Store AIP</td><th>Yes</th>
+      </tr>
+    </table>
