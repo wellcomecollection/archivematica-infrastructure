@@ -270,7 +270,7 @@ module "mcp_client_service" {
   desired_task_count = 2
 
   cpu    = local.mcp_client_cpu / 2
-  memory = 3 * 1024
+  memory = 4 * 1024
 
   # See comment at top of the file about deployments.
   deployment_minimum_healthy_percent = 0
@@ -307,7 +307,7 @@ module "storage_service" {
   healthcheck_timeout = 120
 
   cpu    = local.storage_service_cpu
-  memory = 2048
+  memory = 4096
 
   env_vars = {
     FORWARDED_ALLOW_IPS       = "*"
@@ -388,7 +388,7 @@ module "dashboard_service" {
   healthcheck_path = "/administration/accounts/login/"
 
   cpu    = local.dashboard_cpu
-  memory = 1024
+  memory = 2048
 
   env_vars = {
     FORWARDED_ALLOW_IPS                              = "*"
