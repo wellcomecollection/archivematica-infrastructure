@@ -3,7 +3,7 @@
 This page has some notes on conceptual bits that were useful as I was setting up/debugging our Archivematica deployment.
 Some of it is specific to Wellcome, some of it is general Archivematica knowledge.
 
-## Microservices/tasks/jobs
+## Microservices, tasks and jobs
 
 There are three units of "work" in Archivematica, which you can see in the Archivematica UI:
 
