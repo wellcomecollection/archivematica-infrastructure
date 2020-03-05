@@ -1,0 +1,97 @@
+<svg viewBox="0 0 320 205" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <defs>
+    <style>
+      text {
+        fill: black;
+        font-size: 10px;
+        stroke: none;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        font-family: sans-serif;
+      }
+
+      .cls-redis{fill:#3b48cc;}
+
+      line {
+        stroke-linecap: round;
+        stroke-width: 1.2;
+        stroke: black;
+      }
+    </style>
+  </defs>
+
+  <!-- MCP server -->
+
+  <svg x="0" y="25">
+    <rect stroke-width="2" stroke="#d86613" x="10" y="4" width="40" height="41" fill="none" rx="3"/>
+
+    <text x="30" y="65">MCP server</text>
+  </svg>
+
+  <svg x="235" y="20">
+    <rect stroke-width="2" stroke="#d86613" x="10" y="4" width="40" height="41" fill="white" rx="3"/>
+
+    <svg x="5" y="5">
+      <rect stroke-width="2" stroke="#d86613" x="10" y="4" width="40" height="41" fill="white" rx="3"/>
+    </svg>
+
+    <svg x="10" y="10">
+      <rect stroke-width="2" stroke="#d86613" x="10" y="4" width="40" height="41" fill="white" rx="3"/>
+    </svg>
+
+    <text x="35" y="70">MCP client(s)</text>
+  </svg>
+
+  <!--
+    Gearman
+    Gear icon from https://en.wikipedia.org/wiki/File:Gearman80_title.gif
+  -->
+  <svg x="125" y="25">
+    <svg x="9" y="8">
+      <image width="32" height="32" xlink:href="data:image/png;base64,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"/>
+    </svg>
+
+    <rect stroke-width="2" stroke="#404040" x="5" y="4" width="40" height="41" fill="none" rx="3"/>
+
+    <text x="25" y="65">Gearman</text>
+  </svg>
+
+  <!--
+    Redis instance
+    Task icon from https://aws.amazon.com/architecture/icons/
+  -->
+  <svg x="125" y="140">
+    <path class="cls-redis" d="M25,46.15c-6.3,0-12.69-1.68-12.69-4.88V19.68h2V41.27c0,1,3.77,2.87,10.68,2.87s10.69-1.9,10.69-2.87V19.68h2V41.27C37.71,44.47,31.32,46.15,25,46.15Z"/>
+    <path class="cls-redis" d="M18.8,31.19c-4.18-.83-6.48-2.36-6.48-4.31h2c0,.44,1.19,1.61,4.88,2.34Z"/>
+    <path class="cls-redis" d="M32.35,30.93,31.86,29c2.8-.71,3.84-1.67,3.84-2.11h2C37.7,28.62,35.8,30.06,32.35,30.93Z"/>
+    <path class="cls-redis" d="M25,24.56c-6.31,0-12.7-1.67-12.7-4.88s6.39-4.89,12.7-4.89,12.69,1.68,12.69,4.89S31.32,24.56,25,24.56Zm0-7.76c-6.92,0-10.69,1.9-10.69,2.88S18.1,22.56,25,22.56s10.68-1.9,10.68-2.88S31.93,16.8,25,16.8Z"/>
+    <path class="cls-redis" d="M25,46.15c-6.31,0-12.7-1.68-12.7-4.88v-7.2a1,1,0,1,1,2,0c0,.44,1.2,1.61,4.88,2.35l-.4,2a14.72,14.72,0,0,1-4.48-1.54v4.42c0,1,3.78,2.87,10.7,2.87s10.68-1.9,10.68-2.87V36.84a12.55,12.55,0,0,1-3.35,1.28l-.49-1.94c2.8-.71,3.84-1.67,3.84-2.11a1,1,0,1,1,2,0v7.2C37.7,44.47,31.32,46.15,25,46.15Z"/>
+    <path class="cls-redis" d="M6.84,29.22h-2V26.41a1,1,0,0,1,1-1h4.68v2H6.84Z"/>
+    <path class="cls-redis" d="M45.16,30.22H39.54v-2h4.62v-.8H39.54v-2h5.62a1,1,0,0,1,1,1v2.81A1,1,0,0,1,45.16,30.22Z"/>
+    <path class="cls-redis" d="M48,30.22H39.54v-2H47V13.77a4.07,4.07,0,0,1,0-7.72V5.86H3V6A4,4,0,0,1,5.85,9.91,4,4,0,0,1,3,13.78V28.21h7.48v2H2a1,1,0,0,1-1-1V12.92a1,1,0,0,1,1-1,1.91,1.91,0,0,0,1.81-2A1.92,1.92,0,0,0,2,7.9a1,1,0,0,1-1-1V4.85a1,1,0,0,1,1-1H48a1,1,0,0,1,1,1V6.9a1,1,0,0,1-1,1,1.93,1.93,0,0,0-1.79,2,1.92,1.92,0,0,0,1.79,2,1,1,0,0,1,1,1v16.3A1,1,0,0,1,48,30.22Z"/>
+    <path class="cls-redis" d="M18.07,14.32h-2V8.64a1,1,0,0,1,1-1h6.55a1,1,0,0,1,1,1v4.73h-2V9.64H18.07Z"/>
+    <path class="cls-redis" d="M34,14.32H32V9.64H27.44v3.73h-2V8.64a1,1,0,0,1,1-1H33a1,1,0,0,1,1,1Z"/>
+    <path class="cls-redis" d="M42.35,23.66H39.54v-2h1.81v-12H36.8v5.54h-2V8.64a1,1,0,0,1,1-1h6.55a1,1,0,0,1,1,1v14A1,1,0,0,1,42.35,23.66Z"/>
+    <path class="cls-redis" d="M10.51,23.66H7.71a1,1,0,0,1-1-1v-14a1,1,0,0,1,1-1h6.55a1,1,0,0,1,1,1v6.54h-2V9.64H8.71v12h1.8Z"/>
+    <path class="cls-redis" d="M20.78,40.59V27.47h4.85a4.38,4.38,0,0,1,3.07,1.05,3.68,3.68,0,0,1,1.15,2.83,3.8,3.8,0,0,1-.65,2.22A4,4,0,0,1,27.32,35l3.35,5.6H28.39l-3-5.2H23.07v5.2Zm2.29-7h2.27a1.93,1.93,0,0,0,2.18-2.18,1.9,1.9,0,0,0-2.12-2.18H23.07Z"/>
+  </svg>
+
+  <text x="150" y="200">Redis (Elasticache)</text>
+
+  <!-- Arrows -->
+  <marker id="arrowhead" markerWidth="10" markerHeight="7"
+    refX="0" refY="3.5" orient="auto">
+    <polygon points="0 0, 10 3.5, 0 7" />
+  </marker>
+
+  <line x1="69" x2="112.5" y1="50" y2="50" stroke="black" stroke-width="1" marker-end="url(#arrowhead)"/>
+  <line x1="112.5" x2="69" y1="50" y2="50" stroke="black" stroke-width="1" marker-end="url(#arrowhead)"/>
+
+  <svg x="120">
+    <line x1="69" x2="112.5" y1="50" y2="50" marker-end="url(#arrowhead)"/>
+    <line x1="112.5" x2="69" y1="50" y2="50" marker-end="url(#arrowhead)"/>
+  </svg>
+
+  <line x1="150" y1="100" x2="150" y2="125" marker-end="url(#arrowhead)"/>
+</svg>
