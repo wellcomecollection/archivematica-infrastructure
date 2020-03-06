@@ -9,10 +9,10 @@ provider "aws" {
 
 provider "aws" {
   region  = "eu-west-1"
-	version = "2.35.0"
-	alias 	= "routermaster"
+  version = "2.35.0"
+  alias   = "routermaster"
 
-	assume_role {
-		role_arn = "arn:aws:iam::250790015188:role/wellcomecollection-assume_role_hosted_zone_update"
-	}
+  assume_role {
+    role_arn = "arn:aws:iam::250790015188:role/wellcomecollection-assume_role_hosted_zone_update"
+  }
 }

@@ -39,9 +39,9 @@
 # isn't a deployment bottleneck.  We don't need to manage it as carefully.
 
 locals {
-  fits_cpu       = 3 * 1024
-  mcp_server_cpu = 1 * 1024
-  mcp_client_cpu = 16384 - (3 * 1024 + 1 * 1024 + 1024 + 1600 + 3 * 128 + 1600)
+  fits_cpu            = 3 * 1024
+  mcp_server_cpu      = 1 * 1024
+  mcp_client_cpu      = 16384 - (3 * 1024 + 1 * 1024 + 1024 + 1600 + 3 * 128 + 1600)
   dashboard_cpu       = 1024
   storage_service_cpu = 1600
 }
@@ -330,14 +330,14 @@ module "storage_service" {
     # See https://github.com/wellcometrust/platform/issues/3954
     SS_GUNICORN_WORKERS = 4
 
-    SS_OIDC_AUTHENTICATION    = "true"
-    AZURE_TENANT_ID           = var.azure_tenant_id
-    OIDC_RP_CLIENT_ID         = var.oidc_client_id
-    OIDC_RP_SIGN_ALGO         = "RS256"
+    SS_OIDC_AUTHENTICATION = "true"
+    AZURE_TENANT_ID        = var.azure_tenant_id
+    OIDC_RP_CLIENT_ID      = var.oidc_client_id
+    OIDC_RP_SIGN_ALGO      = "RS256"
   }
 
   secret_env_vars = {
-    DJANGO_SECRET_KEY = "archivematica/storage_service_django_secret_key"
+    DJANGO_SECRET_KEY     = "archivematica/storage_service_django_secret_key"
     OIDC_RP_CLIENT_SECRET = "archivematica/${var.namespace}/oidc_rp_client_secret"
   }
 
@@ -415,10 +415,10 @@ module "dashboard_service" {
     # the 'archivematica' user, which can't access these mounts.
     AM_GUNICORN_USER = "root"
 
-    ARCHIVEMATICA_DASHBOARD_OIDC_AUTHENTICATION              = "true"
-    AZURE_TENANT_ID                                          = var.azure_tenant_id
-    OIDC_RP_CLIENT_ID                                        = var.oidc_client_id
-    OIDC_RP_SIGN_ALGO                                        = "RS256"
+    ARCHIVEMATICA_DASHBOARD_OIDC_AUTHENTICATION = "true"
+    AZURE_TENANT_ID                             = var.azure_tenant_id
+    OIDC_RP_CLIENT_ID                           = var.oidc_client_id
+    OIDC_RP_SIGN_ALGO                           = "RS256"
   }
 
   secret_env_vars = {

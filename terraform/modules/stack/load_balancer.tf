@@ -13,7 +13,7 @@ module "lb_dashboard" {
   ]
 
   # We set a high timeout here and on the storage service load balancer to
-	# allow Archivematica time to prepare large AIP files for download.
+  # allow Archivematica time to prepare large AIP files for download.
   # If nginx is sending back 499 responses, this may not be high enough.
   idle_timeout = 3600
 }
