@@ -12,7 +12,7 @@ resource "aws_instance" "container_host" {
   key_name = var.key_name
 
   vpc_security_group_ids = module.security_groups.instance_security_groups
-  subnet_id = var.subnets[0]
+  subnet_id              = var.subnets[0]
 
   user_data = data.template_file.userdata.rendered
 

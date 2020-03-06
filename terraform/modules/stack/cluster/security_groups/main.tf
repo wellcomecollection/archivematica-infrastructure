@@ -1,13 +1,13 @@
 resource "aws_security_group" "ssh_controlled_ingress" {
-  vpc_id      = var.vpc_id
-  name        = "${var.name}_ssh_controlled_ingress_${random_id.sg_append.hex}"
+  vpc_id = var.vpc_id
+  name   = "${var.name}_ssh_controlled_ingress_${random_id.sg_append.hex}"
 
   ingress {
     protocol  = "tcp"
     from_port = 22
     to_port   = 22
 
-    cidr_blocks = var.controlled_access_cidr_ingress
+    cidr_blocks     = var.controlled_access_cidr_ingress
     security_groups = var.controlled_access_security_groups
   }
 
