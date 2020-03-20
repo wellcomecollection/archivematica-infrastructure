@@ -125,7 +125,7 @@ module "clamav_service" {
 
   name = "clamav"
 
-  container_image = "artefactual/clamav:latest"
+  container_image = "greengloves/clamav:latest"
 
   cpu    = 2 * 1024
   memory = 4 * 1024
