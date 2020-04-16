@@ -261,25 +261,23 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 3.  Set the following settings in the "Default" configuration:
 
     <table>
-      <tr>
-        <td>Assign UUIDs to directories</td><th>No</th>
-        <td>Generate transfer structure report</td><th>No</th>
-        <td>Perform file format identification (Transfer)</td><th>No</th>
-        <td>Perform policy checks on originals</td><th>No</th>
-        <td>Examine contents</td><th>Examine contents</th>
-        <td>Perform file format identification (Ingest)</td><th>No, use existing data</th>
-        <td>Generate thumbnails</td><th>No</th>
-        <td>Perform policy checks on preservation derivatives</td><th>No</th>
-        <td>Perform policy checks on access derivatives</td><th>No</th>
-        <td>Bind PIDs</td><th>No</th>
-        <td>Document empty directories</td><th>No</th>
-        <td>Transcribe files (OCR)</td><th>No</th>
-        <td>Perform file format identification (Submission documentation & metadata)</td><th>No</th>
-        <td>Select compression algorithm</td><th>Gzipped tar</th>
-        <td>Select compression level</td><th>1 - fastest mode</th>
-        <td>Store AIP location</td><th>Wellcome AIP storage</th>
-        <td>Upload DIP</td><th>Do not upload DIP</th>
-      </tr>
+      <tr><td>Assign UUIDs to directories</td><th>No</th></tr>
+      <tr><td>Generate transfer structure report</td><th>No</th></tr>
+      <tr><td>Perform file format identification (Transfer)</td><th>Yes</th></tr>
+      <tr><td>Perform policy checks on originals</td><th>No</th></tr>
+      <tr><td>Examine contents</td><th>Examine contents</th></tr>
+      <tr><td>Perform file format identification (Ingest)</td><th>No, use existing</tr> data</th>
+      <tr><td>Generate thumbnails</td><th>No</th></tr>
+      <tr><td>Perform policy checks on preservation derivatives</td><th>No</th></tr>
+      <tr><td>Perform policy checks on access derivatives</td><th>No</th></tr>
+      <tr><td>Bind PIDs</td><th>No</th></tr>
+      <tr><td>Document empty directories</td><th>No</th></tr>
+      <tr><td>Transcribe files (OCR)</td><th>No</th></tr>
+      <tr><td>Perform file format identification (Submission documentation & metadata)</td><th>No</th>
+      <tr><td>Select compression algorithm</td><th>Gzipped tar</th></tr>
+      <tr><td>Select compression level</td><th>1 - fastest mode</th></tr>
+      <tr><td>Store AIP location</td><th>Wellcome AIP storage</th></tr>
+      <tr><td>Upload DIP</td><th>Do not upload DIP</th></tr>
     </table>
 
     All other fields should be "None".
@@ -287,14 +285,12 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 4.  Create a "born_digital" config, with the settings above and additionally:
 
     <table>
-      <tr>
-        <td>Extract packages</td><th>No</th>
-        <td>Perform policy checks on originals</td><th>No</th>
-        <td>Create SIP(s)</td><th>Create single SIP and continue processing</th>
-        <td>Normalize</td><th>Do not normalize</th>
-        <td>Add metadata if desired</td><th>Continue</th>
-        <td>Store AIP</td><th>Yes</th>
-      </tr>
+      <tr><td>Extract packages</td><th>No</th></tr>
+      <tr><td>Perform policy checks on originals</td><th>No</th></tr>
+      <tr><td>Create SIP(s)</td><th>Create single SIP and continue processing</th></tr>
+      <tr><td>Normalize</td><th>Do not normalize</th></tr>
+      <tr><td>Add metadata if desired</td><th>Continue</th></tr>
+      <tr><td>Store AIP</td><th>Yes</th></tr>
     </table>
 
 5.  Create a "b_dig_accessions" config, with the default settings above and additionally:
