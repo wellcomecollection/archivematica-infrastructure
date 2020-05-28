@@ -3,7 +3,7 @@ provider "aws" {
   version = "2.43.0"
 
   assume_role {
-    role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
+    role_arn = "arn:aws:iam::299497370133:role/workflow-admin"
   }
 }
 
