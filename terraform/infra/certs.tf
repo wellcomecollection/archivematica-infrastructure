@@ -17,13 +17,13 @@ resource "aws_acm_certificate" "cert" {
 }
 
 data "aws_route53_zone" "zone" {
-  provider = "aws.routermaster"
+  provider = aws.dns
 
   name = "wellcomecollection.org."
 }
 
 resource "aws_route53_record" "cert_validation" {
-  provider = "aws.routermaster"
+  provider = aws.dns
   count    = length(aws_acm_certificate.cert.domain_validation_options)
 
   name = aws_acm_certificate.cert.domain_validation_options[count.index].resource_record_name

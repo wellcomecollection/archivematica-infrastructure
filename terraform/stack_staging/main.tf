@@ -49,4 +49,9 @@ module "stack" {
   admin_cidr_ingress = local.admin_cidr_ingress
 
   lambda_error_alarm_arn = local.lambda_error_alarm_arn
+
+  providers = {
+    aws.digitisation = aws.digitisation
+    aws.dns          = aws.dns
+  }
 }
