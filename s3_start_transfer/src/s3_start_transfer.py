@@ -87,18 +87,36 @@ def run_transfer(s3, *, bucket, key):
     logger = Logger()
 
     # Run some verifications on the object before we sent it to Archivematica.
+    #
+    # If the ZIP package is using deflate64, we can't uncompress it with Python.
+    # For now, try to guess the accession number if it's an accession, or error
+    # out if not.
+    #
+    # See https://github.com/wellcomecollection/platform/issues/4614
     try:
-        verify_s3_package(s3=s3, logger=logger, bucket=bucket, key=key)
-    except VerificationFailure:
-        print(f"Verification error in s3://{bucket}/{key}")
-        return
+        try:
+            verify_s3_package(s3=s3, logger=logger, bucket=bucket, key=key)
+        except VerificationFailure:
+            print(f"Verification error in s3://{bucket}/{key}")
+            return
 
-    accession_number = get_accession_number(
-        s3=s3,
-        logger=logger,
-        bucket=bucket,
-        key=key
-    )
+        accession_number = get_accession_number(
+            s3=s3,
+            logger=logger,
+            bucket=bucket,
+            key=key
+        )
+    except NotImplementedError as err:
+        if (
+            str(err) in {"compression type 9 (deflate64)", "That compression method is not supported"} and
+            key.startswith("born-digital-accessions/")
+        ):
+            print(f"Skipping verification for s3://{bucket}/{key}, deflate64-compressed ZIP")
+            accession_number = os.path.basename(os.path.splitext(key)[0])
+        else:
+            print(f"Unable to decompress s3://{bucket}/{key}: {err}")
+            return
+
 
     # Now try to start a transfer in Archivematica.
     try:
