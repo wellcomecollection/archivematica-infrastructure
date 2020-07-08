@@ -212,10 +212,6 @@ module "mcp_client_service" {
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "${local.clamav_hostname}:3310"
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
 
-    # Disable indexing Elasticsearch -- we use Kibana reporting for the
-    # entire storage service.
-    ARCHIVEMATICA_MCPCLIENT_SEARCH_ENABLED = false
-
     # This causes MCP client to stream files to ClamAV, rather than passing
     # it a path.  This means ClamAV doesn't need access to the shared
     # filesystem, and can run in Fargate, not on EC2.
@@ -238,7 +234,8 @@ module "mcp_client_service" {
   }
 
   secret_env_vars = {
-    DJANGO_SECRET_KEY = "archivematica/mcp_client_django_secret_key"
+    DJANGO_SECRET_KEY                           = "archivematica/mcp_client_django_secret_key"
+    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER = "archivematica/${var.namespace}/elasticsearch_url"
   }
 
   mount_points = [
@@ -418,10 +415,6 @@ module "dashboard_service" {
     # the 'archivematica' user, which can't access these mounts.
     AM_GUNICORN_USER = "root"
 
-    # Disable indexing Elasticsearch -- we use Kibana reporting for the
-    # entire storage service.
-    ARCHIVEMATICA_DASHBOARD_DASHBOARD_SEARCH_ENABLED = false
-
     ARCHIVEMATICA_DASHBOARD_OIDC_AUTHENTICATION = "true"
     AZURE_TENANT_ID                             = var.azure_tenant_id
     OIDC_RP_CLIENT_ID                           = var.oidc_client_id
@@ -429,8 +422,9 @@ module "dashboard_service" {
   }
 
   secret_env_vars = {
-    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY = "archivematica/dashboard_django_secret_key"
-    OIDC_RP_CLIENT_SECRET                     = "archivematica/${var.namespace}/oidc_rp_client_secret"
+    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY              = "archivematica/dashboard_django_secret_key"
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "archivematica/${var.namespace}/elasticsearch_url"
+    OIDC_RP_CLIENT_SECRET                                  = "archivematica/${var.namespace}/oidc_rp_client_secret"
   }
 
   container_image = var.dashboard_container_image
