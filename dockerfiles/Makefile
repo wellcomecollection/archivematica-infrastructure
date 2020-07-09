@@ -1,7 +1,7 @@
 ROOT = $(shell git rev-parse --show-toplevel)
 DOCKERFILES = $(ROOT)/dockerfiles
 
-include $(ROOT)/docker.Makefile
+include $(ROOT)/makefiles/docker.Makefile
 
 dashboard_nginx-build:
 	$(call build_image,archivematica_dashboard_nginx,dockerfiles/dashboard_nginx/Dockerfile)
