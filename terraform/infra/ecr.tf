@@ -1,3 +1,8 @@
+module "ecr_clamavd" {
+  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
+  name   = "clamavd"
+}
+
 module "ecr_dashboard" {
   source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
   name   = "archivematica_dashboard"
