@@ -125,7 +125,7 @@ module "clamav_service" {
 
   name = "clamav"
 
-  container_image = "greengloves/clamav:latest"
+  container_image = "299497370133.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/clamavd:c3a2c569a688f5645dd76c0dfe290aae47daeadf"
 
   cpu    = 2 * 1024
   memory = 4 * 1024
