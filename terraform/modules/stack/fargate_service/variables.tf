@@ -1,38 +1,25 @@
 variable "namespace" {}
 variable "name" {}
 
-variable "env_vars" {
-  type    = map(string)
-  default = {}
-}
+variable "cluster_arn" {}
 
-variable "secret_env_vars" {
-  type    = map(string)
-  default = {}
-}
+variable "cpu" {}
+variable "memory" {}
 
 variable "container_image" {}
 
-variable "aws_region" {
-  default = "eu-west-1"
-}
-
-variable "command" {
-  type    = list(string)
-  default = []
-}
-
-variable "cpu" {}
-
-variable "memory" {}
-
 variable "mount_points" {
-  type    = list(string)
+  type = list(object({
+    containerPath = string
+    sourceVolume  = string
+  }))
+
   default = []
 }
 
-variable "cluster_arn" {}
-variable "namespace_id" {}
+variable "desired_task_count" {
+  default = 1
+}
 
 variable "network_private_subnets" {
   type = list(string)
@@ -41,3 +28,22 @@ variable "network_private_subnets" {
 variable "interservice_security_group_id" {}
 variable "service_egress_security_group_id" {}
 variable "service_lb_security_group_id" {}
+
+variable "secrets" {
+  type    = map(string)
+  default = {}
+}
+
+variable "environment" {
+  type    = map(string)
+  default = {}
+}
+
+variable "namespace_id" {
+  type = string
+}
+
+variable "command" {
+  default = null
+  type    = list(string)
+}

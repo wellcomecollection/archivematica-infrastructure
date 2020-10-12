@@ -148,7 +148,7 @@ module "mcp_server_service" {
 
   container_image = var.mcp_server_container_image
 
-  env_vars = {
+  environment = {
     ARCHIVEMATICA_MCPSERVER_CLIENT_USER     = var.rds_username
     ARCHIVEMATICA_MCPSERVER_CLIENT_PASSWORD = var.rds_password
     ARCHIVEMATICA_MCPSERVER_CLIENT_HOST     = var.rds_host
@@ -158,7 +158,7 @@ module "mcp_server_service" {
     ARCHIVEMATICA_MCPSERVER_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
   }
 
-  secret_env_vars = {
+  secrets = {
     DJANGO_SECRET_KEY = "archivematica/mcp_server_django_secret_key"
   }
 
@@ -198,7 +198,7 @@ module "mcp_client_service" {
 
   container_image = var.mcp_client_container_image
 
-  env_vars = {
+  environment = {
     DJANGO_SETTINGS_MODULE                                         = "settings.common"
     NAILGUN_SERVER                                                 = local.fits_hostname
     NAILGUN_PORT                                                   = "2113"
@@ -233,7 +233,7 @@ module "mcp_client_service" {
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
   }
 
-  secret_env_vars = {
+  secrets = {
     DJANGO_SECRET_KEY                           = "archivematica/mcp_client_django_secret_key"
     ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER = "archivematica/${var.namespace}/elasticsearch_url"
   }
