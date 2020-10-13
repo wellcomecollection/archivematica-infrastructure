@@ -8,15 +8,6 @@ variable "memory" {}
 
 variable "container_image" {}
 
-variable "mount_points" {
-  type = list(object({
-    containerPath = string
-    sourceVolume  = string
-  }))
-
-  default = []
-}
-
 variable "desired_task_count" {
   default = 1
 }

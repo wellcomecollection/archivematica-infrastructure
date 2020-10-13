@@ -290,7 +290,7 @@ module "mcp_client_service" {
 module "storage_service" {
   source = "./nginx_service"
 
-  namespace = "am-${var.namespace}"
+  namespace = var.namespace
   name      = "storage-service"
 
   hostname         = var.storage_service_hostname
@@ -309,7 +309,7 @@ module "storage_service" {
   cpu    = local.storage_service_cpu
   memory = 4096
 
-  env_vars = {
+  environment = {
     FORWARDED_ALLOW_IPS       = "*"
     AM_GUNICORN_ACCESSLOG     = "/dev/null"
     AM_GUNICORN_RELOAD        = "true"
@@ -336,12 +336,13 @@ module "storage_service" {
     OIDC_RP_SIGN_ALGO      = "RS256"
   }
 
-  secret_env_vars = {
+  secrets = {
     DJANGO_SECRET_KEY     = "archivematica/storage_service_django_secret_key"
     OIDC_RP_CLIENT_SECRET = "archivematica/${var.namespace}/oidc_rp_client_secret"
   }
 
-  container_image = var.storage_service_container_image
+  app_container_image   = var.storage_service_container_image
+  nginx_container_image = var.storage_service_nginx_container_image
 
   mount_points = [
     {
@@ -362,8 +363,6 @@ module "storage_service" {
     },
   ]
 
-  nginx_container_image = var.storage_service_nginx_container_image
-
   load_balancer_https_listener_arn = module.lb_storage_service.https_listener_arn
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
@@ -381,7 +380,7 @@ module "storage_service" {
 module "dashboard_service" {
   source = "./nginx_service"
 
-  namespace = "am-${var.namespace}"
+  namespace = var.namespace
   name      = "dashboard"
 
   hostname         = var.dashboard_hostname
@@ -390,7 +389,7 @@ module "dashboard_service" {
   cpu    = local.dashboard_cpu
   memory = 2048
 
-  env_vars = {
+  environment = {
     FORWARDED_ALLOW_IPS                              = "*"
     AM_GUNICORN_ACCESSLOG                            = "/dev/null"
     AM_GUNICORN_RELOAD                               = "true"
@@ -421,13 +420,14 @@ module "dashboard_service" {
     OIDC_RP_SIGN_ALGO                           = "RS256"
   }
 
-  secret_env_vars = {
+  secrets = {
     ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY              = "archivematica/dashboard_django_secret_key"
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "archivematica/${var.namespace}/elasticsearch_url"
     OIDC_RP_CLIENT_SECRET                                  = "archivematica/${var.namespace}/oidc_rp_client_secret"
   }
 
-  container_image = var.dashboard_container_image
+  app_container_image   = var.dashboard_container_image
+  nginx_container_image = var.dashboard_nginx_container_image
 
   mount_points = [
     {
@@ -436,7 +436,6 @@ module "dashboard_service" {
     },
   ]
 
-  nginx_container_image = var.dashboard_nginx_container_image
 
   load_balancer_https_listener_arn = module.lb_dashboard.https_listener_arn
 
