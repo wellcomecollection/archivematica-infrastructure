@@ -15,7 +15,7 @@ module "stack" {
 
   mcp_client_container_image            = module.mcp_client_repo_uri.value
   mcp_server_container_image            = module.mcp_server_repo_uri.value
-  storage_service_container_image       = module.storage_service_repo_uri.value
+  storage_service_container_image       = "${local.ecr_storage_service_repo_url}:env.staging"
   storage_service_nginx_container_image = module.storage_service_nginx_repo_uri.value
   dashboard_container_image             = module.dashboard_repo_uri.value
   dashboard_nginx_container_image       = module.dashboard_nginx_repo_uri.value

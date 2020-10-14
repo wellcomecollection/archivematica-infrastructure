@@ -46,6 +46,18 @@ data "terraform_remote_state" "infra" {
   }
 }
 
+data "terraform_remote_state" "shared_archivematica" {
+  backend = "s3"
+
+  config = {
+    role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
+
+    bucket = "wellcomecollection-workflow-infra"
+    key    = "terraform/archivematica-infra/infra.tfstate"
+    region = "eu-west-1"
+  }
+}
+
 data "terraform_remote_state" "shared_infra" {
   backend = "s3"
 
