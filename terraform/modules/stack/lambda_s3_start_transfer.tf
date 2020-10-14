@@ -5,7 +5,7 @@ module "s3_start_transfer_lambda" {
   module_name = "s3_start_transfer"
 
   description     = "Start new Archivematica transfers for uploads to transfer bucket"
-  name            = "s3_start_transfer-${var.namespace}"
+  name            = "archivematica-s3_start_transfer-${var.namespace}"
   alarm_topic_arn = var.lambda_error_alarm_arn
 
   environment_variables = {

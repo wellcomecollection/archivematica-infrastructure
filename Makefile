@@ -16,8 +16,5 @@ s3_start_transfer-test:
 start_test_transfer-publish:
 	$(call publish_lambda,start_test_transfer)
 
-start_test_transfer-test:
-	$(call test_python,start_test_transfer)
-
-lambda-publish: s3_start_transfer-publish
+lambda-publish: s3_start_transfer-publish start_test_transfer-publish
 lambda-test: s3_start_transfer-test
