@@ -4,7 +4,7 @@ module "s3_start_transfer_lambda" {
   s3_key      = "lambdas/s3_start_transfer.zip"
   module_name = "s3_start_transfer"
 
-  description     = "Start new Archivematica transfers for uploads to transfer bucket"
+  description     = "Trigger that starts new Archivematica transfers from an upload to ${var.transfer_source_bucket_name}"
   name            = "archivematica-s3_start_transfer-${var.namespace}"
   alarm_topic_arn = var.lambda_error_alarm_arn
 
