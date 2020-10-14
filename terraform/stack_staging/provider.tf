@@ -2,6 +2,11 @@ provider "aws" {
   region  = var.region
   version = "~> 2.69"
 
+  # Ignore deployment tags on services
+  ignore_tags {
+    keys = ["deployment:label"]
+  }
+
   assume_role {
     role_arn = "arn:aws:iam::299497370133:role/workflow-admin"
   }
