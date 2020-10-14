@@ -144,6 +144,7 @@ def run_transfer(s3, *, bucket, key):
         print(f"Error starting transfer for s3://{bucket}/{key}")
     else:
         logger.write("Started successful transfer!")
+        logger.write(f"Archivematica transfer ID is {transfer_id}")
         _write_log(logger, bucket=bucket, key=key, result="success")
 
         print("Started transfer {}".format(transfer_id))

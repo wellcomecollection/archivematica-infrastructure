@@ -41,11 +41,6 @@ define test_python
 		wellcome/test_python_$(shell basename $(1)):latest
 endef
 
-s3_start_transfer-publish:
-	$(call publish_lambda,s3_start_transfer)
-
-s3_start_transfer-test:
-	$(call test_python,s3_start_transfer)
 
 # Publish a Docker image to ECR, and put its associated release ID in S3.
 #
