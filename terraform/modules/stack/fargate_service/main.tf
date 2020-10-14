@@ -2,46 +2,58 @@ locals {
   full_name = "am-${var.namespace}-${var.name}"
 }
 
-module "task_definition" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/single_container?ref=v1.1.0"
+module "service" {
+  source = "../base"
 
-  task_name = local.full_name
+  cluster_arn = var.cluster_arn
 
-  container_image = var.container_image
+  container_definitions = [
+    module.app_container.container_definition,
+  ]
 
-  cpu    = var.cpu
+  service_discovery_namespace_id = var.namespace_id
+
+  cpu = var.cpu
   memory = var.memory
 
-  mount_points = var.mount_points
+  deployment_service_env  = var.namespace
+  deployment_service_name = var.name
 
-  command = var.command
+  desired_task_count = var.desired_task_count
 
-  env_vars        = var.env_vars
-  secret_env_vars = var.secret_env_vars
-
-  aws_region = var.aws_region
-}
-
-module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.1.0"
-
-  service_name = local.full_name
-  cluster_arn  = var.cluster_arn
-
-  desired_task_count = 1
-
-  task_definition_arn = module.task_definition.arn
-
-  subnets = var.network_private_subnets
-
-  namespace_id = var.namespace_id
+  launch_type = "FARGATE"
 
   security_group_ids = [
     var.interservice_security_group_id,
     var.service_egress_security_group_id,
-    var.service_lb_security_group_id,
+    var.service_lb_security_group_id
   ]
 
-  deployment_minimum_healthy_percent = 100
+  service_name = local.full_name
+
+  subnets = var.network_private_subnets
+
   deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = 100
+}
+
+module "app_container" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.3.0"
+  name   = "app"
+
+  image = var.container_image
+
+  command = var.command
+
+  environment  = var.environment
+  secrets      = var.secrets
+
+  log_configuration = module.service.log_configuration
+}
+
+module "secrets" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.3.0"
+
+  role_name = module.service.task_execution_role_name
+  secrets   = var.secrets
 }

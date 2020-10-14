@@ -2,26 +2,19 @@ variable "namespace" {}
 variable "name" {}
 
 variable "cluster_arn" {}
-variable "namespace_id" {}
 
 variable "cpu" {}
-
 variable "memory" {}
-
-variable "env_vars" {
-  type    = map(string)
-  default = {}
-}
-
-variable "secret_env_vars" {
-  type    = map(string)
-  default = {}
-}
 
 variable "container_image" {}
 
 variable "mount_points" {
-  type = list(map(string))
+  type = list(object({
+    containerPath = string
+    sourceVolume  = string
+  }))
+
+  default = []
 }
 
 variable "desired_task_count" {
@@ -36,12 +29,24 @@ variable "interservice_security_group_id" {}
 variable "service_egress_security_group_id" {}
 variable "service_lb_security_group_id" {}
 
+variable "secrets" {
+  type    = map(string)
+  default = {}
+}
+
+variable "environment" {
+  type    = map(string)
+  default = {}
+}
+
+variable "namespace_id" {
+  type = string
+}
+
 variable "deployment_minimum_healthy_percent" {
-  type    = number
-  default = 100
+  type = number
 }
 
 variable "deployment_maximum_percent" {
-  type    = number
-  default = 200
+  type = number
 }

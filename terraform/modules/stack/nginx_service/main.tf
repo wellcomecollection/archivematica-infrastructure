@@ -1,65 +1,108 @@
 locals {
-  nginx_cpu    = 128
-  nginx_memory = 256
+  full_name = "am-${var.namespace}-${var.name}"
 
-  full_name = "${var.namespace}-${var.name}"
-}
-
-module "task_definition" {
-  source = "./container_with_sidecar"
-
-  task_name = local.full_name
-
-  cpu    = "${var.cpu + local.nginx_cpu}"
-  memory = "${var.memory + local.nginx_memory}"
-
-  app_container_image = var.container_image
-  app_cpu             = var.cpu
-  app_memory          = var.memory
-  app_mount_points    = var.mount_points
-
-  app_env_vars        = var.env_vars
-  secret_app_env_vars = var.secret_env_vars
-
-  sidecar_container_image = var.nginx_container_image
-  sidecar_container_port  = 80
-  sidecar_container_name  = "nginx"
-  sidecar_cpu             = local.nginx_cpu
-  sidecar_memory          = local.nginx_memory
-
-  launch_type = "EC2"
-
-  aws_region = "eu-west-1"
+  host_port            = 80
+  nginx_container_port = 80
+  nginx_container_name = "nginx"
 }
 
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.1.0"
+  source = "../base"
 
-  service_name = local.full_name
-  cluster_arn  = var.cluster_arn
+  cluster_arn = var.cluster_arn
 
-  desired_task_count = 1
+  container_definitions = [
+    module.app_container.container_definition,
+    module.nginx_container.container_definition
+  ]
 
-  task_definition_arn = module.task_definition.arn
+  target_group_arn = aws_alb_target_group.ecs_service.arn
+  container_port = local.nginx_container_port
+  container_name = local.nginx_container_name
 
-  subnets = var.network_private_subnets
+  service_discovery_namespace_id = var.namespace_id
 
-  namespace_id = var.namespace_id
+  cpu = var.cpu
+  memory = var.memory
+
+  deployment_service_env  = var.namespace
+  deployment_service_name = var.name
+
+  desired_task_count = var.desired_task_count
+
+  launch_type = "EC2"
 
   security_group_ids = [
     var.interservice_security_group_id,
     var.service_egress_security_group_id,
-    var.service_lb_security_group_id,
+    var.service_lb_security_group_id
   ]
 
-  deployment_minimum_healthy_percent = 100
-  deployment_maximum_percent         = 200
+  service_name = local.full_name
 
-  launch_type = "EC2"
+  placement_constraints = [{
+    type = "memberOf"
+    expression = "attribute:ebs.volume exists"
+  }]
 
-  target_group_arn = aws_alb_target_group.ecs_service.arn
-  container_name   = "nginx"
-  container_port   = 80
+  volumes = [
+    {
+      name      = "pipeline-data"
+      host_path = "/ebs/pipeline-data"
+    },
+    {
+      name      = "tmp-data"
+      host_path = "/ebs/tmp/${var.name}"
+    },
+    {
+      name      = "location-data"
+      host_path = "/home"
+    },
+    {
+      name      = "staging-data"
+      host_path = "/var/archivematica/storage_service"
+    },
+  ]
+
+  subnets = var.network_private_subnets
+
+  deployment_maximum_percent         = var.deployment_maximum_percent
+  deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
+}
+
+module "app_container" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.3.0"
+  name   = "app"
+
+  image = var.app_container_image
+
+  environment  = var.environment
+  secrets      = var.secrets
+  mount_points = var.mount_points
+
+  log_configuration = module.service.log_configuration
+}
+
+module "nginx_container" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.3.0"
+  name   = local.nginx_container_name
+
+  image = var.nginx_container_image
+
+  port_mappings = [{
+    containerPort = local.nginx_container_port
+    hostPort      = local.host_port
+    protocol      = "tcp"
+  }]
+
+  log_configuration = module.service.log_configuration
+}
+
+module "secrets" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.3.0"
+
+  role_name = module.service.task_execution_role_name
+  secrets   = var.secrets
 }
 
 resource "aws_alb_target_group" "ecs_service" {
@@ -70,7 +113,7 @@ resource "aws_alb_target_group" "ecs_service" {
   target_type = "ip"
 
   protocol = "HTTP"
-  port     = 80
+  port     = local.host_port
   vpc_id   = var.vpc_id
 
   # The root paths return 302s which redirect to this login page.
@@ -102,7 +145,8 @@ resource "aws_alb_listener_rule" "https" {
   }
 
   condition {
-    field  = "host-header"
-    values = [var.hostname]
+    host_header {
+      values = [var.hostname]
+    }
   }
 }

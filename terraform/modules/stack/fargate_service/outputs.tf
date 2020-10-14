@@ -1,3 +1,3 @@
 output "service_name" {
-  value = "${module.service.name}"
+  value = local.full_name
 }
