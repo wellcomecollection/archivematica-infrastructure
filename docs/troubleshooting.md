@@ -34,3 +34,28 @@ If that's not working, and you see this in the CloudWatch logs:
 it might be a sign that the Lambda has bad credentials for the Archivematica API.
 
 These are kept in Parameter Store, then injected into the Lambda by Terraform (see `transfer_lambda.tf`).
+
+
+
+<h2 id="ecs_ec2_state_issues">
+  EC2/ECS issues
+</h2>
+
+It is possible for the ECS agent running on an EC2 host to get into a bad state that prevents containers from starting on the host.
+
+An error we have seen resulting from this is:
+
+> CannotPullContainerError: Error response from daemon: pull access denied
+
+Although permissions are correctly configured. Restarting the ECS agent on the EC2 host machine resolved that issue. 
+
+There may be other issues which arise from having a long running EC2 instance as a cluster host. Out of date or broken ECS agent, or exhausting file system space are potential issues. Restarting the EC2 instance may result in having to perform step 8 of the [bootstrapping.md](bootstrapping procedure.
+
+An EC2 host can be manually inspected by SSHing to that instance using the SSH key available in AWS SecretsManager at `ssh/wellcomedigitalworkflow` in the `platform` account. You will need to SSH via the "bastion host" to gain access.
+
+```sh
+ssh -A -i ~/.ssh/wellcomedigitalworkflow ec2-user@bastion-host.in.aws
+ssh -i ~/.ssh/wellcomedigitalworkflow ec2-user@cluster-host.in.aws
+```
+
+You can then inspect running containers on the cluster host using standard `docker` commands. The ECS agent runs as a container on the EC2 host and will be automatically restarted if it is killed.
