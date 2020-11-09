@@ -1,34 +1,27 @@
-module "ecr_clamavd" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
-  name   = "clamavd"
+resource "aws_ecr_repository" "clamavd" {
+  name = "uk.ac.wellcome/clamavd"
 }
 
-module "ecr_dashboard" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
-  name   = "archivematica_dashboard"
+resource "aws_ecr_repository" "archivematica_dashboard" {
+  name = "uk.ac.wellcome/archivematica_dashboard"
 }
 
-module "ecr_dashboard_nginx" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
-  name   = "archivematica_dashboard_nginx"
+resource "aws_ecr_repository" "archivematica_dashboard_nginx" {
+  name = "uk.ac.wellcome/archivematica_dashboard_nginx"
 }
 
-module "ecr_mcp_client" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
-  name   = "archivematica_mcp_client"
+resource "aws_ecr_repository" "archivematica_mcp_client" {
+  name = "uk.ac.wellcome/archivematica_mcp_client"
 }
 
-module "ecr_mcp_server" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
-  name   = "archivematica_mcp_server"
+resource "aws_ecr_repository" "archivematica_mcp_server" {
+  name = "uk.ac.wellcome/archivematica_mcp_server"
 }
 
-module "ecr_storage_service_nginx" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
-  name   = "archivematica_storage_service_nginx"
+resource "aws_ecr_repository" "archivematica_storage_service_nginx" {
+  name = "uk.ac.wellcome/archivematica_storage_service_nginx"
 }
 
-module "ecr_storage_service" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
-  name   = "archivematica_storage_service"
+resource "aws_ecr_repository" "archivematica_storage_service" {
+  name = "uk.ac.wellcome/archivematica_storage_service"
 }
