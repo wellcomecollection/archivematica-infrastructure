@@ -156,6 +156,10 @@ module "mcp_server_service" {
     ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE = "MCP"
 
     ARCHIVEMATICA_MCPSERVER_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
+
+    # We don't enable indexing or search with Elasticsearch.  Data from the
+    # storage service is indexed separately in the reporting cluster.
+    ARCHIVEMATICA_MCPSERVER_MCPSERVER_SEARCH_ENABLED = false
   }
 
   secrets = {
@@ -231,11 +235,14 @@ module "mcp_client_service" {
     # the database during transfers with lots of files, and reduce the
     # number of times we get the error (2006, ‘MySQL server has gone away’).
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
+
+    # We don't enable indexing or search with Elasticsearch.  Data from the
+    # storage service is indexed separately in the reporting cluster.
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_SEARCH_ENABLED = false
   }
 
   secrets = {
-    DJANGO_SECRET_KEY                           = "archivematica/mcp_client_django_secret_key"
-    ARCHIVEMATICA_MCPCLIENT_ELASTICSEARCHSERVER = "archivematica/${var.namespace}/elasticsearch_url"
+    DJANGO_SECRET_KEY = "archivematica/mcp_client_django_secret_key"
   }
 
   mount_points = [
@@ -414,6 +421,10 @@ module "dashboard_service" {
     # the 'archivematica' user, which can't access these mounts.
     AM_GUNICORN_USER = "root"
 
+    # We don't enable indexing or search with Elasticsearch.  Data from the
+    # storage service is indexed separately in the reporting cluster.
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_SEARCH_ENABLED = false
+
     ARCHIVEMATICA_DASHBOARD_OIDC_AUTHENTICATION = "true"
     AZURE_TENANT_ID                             = var.azure_tenant_id
     OIDC_RP_CLIENT_ID                           = var.oidc_client_id
@@ -421,9 +432,8 @@ module "dashboard_service" {
   }
 
   secrets = {
-    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY              = "archivematica/dashboard_django_secret_key"
-    ARCHIVEMATICA_DASHBOARD_DASHBOARD_ELASTICSEARCH_SERVER = "archivematica/${var.namespace}/elasticsearch_url"
-    OIDC_RP_CLIENT_SECRET                                  = "archivematica/${var.namespace}/oidc_rp_client_secret"
+    ARCHIVEMATICA_DASHBOARD_DJANGO_SECRET_KEY = "archivematica/dashboard_django_secret_key"
+    OIDC_RP_CLIENT_SECRET                     = "archivematica/${var.namespace}/oidc_rp_client_secret"
   }
 
   app_container_image   = var.dashboard_container_image

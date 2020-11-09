@@ -3,5 +3,5 @@ output "certificate_arn" {
 }
 
 output "ecr_storage_service_repo_url" {
-  value = module.ecr_storage_service.repository_url
+  value = aws_ecr_repository.archivematica_storage_service.repository_url
 }
