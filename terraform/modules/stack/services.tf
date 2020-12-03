@@ -41,9 +41,16 @@
 locals {
   fits_cpu            = 3 * 1024
   mcp_server_cpu      = 1 * 1024
-  mcp_client_cpu      = 16384 - (3 * 1024 + 1 * 1024 + 1024 + 1600 + 3 * 128 + 1600)
+  nginx_cpu           = 128
   dashboard_cpu       = 1024
   storage_service_cpu = 1600
+  
+  total_dashboard_cpu       = local.dashboard_cpu + local.nginx_cpu
+  total_storage_service_cpu = local.storage_service_cpu + local.nginx_cpu
+  
+  mcp_client_cpu = 16384 - (local.fits_cpu + local.mcp_server_cpu + local.total_dashboard_cpu + local.total_storage_service_cpu + max(local.total_dashboard_cpu, local.total_storage_service_cpu))
+  
+  mcp_client_count = 2
 }
 
 locals {
@@ -274,9 +281,9 @@ module "mcp_client_service" {
   #
   # That leaves two slots for the MCP client to run, and more clients
   # = better concurrency.
-  desired_task_count = 2
+  desired_task_count = local.mcp_client_count
 
-  cpu    = local.mcp_client_cpu / 2
+  cpu    = floor(local.mcp_client_cpu / local.mcp_client_count)
   memory = 4 * 1024
 
   # See comment at top of the file about deployments.
