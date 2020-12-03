@@ -35,9 +35,10 @@ data "aws_iam_policy_document" "archivematica_transfer_source" {
     principals {
       identifiers = [
         "arn:aws:iam::404315009621:role/digitisation-developer",
+        "arn:aws:iam::975596993436:role/storage-developer",
 
         # All the roles in the workflow account
-        "299497370133",
+        "arn:aws:iam::299497370133:root",
       ]
 
       type = "AWS"
