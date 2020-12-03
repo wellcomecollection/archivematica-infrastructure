@@ -14,7 +14,7 @@ module "cluster" {
 
   controlled_access_cidr_ingress = var.admin_cidr_ingress
 
-  cluster_name = "${aws_ecs_cluster.archivematica.name}"
+  cluster_name = aws_ecs_cluster.archivematica.name
 
   # We want an instance with enough CPU/memory to run all the tasks *and* have
   # room to add new tasks, and with enough Elastic Network Interfaces to run

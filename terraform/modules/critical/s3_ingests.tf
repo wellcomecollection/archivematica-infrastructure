@@ -2,7 +2,7 @@ locals {
   prod_ingests_bucket_name    = "wellcomecollection-archivematica-ingests"
   staging_ingests_bucket_name = "wellcomecollection-archivematica-${var.namespace}-ingests"
 
-  ingests_bucket_name = "${var.namespace == "prod" ? local.prod_ingests_bucket_name : local.staging_ingests_bucket_name}"
+  ingests_bucket_name = var.namespace == "prod" ? local.prod_ingests_bucket_name : local.staging_ingests_bucket_name
 }
 
 resource "aws_s3_bucket" "archivematica_ingests" {

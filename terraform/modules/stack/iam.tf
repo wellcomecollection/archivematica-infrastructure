@@ -10,7 +10,7 @@ data "aws_iam_policy_document" "storage_service_aws_permissions" {
     ]
 
     resources = [
-      "${var.ingests_bucket_arn}",
+      var.ingests_bucket_arn,
       "${var.ingests_bucket_arn}/*",
     ]
   }
@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "storage_service_aws_permissions" {
 
     resources = [
       "${var.storage_service_bucket_arn}/*",
-      "${var.storage_service_bucket_arn}",
+      var.storage_service_bucket_arn,
     ]
   }
 }

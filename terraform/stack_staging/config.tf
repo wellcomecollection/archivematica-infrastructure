@@ -28,7 +28,7 @@ data "aws_ssm_parameter" "oidc_client_id" {
 
 
 locals {
-  admin_cidr_ingress = "${split(",", data.aws_ssm_parameter.admin_cidr_ingress.value)}"
+  admin_cidr_ingress = split(",", data.aws_ssm_parameter.admin_cidr_ingress.value)
 
   archivematica_username    = data.aws_ssm_parameter.archivematica_username.value
   archivematica_api_key     = data.aws_ssm_parameter.archivematica_api_key.value

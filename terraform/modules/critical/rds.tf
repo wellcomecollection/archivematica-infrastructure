@@ -65,7 +65,7 @@ resource "aws_rds_cluster" "archivematica" {
   # Possibly related:
   # https://www.archivematica.org/en/docs/archivematica-1.10/admin-manual/installation-setup/installation/installation/#dependencies
   engine         = "aurora"
-  engine_version = "5.6.10a"
+  engine_version = "5.6.mysql_aurora.1.22.2"
 }
 
 resource "aws_rds_cluster_instance" "archivematica" {
