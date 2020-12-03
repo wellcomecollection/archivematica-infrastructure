@@ -1,6 +1,6 @@
 resource "aws_alb" "load_balancer" {
   # This name can only contain alphanumerics and hyphens
-  name = replace("${var.name}", "_", "-")
+  name = replace(var.name, "_", "-")
 
   subnets = var.public_subnets
   security_groups = concat(

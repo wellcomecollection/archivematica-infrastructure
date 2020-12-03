@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "archivematica_transfer_source" {
     ]
 
     resources = [
-      "${aws_s3_bucket.archivematica_transfer_source.arn}",
+      aws_s3_bucket.archivematica_transfer_source.arn,
       "${aws_s3_bucket.archivematica_transfer_source.arn}/*",
     ]
 
