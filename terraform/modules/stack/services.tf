@@ -1,56 +1,19 @@
-# Currently we run the Archivematica tasks on a c5.4xlarge instance, which
-# has ~16 vCPUs available, or 16384 CPU units (16 × 1024).
-#
-# We need to balance the following factors:
-#
-#   * minimising idle CPU (because the MCP client in particular is very CPU-hungry,
-#     and the more CPU we can allocate, the faster transfers will go through)
-#
-#   * being able to deploy tasks automatically
-#
-# The dashboard and storage service are both user-facing apps, so they should
-# have zero-downtime deployments.  We need to leave enough CPU idle that we can
-# spin up new instances of those tasks.
-#
-# Gearman and ClamAV run in Fargate, so we don't need to worry about them.
-#
-# For the other tasks, we can allow a brief period of downtime while we're
-# deploying new versions, and so claim back some extra CPU.  This setting:
-#
-#     deployment_minimum_healthy_percent = 0
-#
-# will tell ECS that it's okay to scale back to zero when deploying new tasks,
-# and then we don't need so much idling CPU.
-#
-# Our CPU allocations need to satisfy the following constraint:
-#
-#     (fits_cpu + mcp_server_cpu + mcp_client_cpu) +
-#     (dashboard_cpu + storage_service_cpu) + 128 * 3 +
-#     max(dashboard_cpu, storage_service_cpu)
-#      <= 16384
-#
-# (Because we allocate 128 CPU units to our nginx containers.  We have to count
-# the two running instances, and the third instance creating during a deployment.)
-#
-# For more information, see:
-# https://github.com/wellcomecollection/docs/blob/master/research/2020-01-14-ecs-scaling-big-tasks.md
-#
-# Note: a c5.4xlarge has 32GB of memory, which gives us way more headroom and
-# isn't a deployment bottleneck.  We don't need to manage it as carefully.
-
+# Although we have a c5.4xlarge, which nominally only has a handful of ENIs,
+# we use ENI trunking to allow us to run vastly more services on a single host.
+# See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/container-instance-eni.html
 locals {
   fits_cpu            = 3 * 1024
   mcp_server_cpu      = 1 * 1024
   nginx_cpu           = 128
   dashboard_cpu       = 1024
-  storage_service_cpu = 1600
+  storage_service_cpu = 1344
   
   total_dashboard_cpu       = local.dashboard_cpu + local.nginx_cpu
   total_storage_service_cpu = local.storage_service_cpu + local.nginx_cpu
   
-  mcp_client_cpu = 16384 - (local.fits_cpu + local.mcp_server_cpu + local.total_dashboard_cpu + local.total_storage_service_cpu + max(local.total_dashboard_cpu, local.total_storage_service_cpu))
+  mcp_client_cpu = 1024
   
-  mcp_client_count = 2
+  mcp_client_count = 8
 }
 
 locals {
@@ -110,7 +73,7 @@ module "fits_service" {
   ]
 
   cpu    = local.fits_cpu
-  memory = 4096
+  memory = 2048
 
   # See comment at top of the file about deployments.
   deployment_minimum_healthy_percent = 0
@@ -283,8 +246,8 @@ module "mcp_client_service" {
   # = better concurrency.
   desired_task_count = local.mcp_client_count
 
-  cpu    = floor(local.mcp_client_cpu / local.mcp_client_count)
-  memory = 4 * 1024
+  cpu    = local.mcp_client_cpu
+  memory = 2 * 1024
 
   # See comment at top of the file about deployments.
   deployment_minimum_healthy_percent = 0
