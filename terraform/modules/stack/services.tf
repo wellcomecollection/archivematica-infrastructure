@@ -11,9 +11,10 @@ locals {
   total_dashboard_cpu       = local.dashboard_cpu + local.nginx_cpu
   total_storage_service_cpu = local.storage_service_cpu + local.nginx_cpu
   
-  mcp_client_cpu = 1024
-  
-  mcp_client_count = 8
+  mcp_client_cpu = 1024 * 2
+  mcp_client_mem = 1024 * 4
+
+  mcp_client_count = 4
 }
 
 locals {
@@ -247,7 +248,7 @@ module "mcp_client_service" {
   desired_task_count = local.mcp_client_count
 
   cpu    = local.mcp_client_cpu
-  memory = 2 * 1024
+  memory = local.mcp_client_mem
 
   # See comment at top of the file about deployments.
   deployment_minimum_healthy_percent = 0
