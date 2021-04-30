@@ -4,53 +4,133 @@
 #
 #    pip-compile test_requirements.in
 #
-attrs==19.3.0             # via jsonschema
-aws-sam-translator==1.19.0  # via cfn-lint
-aws-xray-sdk==2.4.3       # via moto
-boto3==1.10.37            # via aws-sam-translator, moto
-boto==2.49.0              # via moto
-botocore==1.13.37         # via aws-xray-sdk, boto3, moto, s3transfer
-certifi==2019.11.28       # via requests
-cffi==1.13.2              # via cryptography
-cfn-lint==0.26.0          # via moto
-chardet==3.0.4            # via requests
-cryptography==2.8         # via moto, sshpubkeys
-docker==4.1.0             # via moto
-docutils==0.15.2          # via botocore
-ecdsa==0.14.1             # via python-jose, sshpubkeys
-future==0.18.2            # via aws-xray-sdk
-idna==2.8                 # via moto, requests
-importlib-metadata==1.3.0  # via jsonschema
-jinja2==2.10.3            # via moto
-jmespath==0.9.4           # via boto3, botocore
-jsondiff==1.1.2           # via moto
-jsonpatch==1.24           # via cfn-lint
-jsonpickle==1.2           # via aws-xray-sdk
-jsonpointer==2.0          # via jsonpatch
-jsonschema==3.2.0         # via aws-sam-translator, cfn-lint
-markupsafe==1.1.1         # via jinja2
-mock==3.0.5               # via moto
-more-itertools==8.0.2     # via zipp
+attrs==19.3.0
+    # via jsonschema
+aws-sam-translator==1.19.0
+    # via cfn-lint
+aws-xray-sdk==2.4.3
+    # via moto
+boto3==1.10.37
+    # via
+    #   aws-sam-translator
+    #   moto
+boto==2.49.0
+    # via moto
+botocore==1.13.37
+    # via
+    #   aws-xray-sdk
+    #   boto3
+    #   moto
+    #   s3transfer
+certifi==2019.11.28
+    # via requests
+cffi==1.13.2
+    # via cryptography
+cfn-lint==0.26.0
+    # via moto
+chardet==3.0.4
+    # via requests
+cryptography==2.8
+    # via
+    #   moto
+    #   sshpubkeys
+docker==4.1.0
+    # via moto
+docutils==0.15.2
+    # via botocore
+ecdsa==0.14.1
+    # via
+    #   python-jose
+    #   sshpubkeys
+future==0.18.2
+    # via aws-xray-sdk
+idna==2.8
+    # via
+    #   moto
+    #   requests
+jinja2==2.10.3
+    # via moto
+jmespath==0.9.4
+    # via
+    #   boto3
+    #   botocore
+jsondiff==1.1.2
+    # via moto
+jsonpatch==1.24
+    # via cfn-lint
+jsonpickle==1.2
+    # via aws-xray-sdk
+jsonpointer==2.0
+    # via jsonpatch
+jsonschema==3.2.0
+    # via
+    #   aws-sam-translator
+    #   cfn-lint
+markupsafe==1.1.1
+    # via jinja2
+mock==3.0.5
+    # via moto
 moto==1.3.14
-pyasn1==0.4.8             # via python-jose, rsa
-pycparser==2.19           # via cffi
-pyrsistent==0.15.6        # via jsonschema
-python-dateutil==2.8.0    # via botocore, moto
-python-jose==3.1.0        # via moto
-pytz==2019.3              # via moto
-pyyaml==5.2               # via cfn-lint, moto
-requests==2.22.0          # via docker, moto, responses
-responses==0.10.7         # via moto
-rsa==4.0                  # via python-jose
-s3transfer==0.2.1         # via boto3
-six==1.13.0               # via aws-sam-translator, cfn-lint, cryptography, docker, ecdsa, jsonschema, mock, moto, pyrsistent, python-dateutil, python-jose, responses, websocket-client
-sshpubkeys==3.1.0         # via moto
-urllib3==1.25.7           # via botocore, requests
-websocket-client==0.56.0  # via docker
-werkzeug==0.16.0          # via moto
-wrapt==1.11.2             # via aws-xray-sdk
-xmltodict==0.12.0         # via moto
-zipp==0.6.0               # via importlib-metadata
+    # via -r test_requirements.in
+pyasn1==0.4.8
+    # via
+    #   python-jose
+    #   rsa
+pycparser==2.19
+    # via cffi
+pyrsistent==0.15.6
+    # via jsonschema
+python-dateutil==2.8.0
+    # via
+    #   botocore
+    #   moto
+python-jose==3.1.0
+    # via moto
+pytz==2019.3
+    # via moto
+pyyaml==5.2
+    # via
+    #   cfn-lint
+    #   moto
+requests==2.22.0
+    # via
+    #   docker
+    #   moto
+    #   responses
+responses==0.10.7
+    # via moto
+rsa==4.7
+    # via python-jose
+s3transfer==0.2.1
+    # via boto3
+six==1.13.0
+    # via
+    #   aws-sam-translator
+    #   cfn-lint
+    #   cryptography
+    #   docker
+    #   ecdsa
+    #   jsonschema
+    #   mock
+    #   moto
+    #   python-dateutil
+    #   python-jose
+    #   responses
+    #   websocket-client
+sshpubkeys==3.1.0
+    # via moto
+urllib3==1.25.7
+    # via
+    #   botocore
+    #   requests
+websocket-client==0.56.0
+    # via docker
+werkzeug==0.16.0
+    # via moto
+wrapt==1.11.2
+    # via aws-xray-sdk
+xmltodict==0.12.0
+    # via moto
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
