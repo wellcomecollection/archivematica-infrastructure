@@ -69,7 +69,7 @@ resource "aws_rds_cluster" "archivematica" {
 }
 
 resource "aws_rds_cluster_instance" "archivematica" {
-  count = 2
+  count = 1
 
   identifier           = "${aws_rds_cluster.archivematica.cluster_identifier}-instance-${count.index}"
   cluster_identifier   = aws_rds_cluster.archivematica.id
