@@ -4,6 +4,16 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
   }
+
+  default_tags {
+    tags = {
+      TerraformConfigurationURL = "https://github.com/wellcomecollection/goobi-infrastructure/tree/master/terraform/infra"
+      Environment               = "Production"
+      Department                = "Digital Production"
+      Division                  = "Culture and Society"
+      Use                       = "Archivematica"
+    }
+  }
 }
 
 provider "aws" {
