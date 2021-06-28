@@ -7,7 +7,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      TerraformConfigurationURL = "https://github.com/wellcomecollection/goobi-infrastructure/tree/master/terraform/critical_prod"
+      TerraformConfigurationURL = "https://github.com/wellcomecollection/archivematica-infrastructure/tree/master/terraform/critical_prod"
       Environment               = "Production"
       Department                = "Digital Production"
       Division                  = "Culture and Society"
