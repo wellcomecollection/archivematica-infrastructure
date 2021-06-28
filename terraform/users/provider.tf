@@ -8,7 +8,7 @@ provider "aws" {
   default_tags {
     tags = {
       TerraformConfigurationURL = "https://github.com/wellcomecollection/archivematica-infrastructure/tree/master/terraform/users"
-      Environment               = "Staging"
+      Environment               = "Production"
       Department                = "Digital Production"
       Division                  = "Culture and Society"
       Use                       = "Archivematica"
