@@ -30,10 +30,6 @@ data "aws_iam_policy_document" "allow_s3_upload" {
   }
 }
 
-resource "aws_iam_access_key" "archivists_s3_upload" {
-  user = aws_iam_user.archivists_s3_upload.name
-}
-
 resource "aws_iam_user_policy" "allow_archivists_s3_upload" {
   user   = aws_iam_user.archivists_s3_upload.name
   policy = data.aws_iam_policy_document.allow_s3_upload.json
