@@ -10,9 +10,9 @@ locals {
   
   total_dashboard_cpu       = local.dashboard_cpu + local.nginx_cpu
   total_storage_service_cpu = local.storage_service_cpu + local.nginx_cpu
-  
-  mcp_client_cpu = 1024 * 2
-  mcp_client_mem = 1024 * 4
+
+  mcp_client_cpu = var.namespace == "prod" ? 1024 * 2 : 1024 * 1
+  mcp_client_mem = var.namespace == "prod" ? 1024 * 4 : 1024 * 2
 
   mcp_client_count = 4
 }
