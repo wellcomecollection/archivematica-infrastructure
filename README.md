@@ -10,6 +10,15 @@ You might find these docs helpful:
 
 *   [Bootstrapping a stack](docs/bootstrapping.md) -- how we set up a fresh instance of Archivematica.
 
+## Our Archivematica repositories
+
+Our Archivematica code is split across three repositories:
+
+*   This repo - infrastructure definitions in Terraform
+*   [wellcomecollection/archivematica](https://github.com/wellcomecollection/archivematica) – a forked version of the Artefactual repo.
+    Originally this fork diverged more substantially from the Artefactual repo when we were adding support for OpenID Connect; at this point the difference is slight and we'll probably switch to using code from upstream.
+*   [wellcomecollection/archivematica-storage-service](https://github.com/wellcomecollection/archivematica-storage-service) – a forked version of the Artefactual repo.
+    This fork adds support for the [Wellcome storage service](https://github.com/wellcomecollection/storage-service) to Archivematica.
 
 ## Lambda development
 
