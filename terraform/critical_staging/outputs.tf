@@ -10,23 +10,6 @@ output "interservice_security_group_id" {
   value = module.critical.interservice_security_group_id
 }
 
-# TODO: Don't put these in the unencrypted state file!
-output "rds_username" {
-  value = local.rds_username
-}
-
-output "rds_password" {
-  value = local.rds_password
-}
-
-output "rds_host" {
-  value = module.critical.rds_host
-}
-
-output "rds_port" {
-  value = module.critical.rds_port
-}
-
 output "ingests_bucket_arn" {
   value = module.critical.ingests_bucket_arn
 }

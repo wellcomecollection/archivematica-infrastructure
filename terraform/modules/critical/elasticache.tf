@@ -13,7 +13,7 @@ resource "aws_elasticache_subnet_group" "archivematica" {
 resource "aws_elasticache_cluster" "archivematica" {
   cluster_id           = local.elasticache_id
   engine               = "redis"
-  node_type            = "cache.m4.large"
+  node_type            = "cache.m3.medium"
   num_cache_nodes      = 1
   parameter_group_name = "default.redis3.2"
   engine_version       = "3.2.10"
