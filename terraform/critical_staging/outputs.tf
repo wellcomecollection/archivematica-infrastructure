@@ -12,11 +12,13 @@ output "interservice_security_group_id" {
 
 # TODO: Don't put these in the unencrypted state file!
 output "rds_username" {
-  value = local.rds_username
+  value     = local.rds_username
+  sensitive = true
 }
 
 output "rds_password" {
-  value = local.rds_password
+  value     = local.rds_password
+  sensitive = true
 }
 
 output "rds_host" {
