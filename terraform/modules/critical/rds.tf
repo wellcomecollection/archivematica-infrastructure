@@ -73,7 +73,7 @@ resource "aws_rds_cluster_instance" "archivematica" {
 
   identifier           = "${aws_rds_cluster.archivematica.cluster_identifier}-instance-${count.index}"
   cluster_identifier   = aws_rds_cluster.archivematica.id
-  instance_class       = "db.r5.large"
+  instance_class       = var.namespace == "prod" ? "db.r5.large" : "db.t3.medium"
   db_subnet_group_name = aws_db_subnet_group.archivematica.name
   publicly_accessible  = false
 

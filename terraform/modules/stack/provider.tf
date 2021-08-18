@@ -1,7 +1,9 @@
-provider "aws" {
-  alias = "digitisation"
-}
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
 
-provider "aws" {
-  alias = "dns"
+      configuration_aliases = [aws.digitisation, aws.dns]
+    }
+  }
 }
