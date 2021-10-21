@@ -1,4 +1,4 @@
-# Archivematica Infrastructure on ECS
+# archivematica-infrastructure
 
 [![Build Status](https://travis-ci.org/wellcomecollection/archivematica-infra.svg?branch=main)](https://travis-ci.org/wellcomecollection/archivematica-infra)
 
