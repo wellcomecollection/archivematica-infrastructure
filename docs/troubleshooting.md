@@ -4,6 +4,7 @@ This document has some notes on errors seen in our Archivematica deployment, and
 
 *   [Timeout waiting for network interface provisioning to complete](#timeout_provisioning)
 *   [401 Unauthorized when the s3_start_transfer Lambda tries to run](#401_lambda)
+*   ["pull access denied" when trying to run containers](#ecs_ec2_state_issues)
 
 
 
@@ -47,7 +48,7 @@ An error we have seen resulting from this is:
 
 > CannotPullContainerError: Error response from daemon: pull access denied
 
-Although permissions are correctly configured. Restarting the ECS agent on the EC2 host machine resolved that issue. 
+Although permissions are correctly configured. Restarting the ECS agent on the EC2 host machine resolved that issue.
 
 There may be other issues which arise from having a long running EC2 instance as a cluster host. Out of date or broken ECS agent, or exhausting file system space are potential issues. Restarting the EC2 instance may result in having to perform step 8 of the [bootstrapping.md](bootstrapping procedure.
 
