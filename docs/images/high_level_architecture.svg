@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 230">
   <style>
     .cls-s3{fill:#E15344;}
     .cls-azure{fill: #0079D8;}
@@ -18,7 +18,7 @@
   </style>
 
   <!-- https://thenounproject.com/search/?i=4331475&q=package Package by AB Designs. From The Noun Project, CC BY -->
-  <g transform="scale(0.5) translate(20 150)">
+  <g transform="scale(0.5) translate(40 50)">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="300px" width="300px" fill="#000000" version="1.1" x="0px" y="0px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
       <g>
         <g>
@@ -32,13 +32,13 @@
   </g>
 
   <!-- https://thenounproject.com/term/paper-bag/28579/ Paper bag by Dorian Dance. From The Noun Project, CC BY -->
-  <g transform="scale(0.45) translate(1250 20)">
-    <svg y="150" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="300px" width="300px" fill="#000000" version="1.1" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+  <g transform="scale(0.45) translate(1300 20)">
+    <svg y="41" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="300px" width="300px" fill="#000000" version="1.1" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
       <path d="M81.734,81.745v0.906l-0.58,0.13l-0.453,0.195l-6.666,4.204L73,87.765l-0.453,0.195l-14.756,4.596l-1.164,0.062  l-9.064,0.973L18.178,75.468l-0.517-0.26l-0.193-0.387l-0.13-0.195l3.043-31.197l8.543-33.331l0.646-1.812l1.813-0.388l3.881-0.648  l2.009-0.258l0.519-0.259l0.775-0.191l0.193-0.132l32.167,8.35l0.842,1.1l0.066,1.618l-0.326,4.725l-0.646,0.324l-0.062,0.129  L68.6,22.913l11.26,18.448l0.521,0.973l0.32,0.128L81.734,81.745L81.734,81.745z M79.02,79.417l-0.971-35.792L63.682,20.258  l-0.066-0.063l-6.988,15.856l10.482,30.938L73,73.462l4.596,4.66l1.1,1.23L79.02,79.417L79.02,79.417z M73.191,84.529L77.4,81.88  L66.854,70.937l-2.074,2.525L52.354,89.835l-0.258,0.584l5.564-0.584l14.176-4.397L73.191,84.529L73.191,84.529z M69.311,20.129  l-0.129-2.458l-3.172,0.904l1.684,1.684L69.311,20.129L69.311,20.129z M64.264,16.182l0.645-0.26L38.891,9.255l-0.066,0.13  l-1.228,0.323l24.27,6.279L64.264,16.182L64.264,16.182z M64.004,70.031l0.904-1.294l-9.902-28.996l-0.062-0.064l-2.59,5.954  l-2.46,42.911L64.004,70.031L64.004,70.031z M50.282,43.69L61.35,18.575l-29.773-7.636l-0.129,0.13l-8.479,33.138l-2.784,29.319  l26.536,16.439l0.388,0.065l2.524-43.366l-0.127-1.359L50.282,43.69L50.282,43.69z"/>
     </svg>
   </g>
 
-  <g transform="scale(4.5) translate(69 20)">
+  <g transform="scale(4.5) translate(73.5 8)">
 		<path style="fill:#FB6604;" d="M14.856,14.543c0.011,0.143,0.023,0.234,0.023,0.325c0.001,0.989-0.006,1.979,0.006,2.968
 			c0.003,0.214-0.071,0.354-0.238,0.47c-1.276,0.887-2.589,1.702-4.144,2.008c-0.915,0.18-1.805,0.14-2.587-0.443
 			c-1.269-0.947-1.215-2.665,0.087-3.61c0.565-0.41,1.199-0.641,1.856-0.826c1.29-0.365,2.619-0.525,3.941-0.722
@@ -64,9 +64,9 @@
 			C0.124,15.894,0.047,15.841,0,15.783C0,14.674,0,13.565,0,12.456z"/>
   </g>
 
-  <text x="95" y="235" text-anchor="middle">Transfer package</text>
-  <text x="360" y="235" text-anchor="middle">Archivematica</text>
-  <text x="635" y="235" text-anchor="middle">BagIt “bag”</text>
+  <text x="115" y="185" text-anchor="middle">Transfer package</text>
+  <text x="380" y="185" text-anchor="middle">Archivematica</text>
+  <text x="655" y="185" text-anchor="middle">BagIt “bag”</text>
 
   <!-- Arrows -->
   <marker id="arrowhead" markerWidth="5" markerHeight="3.5"
@@ -74,7 +74,7 @@
     <polygon points="0 0, 5 1.75, 0 3.5" />
   </marker>
 
-  <line x1="150" y1="150" x2="275" y2="150" marker-end="url(#arrowhead)"/>
+  <line x1="170" y1="100" x2="295" y2="100" marker-end="url(#arrowhead)"/>
 
-  <line x1="425" y1="150" x2="555" y2="150" marker-end="url(#arrowhead)"/>
+  <line x1="445" y1="100" x2="575" y2="100" marker-end="url(#arrowhead)"/>
 </svg>
