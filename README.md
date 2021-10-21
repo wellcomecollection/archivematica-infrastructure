@@ -41,7 +41,7 @@ Our Archivematica code is split across three repositories:
 You might find these docs helpful:
 
 *   [Troubleshooting](docs/troubleshooting.md) -- notes on problems we've seen in our deployment, and how to fix them.
-
+*   [Authentication with Azure AD](docs/authentication.md) -- notes on how staff log in to Archivematica.
 *   [Bootstrapping a stack](docs/bootstrapping.md) -- how we set up a fresh instance of Archivematica.
 
 ## Lambda development
