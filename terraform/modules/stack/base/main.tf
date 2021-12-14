@@ -33,6 +33,7 @@ module "service" {
   cluster_arn  = var.cluster_arn
   service_name = var.service_name
 
+  enable_service_discovery       = true
   service_discovery_namespace_id = var.service_discovery_namespace_id
 
   task_definition_arn = module.task_definition.arn
