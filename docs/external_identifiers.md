@@ -19,6 +19,8 @@ We achieve this in two steps:
 2.  In our fork of Archivematica, before we store the AIP, we unpack the bag and write this reference as the External-Identifier.
     We move the Archivematica UUID to the Internal-Identifier field.
 
+    We record this reference in the Archivematica database so that Archivematica can retrieve the bag later (although we don't actually retrieve bags in Archivematica).
+
     You can see the code for this in [storage_service/locations/models/wellcome.py][wellcome.py].
 
 [identifiers]: https://github.com/wellcomecollection/storage-service/blob/main/docs/explanations/identifiers.md
