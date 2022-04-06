@@ -15,8 +15,9 @@ We achieve this in two steps:
     ```
 
     would use the reference `archivematica-dev/TEST/1`.
+    This identifier gets written to the Archivematica METS file.
 
-2.  In our fork of Archivematica, before we store the AIP, we unpack the bag and write this reference as the External-Identifier.
+2.  In our fork of Archivematica, before we store the AIP, we unpack the bag, extract the reference from the METS file, and write it as the External-Identifier.
     We move the Archivematica UUID to the Internal-Identifier field.
 
     We record this reference in the Archivematica database so that Archivematica can retrieve the bag later (although we don't actually retrieve bags in Archivematica).
