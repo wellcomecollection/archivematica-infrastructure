@@ -5,6 +5,7 @@ This document has some notes on errors seen in our Archivematica deployment, and
 *   [Timeout waiting for network interface provisioning to complete](#timeout_provisioning)
 *   [401 Unauthorized when the s3_start_transfer Lambda tries to run](#401_lambda)
 *   ["pull access denied" when trying to run containers](#ecs_ec2_state_issues)
+*   [Unable to log in because "Unauthorized for url"](#unauthorized_azure)
 
 
 
@@ -60,3 +61,21 @@ ssh -i ~/.ssh/wellcomedigitalworkflow ec2-user@cluster-host.in.aws
 ```
 
 You can then inspect running containers on the cluster host using standard `docker` commands. The ECS agent runs as a container on the EC2 host and will be automatically restarted if it is killed.
+
+
+
+<h2 id="unauthorized_azure">
+  Unauthorized for logging in to Azure
+</h2>
+
+In October 2021, we saw issues logging into Archivematica.
+Logged-in users would see an internal server error in the dashboard, and we saw this error in the logs:
+
+> HTTPError: 401 Client Error: Unauthorized for url: https://login.microsoftonline.com/3b7a675a-1fc8-4983-a100-cc52b7647737/oauth2/v2.0/token
+
+This means the Archivematica client secret in Azure AD has expired.
+You can tell this is the case when you log into the [Azure portal](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/Overview/appId/8dccdaeb-e67e-417f-bebc-7aab4abade28/isMSAApp/) and see this screen:
+
+<img src="images/expired_secret.png">
+
+If so, follow the instructions [to regenerate the Azure AD secrets](../azure_ad_login).
