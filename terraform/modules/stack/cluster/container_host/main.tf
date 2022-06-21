@@ -14,7 +14,15 @@ resource "aws_instance" "container_host" {
   vpc_security_group_ids = module.security_groups.instance_security_groups
   subnet_id              = var.subnets[0]
 
-  user_data = data.template_file.userdata.rendered
+  user_data = templatefile(
+    "${path.module}/ebs.tpl",
+    {
+      cluster_name  = var.cluster_name
+      ebs_volume_id = "/dev/xvdb"
+      ebs_host_path = "/ebs"
+      region        = var.region
+    }
+  )
 
   iam_instance_profile = module.instance_profile.name
 
@@ -36,15 +44,4 @@ module "security_groups" {
 module "instance_profile" {
   source = "../instance_profile"
   name   = var.cluster_name
-}
-
-data "template_file" "userdata" {
-  template = file("${path.module}/ebs.tpl")
-
-  vars = {
-    cluster_name  = var.cluster_name
-    ebs_volume_id = "/dev/xvdb"
-    ebs_host_path = "/ebs"
-    region        = var.region
-  }
 }
