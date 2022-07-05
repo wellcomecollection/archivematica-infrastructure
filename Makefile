@@ -3,8 +3,6 @@ ROOT = $(shell git rev-parse --show-toplevel)
 
 export INFRA_BUCKET = wellcomecollection-workflow-infra
 
-include dockerfiles/Makefile
-
 s3_start_transfer-publish:
 	$(ROOT)/docker_run.py --aws --root --dind -- \
       wellcome/publish_lambda:14 \
