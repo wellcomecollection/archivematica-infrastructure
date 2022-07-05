@@ -20,10 +20,31 @@ clamavd-build:
 
 
 dashboard_nginx-publish: dashboard_nginx-build
-	$(call publish_service,archivematica_dashboard_nginx)
+	$(ROOT)/docker_run.py \
+	    --aws --dind -- \
+	    $(PUBLISH_SERVICE_IMAGE) \
+			--project_id=archivematica \
+			--service_id=archivematica_dashboard_nginx \
+			--account_id=$(ACCOUNT_ID) \
+			--region_id=eu-west-1 \
+			--namespace=uk.ac.wellcome
 
 storage_service_nginx-publish: storage_service_nginx-build
-	$(call publish_service,archivematica_storage_service_nginx)
+	$(ROOT)/docker_run.py \
+	    --aws --dind -- \
+	    $(PUBLISH_SERVICE_IMAGE) \
+			--project_id=archivematica \
+			--service_id=archivematica_storage_service_nginx \
+			--account_id=$(ACCOUNT_ID) \
+			--region_id=eu-west-1 \
+			--namespace=uk.ac.wellcome
 
 clamavd-publish: clamavd-build
-	$(call publish_service,clamavd)
+	$(ROOT)/docker_run.py \
+	    --aws --dind -- \
+	    $(PUBLISH_SERVICE_IMAGE) \
+			--project_id=archivematica \
+			--service_id=clamavd \
+			--account_id=$(ACCOUNT_ID) \
+			--region_id=eu-west-1 \
+			--namespace=uk.ac.wellcome

@@ -29,20 +29,3 @@ define test_python
 		--workdir $(ROOT)/$(1) --tty \
 		wellcome/test_python_$(shell basename $(1)):latest
 endef
-
-
-# Publish a Docker image to ECR, and put its associated release ID in S3.
-#
-# Args:
-#   $1 - Name of the Docker image.
-#
-define publish_service
-	$(ROOT)/docker_run.py \
-	    --aws --dind -- \
-	    $(PUBLISH_SERVICE_IMAGE) \
-			--project_id=archivematica \
-			--service_id=$(1) \
-			--account_id=$(ACCOUNT_ID) \
-			--region_id=eu-west-1 \
-			--namespace=uk.ac.wellcome
-endef
