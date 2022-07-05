@@ -1,24 +1,27 @@
 ROOT = $(shell git rev-parse --show-toplevel)
 DOCKERFILES = $(ROOT)/dockerfiles
 
-IMAGE_BUILDER_IMAGE = wellcome/image_builder:25
 PUBLISH_SERVICE_IMAGE = wellcome/publish_service:60
 
+CURRENT_COMMIT=$(shell git rev-parse HEAD)
+
 dashboard_nginx-build:
-	$(ROOT)/docker_run.py --dind -- $(IMAGE_BUILDER_IMAGE) \
-		--name=archivematica_dashboard_nginx \
-		--path=dockerfiles/dashboard_nginx/Dockerfile
+	docker build \
+			--file dockerfiles/dashboard_nginx/Dockerfile \
+			--tag archivematica_dashboard_nginx \
+			dockerfiles/dashboard_nginx
 
 storage_service_nginx-build:
-	$(ROOT)/docker_run.py --dind -- $(IMAGE_BUILDER_IMAGE) \
-		--name=archivematica_storage_service_nginx \
-		--path=dockerfiles/storage_service_nginx/Dockerfile
+	docker build \
+			--file dockerfiles/storage_service_nginx/Dockerfile \
+			--tag archivematica_storage_service_nginx \
+			dockerfiles/storage_service_nginx
 
 clamavd-build:
-	$(ROOT)/docker_run.py --dind -- $(IMAGE_BUILDER_IMAGE) \
-		--name=clamavd \
-		--path=dockerfiles/clamavd/Dockerfile
-
+	docker build \
+			--file dockerfiles/clamavd/Dockerfile \
+			--tag clamavd \
+			dockerfiles/clamavd
 
 dashboard_nginx-publish: dashboard_nginx-build
 	$(ROOT)/docker_run.py \
