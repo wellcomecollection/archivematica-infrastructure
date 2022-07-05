@@ -11,7 +11,13 @@ s3_start_transfer-publish:
 	$(call publish_lambda,s3_start_transfer)
 
 s3_start_transfer-test:
-	$(call test_python,s3_start_transfer)
+	$(ROOT)/docker_run.py --aws --root --dind -- \
+		wellcome/build_test_python s3_start_transfer
+	$(ROOT)/docker_run.py --aws --dind -- \
+		--net=host \
+		--volume $(ROOT)/shared_conftest.py:/conftest.py \
+		--workdir $(ROOT)/s3_start_transfer --tty \
+		wellcome/test_python_s3_start_transfer:latest
 
 start_test_transfer-publish:
 	$(call publish_lambda,start_test_transfer)
