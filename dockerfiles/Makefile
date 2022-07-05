@@ -1,7 +1,8 @@
 ROOT = $(shell git rev-parse --show-toplevel)
 DOCKERFILES = $(ROOT)/dockerfiles
 
-include $(ROOT)/makefiles/docker.Makefile
+IMAGE_BUILDER_IMAGE = wellcome/image_builder:25
+PUBLISH_SERVICE_IMAGE = wellcome/publish_service:60
 
 dashboard_nginx-build:
 	$(ROOT)/docker_run.py --dind -- $(IMAGE_BUILDER_IMAGE) \
