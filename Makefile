@@ -8,7 +8,9 @@ include $(ROOT)/makefiles/docker.Makefile
 include dockerfiles/Makefile
 
 s3_start_transfer-publish:
-	$(call publish_lambda,s3_start_transfer)
+	$(ROOT)/docker_run.py --aws --root --dind -- \
+      wellcome/publish_lambda:14 \
+      "$(1)" --key="lambdas/s3_start_transfer.zip" --bucket="$(INFRA_BUCKET)"
 
 s3_start_transfer-test:
 	$(ROOT)/docker_run.py --aws --root --dind -- \
@@ -20,7 +22,9 @@ s3_start_transfer-test:
 		wellcome/test_python_s3_start_transfer:latest
 
 start_test_transfer-publish:
-	$(call publish_lambda,start_test_transfer)
+	$(ROOT)/docker_run.py --aws --root --dind -- \
+      wellcome/publish_lambda:14 \
+      "$(1)" --key="lambdas/start_test_transfer.zip" --bucket="$(INFRA_BUCKET)"
 
 lambda-publish: s3_start_transfer-publish start_test_transfer-publish
 lambda-test: s3_start_transfer-test
