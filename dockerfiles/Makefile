@@ -4,13 +4,19 @@ DOCKERFILES = $(ROOT)/dockerfiles
 include $(ROOT)/makefiles/docker.Makefile
 
 dashboard_nginx-build:
-	$(call build_image,archivematica_dashboard_nginx,dockerfiles/dashboard_nginx/Dockerfile)
+	$(ROOT)/docker_run.py --dind -- $(IMAGE_BUILDER_IMAGE) \
+		--name=archivematica_dashboard_nginx \
+		--path=dockerfiles/dashboard_nginx/Dockerfile
 
 storage_service_nginx-build:
-	$(call build_image,archivematica_storage_service_nginx,dockerfiles/storage_service_nginx/Dockerfile)
+	$(ROOT)/docker_run.py --dind -- $(IMAGE_BUILDER_IMAGE) \
+		--name=archivematica_storage_service_nginx \
+		--path=dockerfiles/storage_service_nginx/Dockerfile
 
 clamavd-build:
-	$(call build_image,clamavd,dockerfiles/clamavd/Dockerfile)
+	$(ROOT)/docker_run.py --dind -- $(IMAGE_BUILDER_IMAGE) \
+		--name=clamavd \
+		--path=dockerfiles/clamavd/Dockerfile
 
 
 dashboard_nginx-publish: dashboard_nginx-build
