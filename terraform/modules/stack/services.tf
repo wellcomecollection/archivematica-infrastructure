@@ -7,7 +7,7 @@ locals {
   nginx_cpu           = 128
   dashboard_cpu       = 1024
   storage_service_cpu = 1344
-  
+
   total_dashboard_cpu       = local.dashboard_cpu + local.nginx_cpu
   total_storage_service_cpu = local.storage_service_cpu + local.nginx_cpu
 
@@ -96,7 +96,7 @@ module "clamav_service" {
 
   name = "clamav"
 
-  container_image = "299497370133.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/clamavd:c3a2c569a688f5645dd76c0dfe290aae47daeadf"
+  container_image = "299497370133.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/clamavd:a51ed3c37d2968ba698347b13711c0527661782e"
 
   cpu    = 2 * 1024
   memory = 4 * 1024
