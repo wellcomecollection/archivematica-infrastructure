@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
+#!/usr/bin/env python3
 """
 Build a deployment ZIP for a Lambda, and upload it to Amazon S3.
 
@@ -11,8 +10,6 @@ Options:
   <PATH>                Path to the source code for the Lambda
   --bucket=<BUCKET>     Name of the Amazon S3 bucket
   --key=<KEY>           Key for the upload ZIP file
-  --sns-topic=<topic_arn>  If supplied, send a message about the push to this
-                           SNS topic.
 
 """
 
@@ -26,15 +23,7 @@ import boto3
 from botocore.exceptions import ClientError
 import docopt
 
-from tooling import compare_zip_files
-
-
-def cmd(*args):
-    return subprocess.check_output(list(args)).decode('utf8').strip()
-
-
-def git(*args):
-    return cmd('git', *args)
+from tooling import compare_zip_files, git
 
 
 ROOT = git('rev-parse', '--show-toplevel')
@@ -154,28 +143,8 @@ if __name__ == '__main__':
     key = args['--key']
     bucket = args['--bucket']
 
-    topic_arn = args['--sns-topic']
-
     client = boto3.client('s3')
     name = os.path.basename(key)
     filename = build_lambda_local(path=path, name=name)
 
     upload_to_s3(client=client, filename=filename, bucket=bucket, key=key)
-
-    if topic_arn is not None:
-        import json
-
-        sns_client = boto3.client('sns')
-
-        get_user_output = cmd('aws', 'iam', 'get-user')
-        iam_user = json.loads(get_user_output)['User']['UserName']
-
-        message = {
-            'commit_id': git('rev-parse', '--abbrev-ref', 'HEAD'),
-            'commit_msg': git('log', '-1', '--oneline', '--pretty=%B'),
-            'git_branch': git('rev-parse', '--abbrev-ref', 'HEAD'),
-            'iam_user': iam_user,
-            'project': name,
-            'push_type': 'aws_lambda',
-        }
-        sns_client.publish(TopicArn=topic_arn, Message=json.dumps(message))

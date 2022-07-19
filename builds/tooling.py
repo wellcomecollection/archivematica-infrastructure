@@ -1,4 +1,13 @@
+import subprocess
 import zipfile
+
+
+def cmd(*args):
+    return subprocess.check_output(list(args)).decode('utf8').strip()
+
+
+def git(*args):
+    return cmd('git', *args)
 
 
 def compare_zip_files(path1, path2):
