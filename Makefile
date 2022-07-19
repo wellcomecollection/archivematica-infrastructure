@@ -4,9 +4,10 @@ ROOT = $(shell git rev-parse --show-toplevel)
 export INFRA_BUCKET = wellcomecollection-workflow-infra
 
 s3_start_transfer-publish:
-	$(ROOT)/docker_run.py --aws --root --dind -- \
-      wellcome/publish_lambda:14 \
-      s3_start_transfer --key="lambdas/s3_start_transfer.zip" --bucket="$(INFRA_BUCKET)"
+	python3 builds/publish_lambda_zip.py \
+		s3_start_transfer \
+		--key="lambdas/s3_start_transfer.zip" \
+		--bucket="$(INFRA_BUCKET)"
 
 s3_start_transfer-test:
 	$(ROOT)/docker_run.py --aws --root --dind -- \
@@ -18,9 +19,10 @@ s3_start_transfer-test:
 		wellcome/test_python_s3_start_transfer:latest
 
 start_test_transfer-publish:
-	$(ROOT)/docker_run.py --aws --root --dind -- \
-      wellcome/publish_lambda:14 \
-      start_test_transfer --key="lambdas/start_test_transfer.zip" --bucket="$(INFRA_BUCKET)"
+	python3 builds/publish_lambda_zip.py \
+		start_test_transfer \
+		--key="lambdas/start_test_transfer.zip" \
+		--bucket="$(INFRA_BUCKET)"
 
 lambda-publish: s3_start_transfer-publish start_test_transfer-publish
 lambda-test: s3_start_transfer-test
