@@ -1,4 +1,3 @@
-ACCOUNT_ID = 299497370133
 ROOT = $(shell git rev-parse --show-toplevel)
 
 export INFRA_BUCKET = wellcomecollection-workflow-infra
