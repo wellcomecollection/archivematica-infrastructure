@@ -71,7 +71,7 @@ module "service" {
 }
 
 module "app_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.3.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.12.2"
   name   = "app"
 
   image = var.app_container_image
@@ -84,7 +84,7 @@ module "app_container" {
 }
 
 module "nginx_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.3.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.12.2"
   name   = local.nginx_container_name
 
   image = var.nginx_container_image
@@ -99,7 +99,7 @@ module "nginx_container" {
 }
 
 module "secrets" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.3.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.12.2"
 
   role_name = module.service.task_execution_role_name
   secrets   = var.secrets
