@@ -16,7 +16,3 @@ docker run --tty --rm \
 docker run --tty --rm \
 	--volume "$ROOT:/repo" \
 	"$ECR_REGISTRY/wellcome/format_python:112"
-
-# We don't want to autoformat files which are copied out of an Artefactual
-# repo; it would muddy the diffs.
-git checkout dockerfiles/archivematica/overlay
