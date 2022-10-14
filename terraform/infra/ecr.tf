@@ -1,3 +1,13 @@
+resource "aws_ecr_repository" "services" {
+  for_each = toset([
+    "archivematica-mcp-client",
+    "archivematica-mcp-server",
+    "archivematica-dashboard",
+  ])
+
+  name = "weco/${each.key}"
+}
+
 resource "aws_ecr_repository" "clamavd" {
   name = "uk.ac.wellcome/clamavd"
 }

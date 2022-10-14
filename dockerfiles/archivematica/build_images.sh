@@ -29,7 +29,7 @@ pushd $(mktemp -d)
   do
     docker-compose build "archivematica-$service"
 
-    ECR_IMAGE_TAG=299497370133.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/$(echo "archivematica-$service:$ARCHIVEMATICA_TAG" | tr '-' '_')
+    ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$service:$ARCHIVEMATICA_TAG"
     docker tag "hack_archivematica-$service" "$ECR_IMAGE_TAG"
     docker push "$ECR_IMAGE_TAG"
   done
