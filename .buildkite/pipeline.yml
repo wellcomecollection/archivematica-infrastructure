@@ -3,3 +3,8 @@ steps:
     label: "run autoformatting"
     agents:
       queue: "scala"
+
+  - label: "build images based on artefactual/archivematica"
+    command: dockerfiles/archivematica/publish_images.sh
+    agents:
+      queue: "scala"
