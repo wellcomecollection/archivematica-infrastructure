@@ -8,7 +8,7 @@ ARCHIVEMATICA_TAG=v1.13.2
 ROOT=$(git rev-parse --show-toplevel)
 COMMIT=$(git rev-parse HEAD)
 
-eval $(env AWS_PROFILE=workflow-dev aws ecr get-login --no-include-email)
+eval $(aws ecr get-login --no-include-email)
 
 pushd $(mktemp -d)
 
