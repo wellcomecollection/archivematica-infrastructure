@@ -16,7 +16,7 @@ pushd $(mktemp -d)
   echo "*** Checking out tag $ARCHIVEMATICA_TAG"
   git checkout "$ARCHIVEMATICA_TAG"
 
-  echo "*** Applying vendored files to repository"
-  python3 "$ROOT/dockerfiles/archivematica/copy_vendored_files.py"
+  echo "*** Applying overlay files to repository"
+  python3 "$ROOT/dockerfiles/archivematica/copy_overlay_files.py"
   git status
 popd
