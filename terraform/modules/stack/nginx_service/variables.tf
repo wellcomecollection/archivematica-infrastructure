@@ -53,12 +53,12 @@ variable "namespace_id" {
 }
 
 variable "deployment_minimum_healthy_percent" {
-  type = number
+  type    = number
   default = 100
 }
 
 variable "deployment_maximum_percent" {
-  type = number
+  type    = number
   default = 200
 }
 

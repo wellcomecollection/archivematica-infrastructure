@@ -104,7 +104,7 @@ def store_secrets_manager_secret(*, secret_id, secret_value, role_arn):
     secrets_client = get_aws_client("secretsmanager", role_arn=role_arn)
 
     try:
-        resp = secrets_client.create_secret(Name=secret_id, SecretString=secret_value,)
+        resp = secrets_client.create_secret(Name=secret_id, SecretString=secret_value)
     except ClientError as err:
         if err.response["Error"]["Code"] == "ResourceExistsException":
             resp = secrets_client.put_secret_value(

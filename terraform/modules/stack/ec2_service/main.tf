@@ -13,7 +13,7 @@ module "service" {
 
   service_discovery_namespace_id = var.namespace_id
 
-  cpu = var.cpu
+  cpu    = var.cpu
   memory = var.memory
 
   deployment_service_env  = var.namespace
@@ -32,17 +32,17 @@ module "service" {
   service_name = local.full_name
 
   placement_constraints = [{
-    type = "memberOf"
+    type       = "memberOf"
     expression = "attribute:ebs.volume exists"
   }]
 
   volumes = [
     {
-      name = "pipeline-data"
+      name      = "pipeline-data"
       host_path = "/ebs/pipeline-data"
     },
     {
-      name = "tmp-data"
+      name      = "tmp-data"
       host_path = "/ebs/tmp/${var.name}"
     }
   ]

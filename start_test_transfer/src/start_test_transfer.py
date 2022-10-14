@@ -19,9 +19,7 @@ def create_test_package():
         zf.write(
             os.path.join(package_dir, "metadata.csv"), arcname="metadata/metadata.csv"
         )
-        zf.write(
-            os.path.join(package_dir, "manchineel.png"), arcname="manchineel.png"
-        )
+        zf.write(os.path.join(package_dir, "manchineel.png"), arcname="manchineel.png")
 
     stream.seek(0)
     return stream.read()
@@ -36,9 +34,5 @@ def main(event, _):
     upload_key = "born-digital/test_package.zip"
 
     s3 = boto3.client("s3")
-    s3.put_object(
-        Bucket=upload_bucket,
-        Key=upload_key,
-        Body=zip_bytes
-    )
+    s3.put_object(Bucket=upload_bucket, Key=upload_key, Body=zip_bytes)
     print(f"Uploaded package to S3 at s3://{upload_bucket}/{upload_key}")
