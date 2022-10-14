@@ -54,7 +54,7 @@ def test_start_transfer(mock_am_post):
 def test_start_transfer_with_accession(mock_am_post):
     transfer_uuid = str(uuid.uuid4())
 
-    actual_transfer_uuid =archivematica.start_transfer(
+    actual_transfer_uuid = archivematica.start_transfer(
         name="test1.zip",
         path=b"space1-uuid:/test1.zip",
         processing_config="b_dig_accessions",
