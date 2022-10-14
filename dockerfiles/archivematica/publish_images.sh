@@ -6,6 +6,7 @@ set -o nounset
 ARCHIVEMATICA_TAG=v1.13.2
 
 ROOT=$(git rev-parse --show-toplevel)
+COMMIT=$(git rev-parse HEAD)
 
 eval $(env AWS_PROFILE=workflow-dev aws ecr get-login --no-include-email)
 
@@ -29,7 +30,7 @@ pushd $(mktemp -d)
   do
     docker-compose build "archivematica-$service"
 
-    ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$service:$ARCHIVEMATICA_TAG"
+    ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$service:$ARCHIVEMATICA_TAG-$COMMIT"
     docker tag "hack_archivematica-$service" "$ECR_IMAGE_TAG"
     docker push "$ECR_IMAGE_TAG"
   done
