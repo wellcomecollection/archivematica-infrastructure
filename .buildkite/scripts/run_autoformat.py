@@ -24,7 +24,7 @@ if __name__ == "__main__":
         print("*** There were changes from formatting, creating a commit")
 
         git("config", "user.name", "Buildkite on behalf of Wellcome Collection")
-        git("config", "user.email", "wellcomedigitalplatform@wellcome.ac.uk")
+        git("config", "user.email", "wellcomedigitalplatform@wellcome.org")
         git("remote", "add", "ssh-origin", repo(), exit_on_error=False)
 
         # We checkout the branch before we add the commit, so we don't
