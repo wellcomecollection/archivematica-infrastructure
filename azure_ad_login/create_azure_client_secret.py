@@ -12,7 +12,6 @@ import json
 import secrets
 import subprocess
 import sys
-import time
 
 import boto3
 from botocore.exceptions import ClientError
@@ -127,7 +126,7 @@ def force_ecs_task_redeployment(*, cluster_name, service_name):
     """
     ecs_client = get_aws_client("ecs", role_arn=WORKFLOW_DEV_ROLE_ARN)
 
-    resp = ecs_client.update_service(
+    ecs_client.update_service(
         cluster=cluster_name, service=service_name, forceNewDeployment=True
     )
 

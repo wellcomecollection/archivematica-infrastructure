@@ -15,7 +15,15 @@ import archivematica
 from archivematica import choose_processing_config
 from big_s3 import S3File
 from log_handler import Logger
-from verify_transfer_packages import *
+from verify_transfer_packages import (
+    VerificationFailure,
+    verify_has_a_metadata_csv,
+    verify_only_metadata_csv_in_metadata_dir,
+    verify_metadata_csv_has_accession_fields,
+    verify_metadata_csv_has_dc_identifier,
+    verify_package,
+    extract_metadata,
+)
 
 
 def _write_log(logger, bucket, key, result):
