@@ -33,7 +33,7 @@ def test_start_transfer(mock_am_post):
     actual_transfer_uuid = archivematica.start_transfer(
         name="test1.zip",
         path=b"space1-uuid:/test1.zip",
-        processing_config="born-digital"
+        processing_config="born-digital",
     )
 
     assert actual_transfer_uuid == transfer_uuid
@@ -58,8 +58,10 @@ def test_start_transfer_with_accession(mock_am_post):
         name="test1.zip",
         path=b"space1-uuid:/test1.zip",
         processing_config="b_dig_accessions",
-        accession_number="1234"
+        accession_number="1234",
     )
+
+    assert actual_transfer_uuid == transfer_uuid
 
     mock_am_post.assert_called_once_with(
         "/api/v2beta/package",
@@ -119,7 +121,7 @@ def test_get_target_path(mock_ss_get):
     mock_ss_get.assert_has_calls(
         [
             call(
-                "/api/v2/location/", {"space__access_protocol": "S3", "purpose": "TS"},
+                "/api/v2/location/", {"space__access_protocol": "S3", "purpose": "TS"}
             ),
             call("/api/v2/space/1"),
             call("/api/v2/space/2"),
@@ -129,8 +131,8 @@ def test_get_target_path(mock_ss_get):
 
 def test_find_matching_path():
     locations = [
-        {"relative_path": "/path-a/", "s3_bucket": "bucket01", "uuid": "space1-uuid",},
-        {"relative_path": "/path-b/", "s3_bucket": "bucket02", "uuid": "space2-uuid",},
+        {"relative_path": "/path-a/", "s3_bucket": "bucket01", "uuid": "space1-uuid"},
+        {"relative_path": "/path-b/", "s3_bucket": "bucket02", "uuid": "space2-uuid"},
     ]
 
     assert (
@@ -141,7 +143,7 @@ def test_find_matching_path():
 
 def test_find_matching_path_no_path_match():
     locations = [
-        {"relative_path": "/path-a/", "s3_bucket": "bucket01", "uuid": "space1-uuid",}
+        {"relative_path": "/path-a/", "s3_bucket": "bucket01", "uuid": "space1-uuid"}
     ]
 
     with pytest.raises(archivematica.StoragePathException):
@@ -150,7 +152,7 @@ def test_find_matching_path_no_path_match():
 
 def test_find_matching_path_no_bucket_match():
     locations = [
-        {"relative_path": "/path-a/", "s3_bucket": "bucket01", "uuid": "space1-uuid",}
+        {"relative_path": "/path-a/", "s3_bucket": "bucket01", "uuid": "space1-uuid"}
     ]
 
     with pytest.raises(archivematica.StoragePathException):

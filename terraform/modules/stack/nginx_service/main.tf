@@ -17,12 +17,12 @@ module "service" {
   ]
 
   target_group_arn = aws_alb_target_group.ecs_service.arn
-  container_port = local.nginx_container_port
-  container_name = local.nginx_container_name
+  container_port   = local.nginx_container_port
+  container_name   = local.nginx_container_name
 
   service_discovery_namespace_id = var.namespace_id
 
-  cpu = var.cpu
+  cpu    = var.cpu
   memory = var.memory
 
   deployment_service_env  = var.namespace
@@ -41,7 +41,7 @@ module "service" {
   service_name = local.full_name
 
   placement_constraints = [{
-    type = "memberOf"
+    type       = "memberOf"
     expression = "attribute:ebs.volume exists"
   }]
 

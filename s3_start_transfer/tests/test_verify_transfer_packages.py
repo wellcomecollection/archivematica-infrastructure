@@ -74,7 +74,7 @@ class TestVerifyAllFilesNotUnderSingleDir:
         )
 
     @pytest.mark.parametrize(
-        "name", ["valid_transfer_package.zip", "multi_top_level_dir.zip",]
+        "name", ["valid_transfer_package.zip", "multi_top_level_dir.zip"]
     )
     def test_valid_transfer_package_is_okay(self, name):
         file_listing = _get_file_listing(name)
@@ -103,7 +103,7 @@ class TestVerifyAllFilesNotUnderObjectsDir:
 
 class TestVerifyHasMetadataCsv:
     @pytest.mark.parametrize(
-        "name", ["no_metadata_csv.zip", "metadata_at_top_level.zip",]
+        "name", ["no_metadata_csv.zip", "metadata_at_top_level.zip"]
     )
     def test_no_metadata_csv_is_exception(self, name):
         file_listing = _get_file_listing(name)
@@ -125,7 +125,7 @@ class TestVerifyHasMetadataCsv:
 
 
 class TestVerifyOnlyMetadataCsvInMetadataDir:
-    @pytest.mark.parametrize("name", ["extra_files_in_metadata_dir.zip",])
+    @pytest.mark.parametrize("name", ["extra_files_in_metadata_dir.zip"])
     def test_extra_files_in_metadata_dir_is_exception(self, name):
         file_listing = _get_file_listing(name)
 
@@ -315,8 +315,7 @@ class TestVerifyMetadataCsvHasAccessionFields:
     @pytest.mark.parametrize("filename", ["objects", "objects/cat.jpg", "cat.jpg"])
     def test_checks_filename_is_correct(self, filename):
         metadata = (
-            "filename,collection_reference,accession_number\n"
-            f"{filename},LEMON,1234"
+            "filename,collection_reference,accession_number\n" f"{filename},LEMON,1234"
         )
 
         with pytest.raises(VerificationFailure) as err:

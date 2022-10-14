@@ -17,7 +17,7 @@ variable "cluster_arn" {
 }
 
 variable "service_discovery_namespace_id" {
-  type = string
+  type    = string
   default = ""
 }
 
@@ -34,7 +34,7 @@ variable "desired_task_count" {
 }
 
 variable "use_fargate_spot" {
-  type = bool
+  type    = bool
   default = false
 }
 

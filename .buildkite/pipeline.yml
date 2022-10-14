@@ -1,0 +1,5 @@
+steps:
+  - command: .buildkite/scripts/run_autoformat.py
+    label: "run autoformatting"
+    agents:
+      queue: "scala"

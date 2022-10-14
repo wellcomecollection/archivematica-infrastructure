@@ -13,7 +13,7 @@ module "service" {
 
   service_discovery_namespace_id = var.namespace_id
 
-  cpu = var.cpu
+  cpu    = var.cpu
   memory = var.memory
 
   deployment_service_env  = var.namespace
@@ -45,8 +45,8 @@ module "app_container" {
 
   command = var.command
 
-  environment  = var.environment
-  secrets      = var.secrets
+  environment = var.environment
+  secrets     = var.secrets
 
   log_configuration = module.service.log_configuration
 }

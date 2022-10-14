@@ -1,5 +1,5 @@
 resource "aws_cloudformation_stack" "ecs_asg" {
-  name          = var.asg_name
+  name = var.asg_name
 
   template_body = templatefile(
     "${path.module}/asg.json.tpl",

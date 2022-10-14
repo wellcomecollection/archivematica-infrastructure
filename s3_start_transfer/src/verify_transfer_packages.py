@@ -351,9 +351,9 @@ def verify_metadata_csv_has_accession_fields(metadata):
     metadata_row = rows[0]
 
     if (
-        "filename" not in metadata_row or
-        "collection_reference" not in metadata_row or
-        "accession_number" not in metadata_row
+        "filename" not in metadata_row
+        or "collection_reference" not in metadata_row
+        or "accession_number" not in metadata_row
     ):
         raise VerificationFailure(
             """

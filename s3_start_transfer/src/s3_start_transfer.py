@@ -15,7 +15,15 @@ import archivematica
 from archivematica import choose_processing_config
 from big_s3 import S3File
 from log_handler import Logger
-from verify_transfer_packages import *
+from verify_transfer_packages import (
+    VerificationFailure,
+    verify_has_a_metadata_csv,
+    verify_only_metadata_csv_in_metadata_dir,
+    verify_metadata_csv_has_accession_fields,
+    verify_metadata_csv_has_dc_identifier,
+    verify_package,
+    extract_metadata,
+)
 
 
 def _write_log(logger, bucket, key, result):
@@ -82,7 +90,6 @@ def get_accession_number(*, s3, logger, bucket, key):
         return rows[0].get("accession_number")
 
 
-
 def run_transfer(s3, *, bucket, key):
     logger = Logger()
 
@@ -101,22 +108,20 @@ def run_transfer(s3, *, bucket, key):
             return
 
         accession_number = get_accession_number(
-            s3=s3,
-            logger=logger,
-            bucket=bucket,
-            key=key
+            s3=s3, logger=logger, bucket=bucket, key=key
         )
     except NotImplementedError as err:
-        if (
-            str(err) in {"compression type 9 (deflate64)", "That compression method is not supported"} and
-            key.startswith("born-digital-accessions/")
-        ):
-            print(f"Skipping verification for s3://{bucket}/{key}, deflate64-compressed ZIP")
+        if str(err) in {
+            "compression type 9 (deflate64)",
+            "That compression method is not supported",
+        } and key.startswith("born-digital-accessions/"):
+            print(
+                f"Skipping verification for s3://{bucket}/{key}, deflate64-compressed ZIP"
+            )
             accession_number = os.path.basename(os.path.splitext(key)[0])
         else:
             print(f"Unable to decompress s3://{bucket}/{key}: {err}")
             return
-
 
     # Now try to start a transfer in Archivematica.
     try:
@@ -134,7 +139,7 @@ def run_transfer(s3, *, bucket, key):
             name=target_name,
             path=target_path,
             processing_config=processing_config,
-            accession_number=accession_number
+            accession_number=accession_number,
         )
     except Exception as err:
         logger.write(f"Error starting transfer: {err}")
