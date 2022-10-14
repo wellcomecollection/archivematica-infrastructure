@@ -52,7 +52,7 @@
     <details>
       <summary>Log in with username and password (admin only)</summary>
 
-    <form class="form-stacked" method="post" action="{% url 'django.contrib.auth.views.login' %}">
+    <form class="form-stacked" method="post" action="{% url 'accounts:login' %}">
 
       {% csrf_token %}
 
