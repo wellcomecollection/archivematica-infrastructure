@@ -8,3 +8,6 @@ steps:
     command: dockerfiles/archivematica/publish_images.sh
     agents:
       queue: "scala"
+    plugins:
+      - wellcomecollection/aws-assume-role#v0.2.2:
+          role: "arn:aws:iam::299497370133:role/workflow-ci"
