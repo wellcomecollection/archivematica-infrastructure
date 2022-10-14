@@ -3,9 +3,11 @@
 set -o errexit
 set -o nounset
 
+ARCHIVEMATICA_TAG=v1.13.2
+
 ROOT=$(git rev-parse --show-toplevel)
 
-ARCHIVEMATICA_TAG=v1.13.2
+eval $(env AWS_PROFILE=workflow-dev aws ecr get-login --no-include-email)
 
 pushd $(mktemp -d)
 
@@ -26,6 +28,9 @@ pushd $(mktemp -d)
   for service in mcp-server mcp-client dashboard
   do
     docker-compose build "archivematica-$service"
-    docker tag "archivematica-$service" "archivematica-$service:$ARCHIVEMATICA_TAG"
+
+    ECR_IMAGE_TAG=299497370133.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/$(echo "archivematica-$service:$ARCHIVEMATICA_TAG" | tr '-' '_')
+    docker tag "hack_archivematica-$service" "$ECR_IMAGE_TAG"
+    docker push "$ECR_IMAGE_TAG"
   done
 popd
