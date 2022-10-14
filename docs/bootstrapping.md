@@ -114,6 +114,8 @@ To fix this:
     It might take a couple of attempts before this finishes successfully.
     The dashboard can't start until the database is set up correctly, which means it fails load balancer healthchecks -- ECS will be continually restarting the container until you successfully run the database migrations.
 
+    [Note: the location of this file may have changed since these instructions were written, you may need `/src/src/dashboard`.]
+
 3.  Look for a Docker container running the storage service.
     Similar to above:
 
