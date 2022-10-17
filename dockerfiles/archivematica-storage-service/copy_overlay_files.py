@@ -43,8 +43,12 @@ if __name__ == "__main__":
     # Otherwise we copy the artefactual file over the wellcome file.
     for name, pair in file_pairs.items():
         if None in pair.values() and name not in {
-            'storage_service/locations/models/wellcome.py',
             'storage_service/locations/fixtures/wellcome.json',
+            'storage_service/locations/migrations/0026_wellcome.py',
+            'storage_service/locations/migrations/0027_add_wellcome_callback_fields.py',
+            'storage_service/locations/migrations/0028_wellcome_blank_aws_auth.py',
+            'storage_service/locations/migrations/0029_auto_20200122_0726.py',
+            'storage_service/locations/models/wellcome.py',
             'storage_service/locations/tests/test_wellcome.py',
         }:
             raise ValueError(f"Did not get a pair of overlayed files for {name}")
