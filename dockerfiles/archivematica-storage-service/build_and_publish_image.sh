@@ -14,7 +14,7 @@ pushd $(mktemp -d)
 
   echo "*** Checking out the core Artefactual repository"
   git clone https://github.com/artefactual/archivematica-storage-service.git
-  cd archivematica
+  cd archivematica-storage-service
 
   echo "*** Checking out tag $ARCHIVEMATICA_TAG"
   git checkout "$ARCHIVEMATICA_TAG"
