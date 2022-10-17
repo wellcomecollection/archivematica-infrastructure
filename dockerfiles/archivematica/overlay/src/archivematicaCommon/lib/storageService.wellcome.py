@@ -314,7 +314,13 @@ def wait_for_async(response):
     poll_timeout_seconds = 600
 
     response.raise_for_status()
-    poll_url = _storage_service_url().replace('/api/v2', '/') + response.headers["Location"]
+
+    # This is a hacky bit of code to get a proper URL here, because
+    # the Location header returns a relative URL, e.g. /api/v2/async/158
+    #
+    # There's a better way of constructing this but it works and there are
+    # other issues I want to fix.
+    poll_url = (_storage_service_url().replace('/api/v2', '/') + response.headers["Location"]).replace('///', '/')
 
     # We'll enter this loop while waiting for the Wellcome storage to store
     # a package.  This isn't a fast process, so treat it as an exponential backoff.
