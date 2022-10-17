@@ -45,7 +45,8 @@ if __name__ == "__main__":
         if None in pair.values():
             raise ValueError(f"Did not get a pair of overlayed files for {name}")
 
-        if not filecmp.cmp(pair["artefactual"], name):
+        # TODO: Should these be a pre-approved list?
+        if pair['artefactual'] and not filecmp.cmp(pair["artefactual"], name):
             raise ValueError(f"artefactual file for {name} doesn’t match upstream!")
 
         print(f"Copying overlayed file {name}")

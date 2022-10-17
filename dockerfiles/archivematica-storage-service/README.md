@@ -25,10 +25,13 @@ The overlay is designed to balance a few competing concerns:
 
 The overlay is best explained with an example:
 
-![Screenshot of a file tree. There's a folder called "vendor", which contains "src", which contains "archivematicaCommon", which contains "lib", which contains "storageService.artefactual.py" and "storageService.wellcome.py"](overlay_example.png)
+![Screenshot of a file tree. There's a folder called "overlay", which contains "requirements", which contains a series of text files](overlay_example.png)
 
-This represents a Wellcome-specific version of the file `src/archivematicaCommon/lib/storageService.py` in the core Archivematica repo.
+This represents a Wellcome-specific version of the file `requirements/base.in`, `requirements/base.txt`, and so on, in the core Archivematica repo.
 When we build the Docker image, these files replace the upstream versions.
 
 We keep both the upstream and Wellcome-specific copy in the tree so that we can easily see how we've diverged.
 This also allows us to maintain the divergence if the upstream code changes, because we can see what our changes from the original were.
+
+There are also some cases where we only have a Wellcome file – these are files we've added to our tree.
+These are

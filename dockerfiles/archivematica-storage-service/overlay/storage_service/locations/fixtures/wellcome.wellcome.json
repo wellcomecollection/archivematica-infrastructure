@@ -1,0 +1,67 @@
+[
+{
+    "pk": 1,
+    "model": "locations.wellcomestorageservice",
+    "fields": {
+        "space": "0af68d1f-456e-49b2-8791-00f46df65e5d",
+        "token_url": "https://auth.wellcomecollection.org/oauth2/token",
+        "api_root_url": "https://api.wellcomecollection.org/",
+        "app_client_id": "my-app-client-id",
+        "app_client_secret": "my-app-client-secret",
+        "aws_access_key_id": "",
+        "aws_secret_access_key": "",
+        "aws_assumed_role": "",
+        "s3_endpoint_url": "https://s3.amazonaws.com",
+        "s3_region": "us-east-1",
+        "s3_bucket": "ingest-bucket",
+		"callback_host": "https://test.localhost/",
+		"callback_username": "username",
+		"callback_api_key": "api_key"
+    }
+},
+{
+    "pk": 2,
+    "model": "locations.space",
+    "fields": {
+        "last_verified": null,
+        "used": 0,
+        "verified": false,
+        "uuid": "0af68d1f-456e-49b2-8791-00f46df65e5d",
+        "access_protocol": "WELLCOME",
+        "staging_path": "/var/archivematica/storage_service/",
+        "path": "/",
+        "size": null
+    }
+},
+{
+    "pk": 7,
+    "model": "locations.location",
+    "fields": {
+        "used": 0,
+        "description": "Wellcome",
+        "space": "0af68d1f-456e-49b2-8791-00f46df65e5d",
+        "enabled": true,
+        "quota": null,
+        "relative_path": "born-digital",
+        "purpose": "AS",
+        "uuid": "59987281-d8f6-4b46-b854-559981de49e8"
+    }
+},
+{
+    "pk": 1,
+    "model": "locations.package",
+    "fields": {
+        "uuid": "6465da4a-ea88-4300-ac56-9641125f1276",
+        "description": null,
+        "origin_pipeline": null,
+        "current_location": "59987281-d8f6-4b46-b854-559981de49e8",
+        "current_path": "locations/fixtures/small_compressed_bag.zip",
+        "pointer_file_location": "",
+        "pointer_file_path": "",
+        "size": 0,
+        "package_type": "AIP",
+        "status": "Uploaded",
+        "misc_attributes": {}
+    }
+}
+]
