@@ -42,10 +42,13 @@ if __name__ == "__main__":
     #
     # Otherwise we copy the artefactual file over the wellcome file.
     for name, pair in file_pairs.items():
-        if None in pair.values():
+        if None in pair.values() and name not in {
+            'storage_service/locations/models/wellcome.py',
+            'storage_service/locations/fixtures/wellcome.json',
+            'storage_service/locations/tests/test_wellcome.py',
+        }:
             raise ValueError(f"Did not get a pair of overlayed files for {name}")
 
-        # TODO: Should these be a pre-approved list?
         if pair['artefactual'] and not filecmp.cmp(pair["artefactual"], name):
             raise ValueError(f"artefactual file for {name} doesn’t match upstream!")
 
