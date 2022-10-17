@@ -96,7 +96,7 @@ module "clamav_service" {
 
   name = "clamav"
 
-  container_image = "299497370133.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/clamavd:a51ed3c37d2968ba698347b13711c0527661782e"
+  container_image = var.clamavd_container_image
 
   cpu    = 2 * 1024
   memory = 4 * 1024
@@ -294,7 +294,7 @@ module "storage_service" {
     AM_GUNICORN_RELOAD_ENGINE = "auto"
     SS_DB_URL                 = "${local.rds_archivematica_url}/SS"
     SS_GNPUG_HOME_PATH        = "/var/archivematica/storage_service/.gnupg"
-    SS_GUNICORN_BIND          = "0.0.0.0:${local.storage_service_port}"
+    SS_GUNICORN_BIND          = "0.0.0.0:9000"
     DJANGO_ALLOWED_HOSTS      = "*"
 
     # The volume mounts are owned by "root".  By default gunicorn runs with
@@ -320,7 +320,7 @@ module "storage_service" {
   }
 
   app_container_image   = var.storage_service_container_image
-  nginx_container_image = var.storage_service_nginx_container_image
+  nginx_container_image = var.nginx_container_image
 
   mount_points = [
     {
@@ -408,7 +408,7 @@ module "dashboard_service" {
   }
 
   app_container_image   = var.dashboard_container_image
-  nginx_container_image = var.dashboard_nginx_container_image
+  nginx_container_image = var.nginx_container_image
 
   mount_points = [
     {

@@ -15,5 +15,13 @@ output "ecr_mcp_server_repo_url" {
 }
 
 output "ecr_storage_service_repo_url" {
-  value = aws_ecr_repository.archivematica_storage_service.repository_url
+  value = aws_ecr_repository.services["archivematica-storage-service"].repository_url
+}
+
+output "ecr_nginx_repo_url" {
+  value = aws_ecr_repository.services["archivematica-nginx"].repository_url
+}
+
+output "ecr_clamavd_repo_url" {
+  value = aws_ecr_repository.services["clamavd"].repository_url
 }
