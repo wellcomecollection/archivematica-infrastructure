@@ -3,6 +3,7 @@ resource "aws_ecr_repository" "services" {
     "archivematica-mcp-client",
     "archivematica-mcp-server",
     "archivematica-dashboard",
+    "archivematica-storage-service",
   ])
 
   name = "weco/${each.key}"
