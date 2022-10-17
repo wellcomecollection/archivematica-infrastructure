@@ -39,7 +39,7 @@ pushd $(mktemp -d)
     docker tag "hack_archivematica-$SERVICE" "$ECR_IMAGE_TAG"
 
     docker push "$ECR_IMAGE_TAG"
+
+    echo "✨ Published new images with tag $ARCHIVEMATICA_TAG-$CURRENT_COMMIT ✨"
   fi
 popd
-
-echo "✨ Published new images with tag $ARCHIVEMATICA_TAG-$CURRENT_COMMIT ✨"
