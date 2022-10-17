@@ -48,6 +48,7 @@ if __name__ == "__main__":
             "storage_service/locations/migrations/0027_add_wellcome_callback_fields.py",
             "storage_service/locations/migrations/0028_wellcome_blank_aws_auth.py",
             "storage_service/locations/migrations/0029_auto_20200122_0726.py",
+            "storage_service/locations/migrations/0031_merge_20221017_0727.py",
             "storage_service/locations/models/wellcome.py",
             "storage_service/locations/tests/test_wellcome.py",
         }:

@@ -314,7 +314,7 @@ def wait_for_async(response):
     poll_timeout_seconds = 600
 
     response.raise_for_status()
-    poll_url = response.headers["Location"]
+    poll_url = _storage_service_url() + response.headers["Location"]
 
     # We'll enter this loop while waiting for the Wellcome storage to store
     # a package.  This isn't a fast process, so treat it as an exponential backoff.
