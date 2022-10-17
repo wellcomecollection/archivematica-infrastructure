@@ -4,6 +4,7 @@ set -o errexit
 set -o nounset
 
 ARCHIVEMATICA_TAG=v1.13.2
+SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
 COMMIT=$(git rev-parse HEAD)
@@ -26,12 +27,19 @@ pushd $(mktemp -d)
   echo "*** Building the dashboard"
   cd hack
 
-  for service in mcp-server mcp-client dashboard
-  do
-    docker-compose build "archivematica-$service"
+  docker-compose build "archivematica-$SERVICE"
 
-    ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$service:$ARCHIVEMATICA_TAG-$COMMIT"
-    docker tag "hack_archivematica-$service" "$ECR_IMAGE_TAG"
+  if [[ "${BUILDKITE:-}" == "true" && "$BUILDKITE_BRANCH" != "main" ]]
+  then
+    echo "Not pushing to ECR because running in a Buildkite pull request"
+  else
+    echo "Pushing to ECR"
+
+    ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$COMMIT"
+    docker tag "hack_archivematica-$SERVICE" "$ECR_IMAGE_TAG"
+
     docker push "$ECR_IMAGE_TAG"
-  done
+  fi
 popd
+
+echo "✨ Published new images with tag $ARCHIVEMATICA_TAG-$COMMIT ✨"
