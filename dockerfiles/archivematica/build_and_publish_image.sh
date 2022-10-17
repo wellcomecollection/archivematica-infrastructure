@@ -24,16 +24,16 @@ pushd $(mktemp -d)
   python3 "$ROOT/dockerfiles/archivematica/copy_overlay_files.py"
   git status
 
-  echo "*** Building the dashboard"
+  echo "*** Building the Docker image"
   cd hack
 
   docker-compose build "archivematica-$SERVICE"
 
   if [[ "${BUILDKITE:-}" == "true" && "$BUILDKITE_BRANCH" != "main" ]]
   then
-    echo "Not pushing to ECR because running in a Buildkite pull request"
+    echo "*** Not pushing to ECR because running in a Buildkite pull request"
   else
-    echo "Pushing to ECR"
+    echo "*** Pushing to ECR"
 
     ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$COMMIT"
     docker tag "hack_archivematica-$SERVICE" "$ECR_IMAGE_TAG"
