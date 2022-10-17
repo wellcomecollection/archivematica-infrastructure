@@ -1,29 +1,37 @@
 steps:
-  - command: .buildkite/scripts/run_autoformat.py
-    label: "run autoformatting"
-    agents:
-      queue: "scala"
+  # - command: .buildkite/scripts/run_autoformat.py
+  #   label: "run autoformatting"
+  #   agents:
+  #     queue: "scala"
+  #
+  # - wait
+  #
+  # - label: ":docker: dashboard"
+  #   command: dockerfiles/archivematica/build_and_publish_image.sh dashboard
+  #   agents:
+  #     queue: "scala"
+  #   plugins:
+  #     - wellcomecollection/aws-assume-role#v0.2.2:
+  #         role: "arn:aws:iam::299497370133:role/workflow-ci"
+  #
+  # - label: ":docker: MCP client"
+  #   command: dockerfiles/archivematica/build_and_publish_image.sh mcp-client
+  #   agents:
+  #     queue: "scala"
+  #   plugins:
+  #     - wellcomecollection/aws-assume-role#v0.2.2:
+  #         role: "arn:aws:iam::299497370133:role/workflow-ci"
+  #
+  # - label: ":docker: MCP server"
+  #   command: dockerfiles/archivematica/build_and_publish_image.sh mcp-server
+  #   agents:
+  #     queue: "scala"
+  #   plugins:
+  #     - wellcomecollection/aws-assume-role#v0.2.2:
+  #         role: "arn:aws:iam::299497370133:role/workflow-ci"
 
-  - wait
-
-  - label: ":docker: dashboard"
-    command: dockerfiles/archivematica/build_and_publish_image.sh dashboard
-    agents:
-      queue: "scala"
-    plugins:
-      - wellcomecollection/aws-assume-role#v0.2.2:
-          role: "arn:aws:iam::299497370133:role/workflow-ci"
-
-  - label: ":docker: MCP client"
-    command: dockerfiles/archivematica/build_and_publish_image.sh mcp-client
-    agents:
-      queue: "scala"
-    plugins:
-      - wellcomecollection/aws-assume-role#v0.2.2:
-          role: "arn:aws:iam::299497370133:role/workflow-ci"
-
-  - label: ":docker: MCP server"
-    command: dockerfiles/archivematica/build_and_publish_image.sh mcp-server
+  - label: ":docker: Archivematica storage service"
+    command: dockerfiles/archivematica-storage-service/build_and_publish_image.sh
     agents:
       queue: "scala"
     plugins:
