@@ -7,7 +7,7 @@ ARCHIVEMATICA_TAG=v1.13.2
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
-COMMIT=$(git rev-parse HEAD)
+CURRENT_COMMIT=$(git log --oneline dockerfiles/archivematica | head -n 1 | awk '{print $1}')
 
 eval $(aws ecr get-login --no-include-email)
 
@@ -35,11 +35,11 @@ pushd $(mktemp -d)
   else
     echo "*** Pushing to ECR"
 
-    ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$COMMIT"
+    ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$CURRENT_COMMIT"
     docker tag "hack_archivematica-$SERVICE" "$ECR_IMAGE_TAG"
 
     docker push "$ECR_IMAGE_TAG"
   fi
 popd
 
-echo "✨ Published new images with tag $ARCHIVEMATICA_TAG-$COMMIT ✨"
+echo "✨ Published new images with tag $ARCHIVEMATICA_TAG-$CURRENT_COMMIT ✨"
