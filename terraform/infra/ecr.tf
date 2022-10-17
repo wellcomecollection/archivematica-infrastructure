@@ -4,6 +4,8 @@ resource "aws_ecr_repository" "services" {
     "archivematica-mcp-server",
     "archivematica-dashboard",
     "archivematica-storage-service",
+    "archivematica-nginx",
+    "clamavd"
   ])
 
   name = "weco/${each.key}"
