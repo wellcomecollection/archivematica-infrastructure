@@ -4,7 +4,6 @@ set -o errexit
 set -o nounset
 
 ARCHIVEMATICA_TAG=v0.19.0
-SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
 COMMIT=$(git rev-parse HEAD)
