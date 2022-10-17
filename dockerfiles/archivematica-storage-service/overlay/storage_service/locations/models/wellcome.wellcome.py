@@ -1,4 +1,5 @@
 import errno
+from functools import wraps
 import logging
 import os
 import re
@@ -6,6 +7,8 @@ import subprocess
 import tempfile
 import time
 
+import boto3
+import botocore
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -15,7 +18,6 @@ from wellcome_storage_service import BagNotFound, RequestsOAuthStorageServiceCli
 from . import StorageException
 from . import Package
 from .location import Location
-from .s3 import S3SpaceModelMixin
 
 
 TOKEN_HELP_TEXT = _('URL of the OAuth token endpoint, e.g. https://auth.wellcomecollection.org/oauth2/token')
@@ -37,6 +39,17 @@ top_level_dir=sys.argv[3]
 
 download_compressed_bag(storage_manifest=bag, out_path=dest_path, top_level_dir=top_level_dir)
 '''
+
+
+def boto_exception(fn):
+    @wraps(fn)
+    def _inner(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except botocore.exceptions.BotoCoreError as e:
+            raise StorageException("AWS error: %r", e)
+
+    return _inner
 
 
 def handle_ingest(ingest, package):
@@ -285,6 +298,97 @@ def get_wellcome_identifier(src_path, package_uuid, space):
     # This rename should be atomic.
     os.rename(src_path + ".tmp", src_path)
     return wellcome_identifier
+
+
+class S3SpaceModelMixin(models.Model):
+    class Meta:
+        app_label = "locations"
+        abstract = True
+
+    aws_access_key_id = models.CharField(
+        max_length=64, blank=True, verbose_name=_("Access Key ID to authenticate")
+    )
+    aws_secret_access_key = models.CharField(
+        max_length=256,
+        blank=True,
+        verbose_name=_("Secret Access Key to authenticate with"),
+    )
+    aws_assumed_role = models.CharField(
+        max_length=256,
+        blank=True,
+        verbose_name=_('Assumed AWS IAM Role'),
+    )
+    s3_endpoint_url = models.CharField(
+        max_length=2048,
+        verbose_name=_("S3 Endpoint URL"),
+        help_text=_("S3 Endpoint URL. Eg. https://s3.amazonaws.com"),
+    )
+    s3_region = models.CharField(
+        max_length=64,
+        verbose_name=_("Region"),
+        help_text=_("Region in S3. Eg. us-east-2"),
+    )
+    s3_bucket = models.CharField(
+        max_length=64,
+        verbose_name=_("S3 Bucket"),
+        blank=True,
+        help_text=_("S3 Bucket Name"),
+    )
+
+    @property
+    def bucket_name(self):
+        return self.s3_bucket or self.space_id
+
+    @property
+    def s3_resource(self):
+        if not hasattr(self, "_s3_resource"):
+            boto_args = {
+                "service_name": "s3",
+                "endpoint_url": self.s3_endpoint_url,
+                "region_name": self.s3_region,
+            }
+            if self.aws_access_key_id and self.aws_secret_access_key:
+                boto_args.update(
+                    aws_access_key_id=self.aws_access_key_id,
+                    aws_secret_access_key=self.aws_secret_access_key,
+                )
+
+            self._s3_resource = boto3.resource(**boto_args)
+
+        return self._s3_resource
+
+    @boto_exception
+    def _ensure_bucket_exists(self):
+        """Ensure that the bucket exists by asking it something about itself.
+        If we cannot retrieve metadata about it, and specifically, we can
+        determine the endpoint has returned a `NoSuchBucket' error code then
+        we attempt to create the bucket, else, we raise a StorageException.
+        NB. Boto3 has an API called head_bucket that looks to return 400,
+        Bad Request at time of 1.9.174 when the S3 documents suggest 404, or
+        more 'specifically':
+            > Otherwise, the operation might return responses such as 404 Not
+            > Found and 403 Forbidden. "
+            via-- Amazon AWS: https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketHEAD.html
+        """
+        LOGGER.debug("Test the S3 bucket '%s' exists", self.bucket_name)
+        try:
+            loc_info = self.s3_resource.meta.client.head_bucket(
+                Bucket=self.bucket_name
+            )
+            LOGGER.debug("S3 bucket's response: %s", loc_info)
+        except botocore.exceptions.ClientError as err:
+            error_code = err.response["Error"]["Code"]
+            if error_code not in ["NoSuchBucket", "404"]:
+                raise StorageException(err)
+            LOGGER.info("Creating S3 bucket '%s'", self.bucket_name)
+            # LocationConstraint cannot be specified if it us-east-1 because it is the default, see: https://github.com/boto/boto3/issues/125
+            if self.s3_region.lower() == "us-east-1":
+                self.s3_resource.create_bucket(Bucket=self.bucket_name)
+            else:
+                self.s3_resource.create_bucket(
+                    Bucket=self.bucket_name,
+                    CreateBucketConfiguration={"LocationConstraint": self.s3_region},
+                )
 
 
 class WellcomeStorageService(S3SpaceModelMixin):
