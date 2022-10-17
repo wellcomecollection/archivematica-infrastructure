@@ -4,7 +4,9 @@ steps:
     agents:
       queue: "scala"
 
-  - label: "build/publish dashboard"
+  - wait
+
+  - label: ":docker: dashboard"
     command: dockerfiles/archivematica/build_and_publish_image.sh dashboard
     agents:
       queue: "scala"
@@ -12,7 +14,7 @@ steps:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
 
-  - label: "build/publish MCP client"
+  - label: ":docker: MCP client"
     command: dockerfiles/archivematica/build_and_publish_image.sh mcp-client
     agents:
       queue: "scala"
@@ -20,7 +22,7 @@ steps:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
 
-  - label: "build/publish MCP server"
+  - label: ":docker: MCP server"
     command: dockerfiles/archivematica/build_and_publish_image.sh mcp-server
     agents:
       queue: "scala"
