@@ -42,8 +42,14 @@ steps:
     commands:
       - "./builds/build_docker_image.sh archivematica-nginx"
       - "./builds/publish_docker_image.sh archivematica-nginx"
+    plugins:
+      - wellcomecollection/aws-assume-role#v0.2.2:
+          role: "arn:aws:iam::299497370133:role/workflow-ci"
 
   - label: ":docker: clamavd"
     commands:
       - "./builds/build_docker_image.sh clamavd"
       - "./builds/publish_docker_image.sh clamavd"
+    plugins:
+      - wellcomecollection/aws-assume-role#v0.2.2:
+          role: "arn:aws:iam::299497370133:role/workflow-ci"
