@@ -20,7 +20,7 @@ pushd $(mktemp -d)
   git checkout "$ARCHIVEMATICA_TAG"
 
   echo "*** Applying overlay files to repository"
-  # python3 "$ROOT/dockerfiles/archivematica-storage-service/copy_overlay_files.py"
+  python3 "$ROOT/dockerfiles/archivematica-storage-service/copy_overlay_files.py"
   git status
 
   echo "*** Building the Docker image"
