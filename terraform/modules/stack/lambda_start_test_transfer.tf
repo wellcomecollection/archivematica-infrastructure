@@ -1,14 +1,13 @@
 module "start_test_transfer_lambda" {
-  source      = "./lambda"
-  s3_bucket   = "wellcomecollection-workflow-infra"
-  s3_key      = "lambdas/start_test_transfer.zip"
-  module_name = "start_test_transfer"
+  source     = "./lambda"
+  handler    = "start_test_transfer.main"
+  source_dir = "${path.module}/../../../start_test_transfer/src"
 
   description     = "Send a test transfer package to Archivematica"
   name            = "archivematica-start_test_transfer-${var.namespace}"
   alarm_topic_arn = var.lambda_error_alarm_arn
 
-  environment_variables = {
+  environment = {
     "UPLOAD_BUCKET" = var.transfer_source_bucket_name
   }
 
