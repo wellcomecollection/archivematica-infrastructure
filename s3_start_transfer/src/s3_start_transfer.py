@@ -16,7 +16,7 @@ from log_handler import Logger
 from verify_transfer_packages import (
     VerificationFailure,
     verify_has_a_metadata_csv,
-    verify_only_metadata_csv_in_metadata_dir,
+    verify_only_metadata_and_rights_csv_in_metadata_dir,
     verify_metadata_csv_has_accession_fields,
     verify_metadata_csv_has_dc_identifier,
     verify_package,
@@ -56,7 +56,7 @@ def verify_s3_package(*, s3, logger, bucket, key):
         # verify_all_files_not_under_single_dir,
         # verify_all_files_not_under_objects_dir,
         verify_has_a_metadata_csv,
-        verify_only_metadata_csv_in_metadata_dir,
+        verify_only_metadata_and_rights_csv_in_metadata_dir,
     ]
 
     if key.startswith("born-digital-accessions/"):
