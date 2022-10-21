@@ -101,7 +101,6 @@ def write_mets(mets_path, transfer_dir_path, base_path_placeholder, transfer_uui
         mets.alternate_ids.append(alt_record_id)
 
     fsentry_tree = FSEntriesTree(transfer_dir_path, db_base_path, transfer)
-    logger.info("@@AWLC about to call fsentry_tree.scan()")
     fsentry_tree.scan()
 
     mets.append_file(fsentry_tree.root_node)
@@ -190,9 +189,7 @@ class FSEntriesTree(object):
     def scan(self):
         self.build_tree(self.root_path, parent=self.root_node)
         self.load_file_data_from_db()
-        logger.info("@@AWLC about to call load_rights_data_from_db()")
         self.load_rights_data_from_db()
-        logger.info("@@AWLC finished call load_rights_data_from_db()")
         self.load_dir_uuids_from_db()
         self.check_for_missing_file_uuids()
 
@@ -497,7 +494,11 @@ def get_premis_license_information(rights):
             "license",
             license_section.rightsstatementlicensedocumentationidentifier_set.all(),
         )
-        license_information += (("license_terms", license_section.licenseterms),)
+
+        # See https://github.com/archivematica/Issues/issues/1581
+        if license_section.licenseterms is not None:
+            license_information += (("license_terms", license_section.licenseterms),)
+
         for note in license_section.rightsstatementlicensenote_set.all():
             license_information += (("license_note", note.licensenote),)
         license_information += (
@@ -756,8 +757,6 @@ def rights_to_premis(rights, file_uuid):
     Returns:
         lxml.etree._Element
     """
-    logger.info("@@AWLC calling rights_to_premis({rights!r}, {file_uuid!r})")
-
     VALID_RIGHTS_BASES = ["copyright", "institutional policy", "license", "statute"]
 
     if rights.rightsstatementidentifiervalue:
