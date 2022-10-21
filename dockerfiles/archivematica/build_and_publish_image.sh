@@ -29,17 +29,12 @@ pushd $(mktemp -d)
 
   docker-compose build "archivematica-$SERVICE"
 
-  # if [[ "${BUILDKITE:-}" == "true" && "$BUILDKITE_BRANCH" != "main" ]]
-  # then
-  #   echo "*** Not pushing to ECR because running in a Buildkite pull request"
-  # else
-    echo "*** Pushing to ECR"
+  echo "*** Pushing to ECR"
 
-    ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$CURRENT_COMMIT"
-    docker tag "hack_archivematica-$SERVICE" "$ECR_IMAGE_TAG"
+  ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$CURRENT_COMMIT"
+  docker tag "hack_archivematica-$SERVICE" "$ECR_IMAGE_TAG"
 
-    docker push "$ECR_IMAGE_TAG"
+  docker push "$ECR_IMAGE_TAG"
 
-    echo "✨ Published new images with tag $ARCHIVEMATICA_TAG-$CURRENT_COMMIT ✨"
-  # fi
+  echo "✨ Published new images with tag $ARCHIVEMATICA_TAG-$CURRENT_COMMIT ✨"
 popd

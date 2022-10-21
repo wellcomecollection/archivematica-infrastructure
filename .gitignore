@@ -1,11 +1,6 @@
 *.plan
 *.tfvars
 .DS_Store
-.releases
-secrets.zip
-secrets
-id_rsa
-id_rsa.pub
 config
 credentials
 
