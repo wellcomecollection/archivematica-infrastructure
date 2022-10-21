@@ -166,7 +166,11 @@ def verify_has_a_metadata_csv(file_listing):
 def verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing):
     metadata_files = {f for f in file_listing if f.startswith("metadata/")}
 
-    unexpected_metadata_files = metadata_files - {"metadata/", "metadata/metadata.csv", "metadata/rights.csv"}
+    unexpected_metadata_files = metadata_files - {
+        "metadata/",
+        "metadata/metadata.csv",
+        "metadata/rights.csv",
+    }
 
     if unexpected_metadata_files:
         raise VerificationFailure(
