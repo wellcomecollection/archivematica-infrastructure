@@ -1,13 +1,13 @@
-# -*- encoding: utf-8
 """
 Code for talking to Archivematica.
 """
 
 import base64
 import collections
+import json
 import os
-
-import requests
+import urllib.parse
+import urllib.request
 
 
 class StartTransferException(Exception):
@@ -31,10 +31,18 @@ def am_api_post_json(api_path, data):
     am_headers = {"Authorization": f"ApiKey {am_user}:{am_api_key}"}
 
     url = f"{am_url}{api_path}"
+    data = json.dumps(data).encode("utf-8")
     print(f"URL: {url}; Data: {data}")
-    response = requests.post(url, json=data, headers=am_headers)
+
+    request = urllib.request.Request(
+        url,
+        data=data,
+        headers={**am_headers, "Content-Type": "application/json"},
+        method="POST",
+    )
+    response = urllib.request.urlopen(request)
     print(f"Response: {response}")
-    response_json = response.json()
+    response_json = json.loads(response.read())
     print(f"Response JSON: {response_json}")
     return response_json
 
@@ -46,17 +54,22 @@ def ss_api_get(api_path, params=None):
     :param params: Dict of params to include in the request
     :returns: dict of json data returned by request
     """
+    params = params or {}
+
     ss_url = os.environ["ARCHIVEMATICA_SS_URL"]
     ss_user = os.environ["ARCHIVEMATICA_SS_USERNAME"]
     ss_api_key = os.environ["ARCHIVEMATICA_SS_API_KEY"]
     ss_headers = {"Authorization": f"ApiKey {ss_user}:{ss_api_key}"}
 
-    params = params or {}
-    url = f"{ss_url}{api_path}"
+    query_string = urllib.parse.urlencode(params)
+
+    url = f"{ss_url}{api_path}?{query_string}"
     print(f"URL: {url}; Params: {params}")
-    response = requests.get(url, params=params, headers=ss_headers)
+
+    request = urllib.request.Request(url, headers=ss_headers)
+    response = urllib.request.urlopen(request)
     print(f"Response: {response}")
-    response_json = response.json()
+    response_json = json.loads(response.read())
     print(f"Response JSON: {response_json}")
     return response_json
 

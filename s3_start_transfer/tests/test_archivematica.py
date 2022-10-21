@@ -4,25 +4,8 @@ from unittest.mock import call, patch
 import uuid
 
 import pytest
-import requests
 
 import archivematica
-
-
-@patch.object(requests, "post")
-def test_am_api_post_json(mock_post, monkeypatch):
-    monkeypatch.setenv("ARCHIVEMATICA_URL", "http://archivematica.example.com")
-    monkeypatch.setenv("ARCHIVEMATICA_USERNAME", "am_username")
-    monkeypatch.setenv("ARCHIVEMATICA_API_KEY", "am_api_key")
-    mock_post.return_value.json.return_value = {"c": "d"}
-
-    archivematica.am_api_post_json("/api/v2/path", {"a": "b"})
-
-    mock_post.assert_called_with(
-        "http://archivematica.example.com/api/v2/path",
-        json={"a": "b"},
-        headers={"Authorization": "ApiKey am_username:am_api_key"},
-    )
 
 
 @patch.object(archivematica, "am_api_post_json")
@@ -73,23 +56,6 @@ def test_start_transfer_with_accession(mock_am_post):
             "auto_approve": True,
             "accession": "1234",
         },
-    )
-
-
-@patch.object(requests, "get")
-def test_ss_api_get(mock_get, monkeypatch):
-    monkeypatch.setenv("ARCHIVEMATICA_SS_URL", "http://archivematica-ss.example.com")
-    monkeypatch.setenv("ARCHIVEMATICA_SS_USERNAME", "ss_username")
-    monkeypatch.setenv("ARCHIVEMATICA_SS_API_KEY", "ss_api_key")
-    mock_get.return_value.json.return_value = {"c": "d"}
-
-    response = archivematica.ss_api_get("/api/v2/path", {"a": "b"})
-
-    assert response == {"c": "d"}
-    mock_get.assert_called_with(
-        "http://archivematica-ss.example.com/api/v2/path",
-        params={"a": "b"},
-        headers={"Authorization": "ApiKey ss_username:ss_api_key"},
     )
 
 

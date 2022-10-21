@@ -1,5 +1,3 @@
-# -*- encoding: utf-8
-
 import csv
 import datetime as dt
 import io

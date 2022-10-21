@@ -1,4 +1,3 @@
-# -*- encoding: utf-8
 """
 The Archivematica transfer format is a bit fiddly, and there are ways to get
 it wrong that are non-obvious.
