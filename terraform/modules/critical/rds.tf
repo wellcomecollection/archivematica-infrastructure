@@ -19,26 +19,6 @@ resource "aws_db_subnet_group" "archivematica" {
   subnet_ids = var.network_private_subnets
 }
 
-# This tweaks the MySQL settings to make Archivematica happier with transfers
-# that contain lots of files.
-#
-# We don't set it as high as 1GB, because if we set it too high all transfers
-# start to slow down -- but it's higher than the Aurora default, which is 4MB.
-#
-# See https://github.com/archivematica/Issues/issues/956
-#     https://github.com/wellcomecollection/platform/issues/4233
-#
-resource "aws_db_parameter_group" "archivematica" {
-  name   = "archivematica-${var.namespace}"
-  family = "aurora5.6"
-
-  parameter {
-    apply_method = "pending-reboot"
-    name         = "max_allowed_packet"
-    value        = 100 * 1024 * 1024
-  }
-}
-
 resource "aws_rds_cluster" "archivematica" {
   db_subnet_group_name   = aws_db_subnet_group.archivematica.name
   cluster_identifier     = local.cluster_identifier
@@ -47,25 +27,8 @@ resource "aws_rds_cluster" "archivematica" {
   master_password        = var.rds_password
   vpc_security_group_ids = [aws_security_group.database_sg.id]
 
-  # Be careful of changing these.  When I tried updating to MySQL 5.7
-  # (or a different flavour of 5.6), transfers would always fail at
-  # the "Scan for viruses" stage.
-  #
-  # Debugging showed that we were getting a repeated error inside
-  # the MCP client:
-  #
-  #     OperationalError: (2006, 'MySQL server has gone away')
-  #
-  # It could connect to the database if you opened an interactive shell,
-  # but something in the Archivematica process kept breaking.
-  #
-  # We should diagnose this further and understand why Archivematica
-  # doesn't work with MySQL 5.7, but I don't want to do that right now.
-  #
-  # Possibly related:
-  # https://www.archivematica.org/en/docs/archivematica-1.10/admin-manual/installation-setup/installation/installation/#dependencies
-  engine         = "aurora"
-  engine_version = "5.6.mysql_aurora.1.22.2"
+  engine         = "aurora-mysql"
+  engine_version = "5.7.mysql_aurora.2.11.0"
 }
 
 resource "aws_rds_cluster_instance" "archivematica" {
@@ -82,7 +45,7 @@ resource "aws_rds_cluster_instance" "archivematica" {
 
   apply_immediately = false
 
-  db_parameter_group_name = aws_db_parameter_group.archivematica.name
+  db_parameter_group_name = "default.aurora-mysql5.7"
 }
 
 resource "aws_security_group" "database_sg" {
