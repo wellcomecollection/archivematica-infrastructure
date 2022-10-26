@@ -18,7 +18,7 @@ locals {
     dashboard          = "v1.13.2-f956ec8"
     mcp_client         = "v1.13.2-f956ec8-10"
     mcp_server         = "v1.13.2-f956ec8"
-    am_storage_service = "v0.19.0-76c5cf8"
+    am_storage_service = "v0.19.0-d72c777"
     clamavd            = "a49d4f9"
     nginx              = "8ed3654"
   }

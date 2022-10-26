@@ -13,12 +13,12 @@ module "stack" {
 
   ebs_volume_id = data.terraform_remote_state.critical.outputs.ebs_volume_id
 
-  mcp_client_container_image            = module.mcp_client_repo_uri.value
-  mcp_server_container_image            = module.mcp_server_repo_uri.value
-  storage_service_container_image       = "${local.ecr_storage_service_repo_url}:env.prod"
-  storage_service_nginx_container_image = module.storage_service_nginx_repo_uri.value
-  dashboard_container_image             = module.dashboard_repo_uri.value
-  dashboard_nginx_container_image       = module.dashboard_nginx_repo_uri.value
+  mcp_client_container_image      = "${local.ecr_repo_urls["mcp_client"]}:${local.ecr_image_tags["mcp_client"]}"
+  mcp_server_container_image      = "${local.ecr_repo_urls["mcp_server"]}:${local.ecr_image_tags["mcp_server"]}"
+  storage_service_container_image = "${local.ecr_repo_urls["am_storage_service"]}:${local.ecr_image_tags["am_storage_service"]}"
+  dashboard_container_image       = "${local.ecr_repo_urls["dashboard"]}:${local.ecr_image_tags["dashboard"]}"
+  nginx_container_image           = "${local.ecr_repo_urls["nginx"]}:${local.ecr_image_tags["nginx"]}"
+  clamavd_container_image         = "${local.ecr_repo_urls["clamavd"]}:${local.ecr_image_tags["clamavd"]}"
 
   certificate_arn = data.terraform_remote_state.infra.outputs.certificate_arn
 
