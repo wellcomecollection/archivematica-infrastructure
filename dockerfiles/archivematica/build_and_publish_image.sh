@@ -7,7 +7,7 @@ ARCHIVEMATICA_TAG=v1.13.2
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
-CURRENT_COMMIT=$(git log --oneline dockerfiles/archivematica | head -n 1 | awk '{print $1}')
+CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" dockerfiles/archivematica)
 
 eval $(aws ecr get-login --no-include-email)
 

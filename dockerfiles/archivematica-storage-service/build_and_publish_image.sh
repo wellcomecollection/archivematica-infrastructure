@@ -6,7 +6,7 @@ set -o nounset
 ARCHIVEMATICA_TAG=v0.19.0
 
 ROOT=$(git rev-parse --show-toplevel)
-CURRENT_COMMIT=$(git log --oneline dockerfiles/archivematica-storage-service | head -n 1 | awk '{print $1}')
+CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" dockerfiles/archivematica-storage-service)
 
 eval $(aws ecr get-login --no-include-email)
 

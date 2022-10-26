@@ -6,7 +6,7 @@ set -o nounset
 SERVICE_ID="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
-CURRENT_COMMIT=$(git log --oneline dockerfiles/$SERVICE_ID | head -n 1 | awk '{print $1}')
+CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" dockerfiles/$SERVICE_ID)
 
 docker build \
   --file "$ROOT/dockerfiles/$SERVICE_ID/Dockerfile" \
