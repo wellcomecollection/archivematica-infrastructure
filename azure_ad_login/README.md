@@ -28,7 +28,7 @@ The tenant ID and client ID are fixed; the client secret can be changed.
 To create a new secret:
 
 1.  Become an owner on the Azure AD app.
-    (As of 15 October 2020, @alexwlchan and @kenoir are both owners.)
+    (As of 26 October 2022, Alex is the only owner.)
 
 2.  Install the Azure CLI and the boto3 Python library.
 
