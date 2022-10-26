@@ -1,4 +1,3 @@
-# -*- encoding: utf-8
 """
 The Archivematica transfer format is a bit fiddly, and there are ways to get
 it wrong that are non-obvious.
@@ -101,6 +100,7 @@ def verify_all_files_not_under_single_dir(file_listing):
                 transfer_package.zip
                   ├── recipe.txt
                   └── metadata/
+                        ├── rights.csv
                         └── metadata.csv
 
             """
@@ -163,10 +163,14 @@ def verify_has_a_metadata_csv(file_listing):
         )
 
 
-def verify_only_metadata_csv_in_metadata_dir(file_listing):
+def verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing):
     metadata_files = {f for f in file_listing if f.startswith("metadata/")}
 
-    unexpected_metadata_files = metadata_files - {"metadata/", "metadata/metadata.csv"}
+    unexpected_metadata_files = metadata_files - {
+        "metadata/",
+        "metadata/metadata.csv",
+        "metadata/rights.csv",
+    }
 
     if unexpected_metadata_files:
         raise VerificationFailure(

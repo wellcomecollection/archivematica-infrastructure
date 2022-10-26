@@ -1,30 +1,34 @@
-data "aws_s3_bucket_object" "package" {
-  bucket = var.s3_bucket
-  key    = var.s3_key
+data "archive_file" "deployment_package" {
+  type        = "zip"
+  source_dir  = var.source_dir
+  output_path = "${var.name}.zip"
 }
 
 resource "aws_lambda_function" "lambda_function" {
   description   = var.description
   function_name = var.name
 
-  s3_bucket         = var.s3_bucket
-  s3_key            = var.s3_key
-  s3_object_version = data.aws_s3_bucket_object.package.version_id
+  filename         = data.archive_file.deployment_package.output_path
+  source_code_hash = data.archive_file.deployment_package.output_base64sha256
+
+  handler = var.handler
 
   role    = aws_iam_role.iam_role.arn
-  handler = var.module_name == "" ? "${var.name}.main" : "${var.module_name}.main"
   runtime = "python3.8"
   timeout = var.timeout
 
-  memory_size = var.memory_size
+  environment {
+    variables = var.environment
+  }
 
   dead_letter_config {
     target_arn = aws_sqs_queue.lambda_dlq.arn
   }
+}
 
-  environment {
-    variables = var.environment_variables
-  }
+resource "aws_iam_role_policy_attachment" "basic_execution_role" {
+  role       = aws_iam_role.iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_cloudwatch_metric_alarm" "lambda_alarm" {

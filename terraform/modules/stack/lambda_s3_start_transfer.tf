@@ -1,14 +1,13 @@
 module "s3_start_transfer_lambda" {
-  source      = "./lambda"
-  s3_bucket   = "wellcomecollection-workflow-infra"
-  s3_key      = "lambdas/s3_start_transfer.zip"
-  module_name = "s3_start_transfer"
+  source     = "./lambda"
+  handler    = "s3_start_transfer.main"
+  source_dir = "${path.module}/../../../s3_start_transfer/src"
 
   description     = "Trigger that starts new Archivematica transfers from an upload to ${var.transfer_source_bucket_name}"
   name            = "archivematica-s3_start_transfer-${var.namespace}"
   alarm_topic_arn = var.lambda_error_alarm_arn
 
-  environment_variables = {
+  environment = {
     "ARCHIVEMATICA_URL"         = "https://${module.dashboard_service.hostname}"
     "ARCHIVEMATICA_SS_URL"      = "https://${module.storage_service.hostname}"
     "ARCHIVEMATICA_USERNAME"    = var.archivematica_username

@@ -114,6 +114,8 @@ To fix this:
     It might take a couple of attempts before this finishes successfully.
     The dashboard can't start until the database is set up correctly, which means it fails load balancer healthchecks -- ECS will be continually restarting the container until you successfully run the database migrations.
 
+    [Note: the location of this file may have changed since these instructions were written, you may need `/src/src/dashboard`.]
+
 3.  Look for a Docker container running the storage service.
     Similar to above:
 
@@ -261,6 +263,7 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 3.  Set the following settings in the "Default" configuration:
 
     <table>
+      <tr><td>Scan for viruses</td><th>Yes</th></tr>
       <tr><td>Assign UUIDs to directories</td><th>No</th></tr>
       <tr><td>Generate transfer structure report</td><th>No</th></tr>
       <tr><td>Perform file format identification (Transfer)</td><th>Yes</th></tr>
@@ -296,12 +299,10 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 5.  Create a "b_dig_accessions" config, with the default settings above and additionally:
 
     <table>
-      <tr>
-        <td>Extract packages</td><th>No</th>
-        <td>Perform policy checks on originals</td><th>No</th>
-        <td>Create SIP(s)</td><th>Create single SIP and continue processing</th>
-        <td>Normalize</td><th>Do not normalize</th>
-        <td>Add metadata if desired</td><th>Continue</th>
-        <td>Store AIP</td><th>Yes</th>
-      </tr>
+      <tr><td>Extract packages</td><th>No</th></tr>
+      <tr><td>Perform policy checks on originals</td><th>No</th></tr>
+      <tr><td>Create SIP(s)</td><th>Create single SIP and continue</tr> processing</th>
+      <tr><td>Normalize</td><th>Do not normalize</th></tr>
+      <tr><td>Add metadata if desired</td><th>Continue</th></tr>
+      <tr><td>Store AIP</td><th>Yes</th></tr>
     </table>

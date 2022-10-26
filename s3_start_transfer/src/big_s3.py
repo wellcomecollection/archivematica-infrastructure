@@ -1,4 +1,3 @@
-# -*- encoding: utf-8
 """
 This is some code for treating objects in S3 as if they're file-like objects
 in Python.  It's useful if you're working in an environment where you don't

@@ -10,12 +10,29 @@ variable "rds_port" {}
 
 variable "ebs_volume_id" {}
 
-variable "mcp_client_container_image" {}
-variable "mcp_server_container_image" {}
-variable "storage_service_container_image" {}
-variable "storage_service_nginx_container_image" {}
-variable "dashboard_container_image" {}
-variable "dashboard_nginx_container_image" {}
+variable "mcp_client_container_image" {
+  type = string
+}
+
+variable "mcp_server_container_image" {
+  type = string
+}
+
+variable "storage_service_container_image" {
+  type = string
+}
+
+variable "dashboard_container_image" {
+  type = string
+}
+
+variable "nginx_container_image" {
+  type = string
+}
+
+variable "clamavd_container_image" {
+  type = string
+}
 
 variable "certificate_arn" {}
 

@@ -1,4 +1,3 @@
-# -*- encoding: utf-8
 """
 Although a Lambda function will write logs to CloudWatch, our users
 (e.g. archivists) only interact with the S3 Console.
