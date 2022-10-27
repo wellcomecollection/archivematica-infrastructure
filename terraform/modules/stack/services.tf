@@ -98,7 +98,9 @@ module "clamav_service" {
 
   container_image = var.clamavd_container_image
 
-  cpu    = 2 * 1024
+  desired_task_count = 2
+
+  cpu    = 1 * 1024
   memory = 4 * 1024
 
   cluster_arn  = aws_ecs_cluster.archivematica.arn
