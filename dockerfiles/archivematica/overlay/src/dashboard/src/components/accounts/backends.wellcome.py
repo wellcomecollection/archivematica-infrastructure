@@ -67,14 +67,14 @@ class CustomOIDCBackend(OIDCAuthenticationBackend):
 
     def create_user(self, user_info):
         # We want to explicitly gate the creation of users here --
-         # don't just create a user because OIDC has told us who they are.
-         #
-         # OIDC is an *identity* service, not an *authorisation* service.
-         # It call tell us "this person is Henry Wellcome", not "Henry Wellcome
-         # should have Archivematica access".
-         #
-         # Using `get_or_create_user()` instead of `create_user()` means we
-         # can control the creation of users with `OIDC_CREATE_USER`.
+        # don't just create a user because OIDC has told us who they are.
+        #
+        # OIDC is an *identity* service, not an *authorisation* service.
+        # It call tell us "this person is Henry Wellcome", not "Henry Wellcome
+        # should have Archivematica access".
+        #
+        # Using `get_or_create_user()` instead of `create_user()` means we
+        # can control the creation of users with `OIDC_CREATE_USER`.
         user = super(CustomOIDCBackend, self).get_or_create_user(user_info)
 
         if user is not None:
