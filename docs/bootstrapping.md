@@ -146,7 +146,7 @@ Create a dashboard user:
 
 ```
 docker exec -it $(docker ps | grep dashboard | grep app | awk '{print $1}') \
-    python /src/dashboard/src/manage.py install \
+    python /src/src/dashboard/src/manage.py install \
     --username="admin" \
     --password="PASSWORD" \
     --email="wellcomedigitalworkflow@wellcome.ac.uk" \
