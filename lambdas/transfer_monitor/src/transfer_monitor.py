@@ -67,7 +67,10 @@ def has_matching_bag(*, archivematica_transfer_id, external_identifier, files_in
     req = urllib.request.Request(
         f"{es_credentials['endpoint']}/{files_index}/_search",
         data=json.dumps(query).encode("utf-8"),
-        headers={"Authorization": f"ApiKey {api_key}", "Content-Type": "application/json"},
+        headers={
+            "Authorization": f"ApiKey {api_key}",
+            "Content-Type": "application/json",
+        },
     )
 
     resp = urllib.request.urlopen(req)
@@ -86,6 +89,8 @@ def get_recent_objects(sess, *, bucket, days):
     s3 = sess.client("s3")
     paginator = s3.get_paginator("list_objects_v2")
 
+    # TODO: Do we need to do a date restriction?  Could we look at
+    # the entire bucket every time?
     last_modified_after = datetime.datetime.now() - datetime.timedelta(days=days)
 
     for page in paginator.paginate(Bucket=bucket):
@@ -225,7 +230,7 @@ def main(event, _):
     # Send a message to Slack with a summary of the report.
     post_to_slack(
         webhook_url=get_secret_string(
-            sess, secret_id="archivematica/transfer_monitoring/slack_webhook"
+            sess, secret_id="archivematica/transfer_monitor/slack_webhook"
         ),
         results=results,
         days_to_check=days_to_check,
@@ -244,7 +249,3 @@ def main(event, _):
             pass
 
         sess.client("s3").delete_object(**kwargs)
-
-
-if __name__ == "__main__":
-    main(None, None)
