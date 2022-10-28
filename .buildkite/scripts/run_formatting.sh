@@ -19,5 +19,5 @@ docker run --tty --rm \
 
 # We don't want to autoformat files which are copied out of an Artefactual
 # repo; it would muddy the diffs.
-git checkout dockerfiles/archivematica/overlay
-git checkout dockerfiles/archivematica-storage-service/overlay
+git checkout archivematica-apps/archivematica/overlay
+git checkout archivematica-apps/archivematica-storage-service/overlay
