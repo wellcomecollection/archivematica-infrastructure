@@ -36,9 +36,6 @@ def _write_log(sess, logger, bucket, key, result, tags=None):
         Bucket=bucket,
         Key=log_key,
         Body=logger.text(),
-        Tagging=" ".join(
-            f"{key}={value}" for key, value in tags.items() if value is not None
-        ),
         # The object is uploaded by a Lambda running in the workflow account,
         # but the transfer bucket is owned by the digitisation bucket.
         #
@@ -46,6 +43,19 @@ def _write_log(sess, logger, bucket, key, result, tags=None):
         # account (e.g. archivists) can download/clean up the files.
         ACL="bucket-owner-full-control",
     )
+
+    if tags:
+        s3.put_object_tagging(
+            Bucket=bucket,
+            Key=log_key,
+            Tagging={
+                "TagSet": [
+                    {"Key": key, "Value": value}
+                    for key, value in tags.items()
+                    if value is not None
+                ]
+            },
+        )
 
 
 def verify_s3_package(*, s3, logger, bucket, key):
