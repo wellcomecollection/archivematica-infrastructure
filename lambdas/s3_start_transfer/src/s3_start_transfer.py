@@ -118,7 +118,10 @@ def run_transfer(sess, *, bucket, key):
             print(
                 f"Skipping verification for s3://{bucket}/{key}, deflate64-compressed ZIP"
             )
-            accession_number = os.path.basename(os.path.splitext(key)[0])
+            identifiers = {
+                "accession_number": os.path.basename(os.path.splitext(key)[0]),
+                "dc.identifier": None,
+            }
         else:
             print(f"Unable to decompress s3://{bucket}/{key}: {err}")
             return
