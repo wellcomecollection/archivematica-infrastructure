@@ -37,6 +37,7 @@ It then runs a series of checks on the transfer package, e.g.:
 It records a success/fail result by uploading a small log file alongside the original file, which includes instructions if the transfer package is rejected -- so users can diagnose issues without leaving S3.
 
 If it starts a transfer successfully, it tags the S3 object with the transfer ID.
+These tags will be used by the (yet-to-be-written) transfer monitor Lambda to check for Archivematica failures and/or clean up the bucket.
 
 
 
