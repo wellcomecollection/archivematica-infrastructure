@@ -1,7 +1,7 @@
 module "s3_start_transfer_lambda" {
   source     = "./lambda"
   handler    = "s3_start_transfer.main"
-  source_dir = "${path.module}/../../../s3_start_transfer/src"
+  source_dir = "${path.module}/../../../lambdas/s3_start_transfer/src"
 
   description     = "Trigger that starts new Archivematica transfers from an upload to ${var.transfer_source_bucket_name}"
   name            = "archivematica-s3_start_transfer-${var.namespace}"

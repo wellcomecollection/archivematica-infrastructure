@@ -1,7 +1,7 @@
 module "start_test_transfer_lambda" {
   source     = "./lambda"
   handler    = "start_test_transfer.main"
-  source_dir = "${path.module}/../../../start_test_transfer/src"
+  source_dir = "${path.module}/../../../lambdas/start_test_transfer/src"
 
   description     = "Send a test transfer package to Archivematica"
   name            = "archivematica-start_test_transfer-${var.namespace}"
