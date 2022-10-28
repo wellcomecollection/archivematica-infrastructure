@@ -1,8 +1,15 @@
 # s3_start_transfer
 
-This Lambda allows archivists to start processing a transfer package with Archivematica by uploading it to S3.
-
+This Lambda tells Archivematica to process transfer packages which are uploaded to a "transfer source" S3 bucket.
 A transfer package is a zip file containing the files, plus some metadata (including our catalogue reference and/or accession number).
+
+*   For archivists, this means they can start processing a transfer package by uploading it to S3, rather than using the Archivematica dashboard.
+
+*   For the platform team, this means we can do some checks on packages before they're sent to Archivematica (e.g. that the metadata has been supplied correctly).
+
+
+
+## How it works
 
 ```mermaid
 graph TD
