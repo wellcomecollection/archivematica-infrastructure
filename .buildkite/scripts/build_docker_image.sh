@@ -11,4 +11,4 @@ CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" archivematica-apps/$SERVICE_ID)
 docker build \
   --file "$ROOT/archivematica-apps/$SERVICE_ID/Dockerfile" \
   --tag "$SERVICE_ID:$CURRENT_COMMIT" \
-  "$ROOT/dockerfiles/$SERVICE_ID"
+  "$ROOT/archivematica-apps/$SERVICE_ID"
