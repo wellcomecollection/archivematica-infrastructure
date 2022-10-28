@@ -17,13 +17,13 @@ graph TD
     L -->|passes checks| S[trigger Archivematica transfer,<br/>upload 'success' log and<br/>tag S3 object]
     L -->|fails checks| F[upload 'failed' log]
 
-    classDef failedNode fill:#f6b6bd;stroke:#e01b2f
+    classDef failedNode fill:#e01b2f,stroke:#e01b2f,fill-opacity:0.15
     class F failedNode
 
-    classDef successNode fill:#b0f7e2;stroke:#0b7051
+    classDef successNode fill:#b0f7e2,stroke:#0b7051,fill-opacity:0.35
     class S successNode
 
-    classDef genericNode fill:#e8e8e8;stroke:#8f8f8f
+    classDef genericNode fill:#e8e8e8,stroke:#8f8f8f
     class A,L genericNode
 ```
 
