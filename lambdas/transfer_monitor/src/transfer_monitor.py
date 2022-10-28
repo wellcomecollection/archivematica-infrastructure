@@ -44,6 +44,12 @@ def has_matching_bag(*, archivematica_transfer_id, external_identifier, files_in
     endpoint = es_credentials["endpoint"]
     api_key = es_credentials["api_key"]
 
+    # This query looks for the most recently uploaded files that end
+    # with '.xml'; unfortunately there's no way to query the index for
+    # files by a name suffix.
+    #
+    # This may be possible in future, see
+    # https://github.com/wellcomecollection/storage-service/issues/1028
     query = {
         "query": {
             "bool": {
@@ -105,6 +111,19 @@ def get_recent_objects(sess, *, bucket, days):
 
 
 def post_to_slack(*, webhook_url, results, days_to_check, environment):
+    """
+    Send a message to Slack about the results.  Here's an example of
+    the sort of message is sends:
+
+        Here’s what happened in Archivematica in the last 7 days:
+
+        🚨 These packages didn’t get stored successfully:
+        - born-digital/test_package.zip (d5669206-65bb-4e21-9689-d095b4a828c6)
+
+        These packages were stored successfully:
+        - born-digital/test_package2.zip
+
+    """
     if environment == "staging":
         name = "Archivematica (staging)"
     else:
@@ -183,6 +202,8 @@ def main(event, _):
     days_to_check = int(os.environ["DAYS_TO_CHECK"])
     environment = os.environ["ENVIRONMENT"]
 
+    # Categorise all the S3 objects that are tagged with a TransferId
+    # as "succeeded" or "failed".
     results = {"succeeded": [], "failed": []}
 
     for s3_obj in get_recent_objects(sess, bucket=transfer_bucket, days=days_to_check):
@@ -201,6 +222,7 @@ def main(event, _):
         else:
             results["failed"].append(s3_obj)
 
+    # Send a message to Slack with a summary of the report.
     post_to_slack(
         webhook_url=get_secret_string(
             sess, secret_id="archivematica/transfer_monitoring/slack_webhook"
@@ -210,6 +232,9 @@ def main(event, _):
         environment=environment,
     )
 
+    # Once we've reported any successes in Slack, we can trust these were
+    # successfully uploaded to the storage service.  Let's delete the objects
+    # to keep the transfer bucket clean.
     for s3_obj in results["succeeded"]:
         kwargs = {"Bucket": transfer_bucket, "Key": s3_obj["Key"]}
 
