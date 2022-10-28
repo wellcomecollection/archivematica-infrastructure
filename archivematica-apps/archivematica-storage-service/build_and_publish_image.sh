@@ -6,7 +6,7 @@ set -o nounset
 ARCHIVEMATICA_TAG=v0.19.0
 
 ROOT=$(git rev-parse --show-toplevel)
-CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" dockerfiles/archivematica-storage-service)
+CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" archivematica-apps/archivematica-storage-service)
 
 eval $(aws ecr get-login --no-include-email)
 
@@ -20,7 +20,7 @@ pushd $(mktemp -d)
   git checkout "$ARCHIVEMATICA_TAG"
 
   echo "*** Applying overlay files to repository"
-  python3 "$ROOT/dockerfiles/archivematica-storage-service/copy_overlay_files.py"
+  python3 "$ROOT/archivematica-apps/archivematica-storage-service/copy_overlay_files.py"
   git status
 
   echo "*** Building the Docker image"
