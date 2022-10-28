@@ -28,7 +28,7 @@ graph TD
 ```
 
 When a user uploads a package to the "transfer source" S3 bucket, this Lambda is triggered by a bucket notification.
-It then runs a series of checks on the Lambda, e.g.:
+It then runs a series of checks on the transfer package, e.g.:
 
 *   does it have a `metadata.csv` in the right place?
 *   does the `metadata.csv` have the right fields?
