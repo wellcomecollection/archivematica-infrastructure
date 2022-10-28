@@ -1,11 +1,9 @@
 import datetime
 import functools
-import io
 import json
 import os
 from urllib.error import HTTPError
 import urllib.request
-import zipfile
 
 import boto3
 
@@ -65,7 +63,7 @@ def has_matching_bag(*, archivematica_transfer_id, external_identifier, files_in
     }
 
     req = urllib.request.Request(
-        f"{es_credentials['endpoint']}/{files_index}/_search",
+        f"{endpoint}/{files_index}/_search",
         data=json.dumps(query).encode("utf-8"),
         headers={
             "Authorization": f"ApiKey {api_key}",
@@ -162,7 +160,7 @@ def post_to_slack(*, webhook_url, results, days_to_check, environment):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "{warning_emoji} *These packages didn’t get stored successfully:*\n"
+                    "text": f"{warning_emoji} *These packages didn’t get stored successfully:*\n"
                     + "\n".join(
                         f'- {p["Key"]} (`{p["Tags"]["Archivematica-TransferId"]}`)'
                         for p in failed_packages
