@@ -24,8 +24,8 @@ from verify_transfer_packages import (
 )
 
 
-def _write_log(logger, bucket, key, result):
-    s3 = boto3.client("s3")
+def _write_log(sess, logger, bucket, key, result, tags=None):
+    s3 = sess.client("s3")
 
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     log_key = ".".join([key, result, timestamp, "log"])
@@ -43,6 +43,19 @@ def _write_log(logger, bucket, key, result):
         # account (e.g. archivists) can download/clean up the files.
         ACL="bucket-owner-full-control",
     )
+
+    if tags:
+        s3.put_object_tagging(
+            Bucket=bucket,
+            Key=log_key,
+            Tagging={
+                "TagSet": [
+                    {"Key": key, "Value": value}
+                    for key, value in tags.items()
+                    if value is not None
+                ]
+            },
+        )
 
 
 def verify_s3_package(*, s3, logger, bucket, key):
@@ -70,8 +83,8 @@ def verify_s3_package(*, s3, logger, bucket, key):
             raise VerificationFailure("One of the verifications failed!")
 
 
-def get_accession_number(*, s3, logger, bucket, key):
-    print(f"Extracting accession number from s3://{bucket}/{key}")
+def get_identifiers(*, s3, logger, bucket, key):
+    print(f"Extracting accession number and dc.identifier from s3://{bucket}/{key}")
     s3_object = s3.Object(bucket, key)
     s3_file = S3File(s3_object=s3_object)
 
@@ -85,10 +98,13 @@ def get_accession_number(*, s3, logger, bucket, key):
         rows = list(csv_reader)
 
         assert len(rows) == 1
-        return rows[0].get("accession_number")
+        return {
+            "accession_number": rows[0].get("accession_number"),
+            "dc.identifier": rows[0].get("dc.identifier"),
+        }
 
 
-def run_transfer(s3, *, bucket, key):
+def run_transfer(sess, *, bucket, key):
     logger = Logger()
 
     # Run some verifications on the object before we sent it to Archivematica.
@@ -100,13 +116,15 @@ def run_transfer(s3, *, bucket, key):
     # See https://github.com/wellcomecollection/platform/issues/4614
     try:
         try:
-            verify_s3_package(s3=s3, logger=logger, bucket=bucket, key=key)
+            verify_s3_package(
+                s3=sess.resource("s3"), logger=logger, bucket=bucket, key=key
+            )
         except VerificationFailure:
             print(f"Verification error in s3://{bucket}/{key}")
             return
 
-        accession_number = get_accession_number(
-            s3=s3, logger=logger, bucket=bucket, key=key
+        identifiers = get_identifiers(
+            s3=sess.resource("s3"), logger=logger, bucket=bucket, key=key
         )
     except NotImplementedError as err:
         if str(err) in {
@@ -116,7 +134,10 @@ def run_transfer(s3, *, bucket, key):
             print(
                 f"Skipping verification for s3://{bucket}/{key}, deflate64-compressed ZIP"
             )
-            accession_number = os.path.basename(os.path.splitext(key)[0])
+            identifiers = {
+                "accession_number": os.path.basename(os.path.splitext(key)[0]),
+                "dc.identifier": None,
+            }
         else:
             print(f"Unable to decompress s3://{bucket}/{key}: {err}")
             return
@@ -137,24 +158,44 @@ def run_transfer(s3, *, bucket, key):
             name=target_name,
             path=target_path,
             processing_config=processing_config,
-            accession_number=accession_number,
+            accession_number=identifiers["accession_number"],
+        )
+
+        tags = {
+            "Archivematica-TransferId": transfer_id,
+            "Archivematica-ProcessingConfig": processing_config,
+            "Archivematica-AccessionNumber": identifiers["accession_number"],
+            "Archivematica-CatalogueIdentifier": identifiers["dc.identifier"],
+            "Archivematica-TransferStartedAt": dt.datetime.now().isoformat(),
+        }
+
+        sess.client("s3").put_object_tagging(
+            Bucket=bucket,
+            Key=key,
+            Tagging={
+                "TagSet": [
+                    {"Key": key, "Value": value}
+                    for (key, value) in tags.items()
+                    if value is not None
+                ]
+            },
         )
     except Exception as err:
         logger.write(f"Error starting transfer: {err}")
         logger.write("Ask somebody to check the CloudWatch logs for more info")
-        _write_log(logger, bucket=bucket, key=key, result="failed")
+        _write_log(sess, logger, bucket=bucket, key=key, result="failed")
 
         print(f"Error starting transfer for s3://{bucket}/{key}")
     else:
         logger.write("Started successful transfer!")
         logger.write(f"Archivematica transfer ID is {transfer_id}")
-        _write_log(logger, bucket=bucket, key=key, result="success")
+        _write_log(sess, logger, bucket=bucket, key=key, result="success", tags=tags)
 
         print("Started transfer {}".format(transfer_id))
 
 
 def main(event, context=None):
-    s3 = boto3.resource("s3")
+    sess = boto3.Session()
 
     for record in event["Records"]:
         # Get the object from the event and show its content type
@@ -162,7 +203,7 @@ def main(event, context=None):
         key = urllib.parse.unquote_plus(record["s3"]["object"]["key"], encoding="utf-8")
 
         try:
-            run_transfer(s3, bucket=bucket, key=key)
+            run_transfer(sess, bucket=bucket, key=key)
         except Exception:
             print(traceback.format_exc())
             print("Error thrown, skipping to next record...")

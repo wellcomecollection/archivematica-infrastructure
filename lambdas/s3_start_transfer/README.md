@@ -1,6 +1,50 @@
 # s3_start_transfer
 
-This Lambda notices uploads to the `wellcomecollection-archivematica-transfer-source` S3 bucket (and staging equivalent), and calls the Archivematica API to trigger a new transfer.
+This Lambda tells Archivematica to process transfer packages which are uploaded to a "transfer source" S3 bucket.
+A transfer package is a zip file containing the files, plus some metadata (including our catalogue reference and/or accession number).
+
+*   For archivists, this means they can start processing a transfer package by uploading it to S3, rather than using the Archivematica dashboard.
+
+*   For the platform team, this means we can do some checks on packages before they're sent to Archivematica (e.g. that the metadata has been supplied correctly).
+
+
+
+## How it works
+
+```mermaid
+graph TD
+    A[User uploads package<br/>to S3] -->|S3 PutObject notification| L{Lambda checks package<br/>has correct structure<br/>and metadata}
+    L -->|passes checks| S[trigger Archivematica transfer,<br/>upload 'success' log and<br/>tag S3 object]
+    L -->|fails checks| F[upload 'failed' log]
+
+    classDef failedNode fill:#e01b2f,stroke:#e01b2f,fill-opacity:0.15
+    class F failedNode
+
+    classDef successNode fill:#b0f7e2,stroke:#0b7051,fill-opacity:0.35
+    class S successNode
+
+    classDef genericNode fill:#e8e8e8,stroke:#8f8f8f
+    class A,L genericNode
+```
+
+When a user uploads a package to the "transfer source" S3 bucket, this Lambda is triggered by a bucket notification.
+It then runs a series of checks on the transfer package, e.g.:
+
+*   does it have a `metadata.csv` in the right place?
+*   does the `metadata.csv` have the right fields?
+*   is the package structured correctly?
+
+It records a success/fail result by uploading a small log file alongside the original file, which includes instructions if the transfer package is rejected -- so users can diagnose issues without leaving S3.
+
+If it starts a transfer successfully, it tags the S3 object with the transfer ID.
+These tags will be used by the (yet-to-be-written) transfer monitor Lambda to check for Archivematica failures and/or clean up the bucket.
+
+
+
+## Deployment
+
+This Lambda is automatically deployed with the latest version whenever you apply Terraform in `stack_staging` or `stack_prod`.
+
 
 
 ## Running tests
@@ -34,3 +78,5 @@ $ coverage report
 
     We should have two top-level folders configured as transfer sources: `/born-digital` and `/born-digital-accessions`.
     To fix, set up these folders as transfer sources.
+
+    See the bootstrapping docs elsewhere in this repo.
