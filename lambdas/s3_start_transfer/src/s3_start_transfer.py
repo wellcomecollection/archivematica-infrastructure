@@ -24,8 +24,8 @@ from verify_transfer_packages import (
 )
 
 
-def _write_log(logger, bucket, key, result):
-    s3 = boto3.client("s3")
+def _write_log(sess, logger, bucket, key, result, tags=None):
+    s3 = sess.client("s3")
 
     timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     log_key = ".".join([key, result, timestamp, "log"])
@@ -36,6 +36,7 @@ def _write_log(logger, bucket, key, result):
         Bucket=bucket,
         Key=log_key,
         Body=logger.text(),
+        Tagging=[{"Key": key, "Value": value} for key, value in tags.items() if value is not None],
         # The object is uploaded by a Lambda running in the workflow account,
         # but the transfer bucket is owned by the digitisation bucket.
         #
@@ -163,13 +164,13 @@ def run_transfer(sess, *, bucket, key):
     except Exception as err:
         logger.write(f"Error starting transfer: {err}")
         logger.write("Ask somebody to check the CloudWatch logs for more info")
-        _write_log(logger, bucket=bucket, key=key, result="failed")
+        _write_log(sess, logger, bucket=bucket, key=key, result="failed")
 
         print(f"Error starting transfer for s3://{bucket}/{key}")
     else:
         logger.write("Started successful transfer!")
         logger.write(f"Archivematica transfer ID is {transfer_id}")
-        _write_log(logger, bucket=bucket, key=key, result="success")
+        _write_log(sess, logger, bucket=bucket, key=key, result="success", tags=tags)
 
         print("Started transfer {}".format(transfer_id))
 
