@@ -36,11 +36,11 @@ def _write_log(sess, logger, bucket, key, result, tags=None):
         Bucket=bucket,
         Key=log_key,
         Body=logger.text(),
-        Tagging=[
+        Tagging={"TagSet":[
             {"Key": key, "Value": value}
             for key, value in tags.items()
             if value is not None
-        ],
+        ]},
         # The object is uploaded by a Lambda running in the workflow account,
         # but the transfer bucket is owned by the digitisation bucket.
         #
