@@ -36,7 +36,11 @@ def _write_log(sess, logger, bucket, key, result, tags=None):
         Bucket=bucket,
         Key=log_key,
         Body=logger.text(),
-        Tagging=[{"Key": key, "Value": value} for key, value in tags.items() if value is not None],
+        Tagging=[
+            {"Key": key, "Value": value}
+            for key, value in tags.items()
+            if value is not None
+        ],
         # The object is uploaded by a Lambda running in the workflow account,
         # but the transfer bucket is owned by the digitisation bucket.
         #
@@ -104,12 +108,16 @@ def run_transfer(sess, *, bucket, key):
     # See https://github.com/wellcomecollection/platform/issues/4614
     try:
         try:
-            verify_s3_package(s3=sess.resource("s3"), logger=logger, bucket=bucket, key=key)
+            verify_s3_package(
+                s3=sess.resource("s3"), logger=logger, bucket=bucket, key=key
+            )
         except VerificationFailure:
             print(f"Verification error in s3://{bucket}/{key}")
             return
 
-        identifiers = get_identifiers(s3=sess.resource("s3"), logger=logger, bucket=bucket, key=key)
+        identifiers = get_identifiers(
+            s3=sess.resource("s3"), logger=logger, bucket=bucket, key=key
+        )
     except NotImplementedError as err:
         if str(err) in {
             "compression type 9 (deflate64)",
@@ -142,14 +150,14 @@ def run_transfer(sess, *, bucket, key):
             name=target_name,
             path=target_path,
             processing_config=processing_config,
-            accession_number=identifiers['accession_number'],
+            accession_number=identifiers["accession_number"],
         )
 
         tags = {
             "Archivematica-TransferId": transfer_id,
             "Archivematica-ProcessingConfig": processing_config,
-            "Archivematica-AccessionNumber": identifiers['accession_number'],
-            "Archivematica-CatalogueIdentifier": identifiers['dc.identifier'],
+            "Archivematica-AccessionNumber": identifiers["accession_number"],
+            "Archivematica-CatalogueIdentifier": identifiers["dc.identifier"],
             "Archivematica-TransferStartedAt": dt.datetime.now().isoformat(),
         }
 
@@ -162,7 +170,7 @@ def run_transfer(sess, *, bucket, key):
                     for (key, value) in tags.items()
                     if value is not None
                 ]
-            }
+            },
         )
     except Exception as err:
         logger.write(f"Error starting transfer: {err}")
