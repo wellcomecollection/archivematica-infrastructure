@@ -137,15 +137,7 @@ def post_to_slack(*, webhook_url, results, days_to_check, environment):
     else:
         summary = f"Nothing happened in {name} in the last {days_to_check} day{'s' if days_to_check > 1 else ''}."
 
-    blocks = [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": summary,
-            },
-        }
-    ]
+    blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": summary}}]
 
     failed_packages = [p for p in results["failed"] if p["Key"].endswith(".zip")]
 
