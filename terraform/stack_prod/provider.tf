@@ -1,23 +1,22 @@
-provider "aws" {
-  region = var.region
-
-  # Ignore deployment tags on services
-  ignore_tags {
-    keys = ["deployment:label"]
+locals {
+  default_tags = {
+    TerraformConfigurationURL = "https://github.com/wellcomecollection/archivematica-infrastructure/tree/master/terraform/stack_prod"
+    Environment               = "Production"
+    Department                = "Digital Production"
+    Division                  = "Culture and Society"
+    Use                       = "Archivematica"
   }
+}
+
+provider "aws" {
+  region = "eu-west-1"
 
   assume_role {
     role_arn = "arn:aws:iam::299497370133:role/workflow-admin"
   }
 
   default_tags {
-    tags = {
-      TerraformConfigurationURL = "https://github.com/wellcomecollection/archivematica-infrastructure/tree/master/terraform/stack_prod"
-      Environment               = "Production"
-      Department                = "Digital Production"
-      Division                  = "Culture and Society"
-      Use                       = "Archivematica"
-    }
+    tags = local.default_tags
   }
 }
 
@@ -28,6 +27,10 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::404315009621:role/digitisation-admin"
   }
+
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -36,5 +39,9 @@ provider "aws" {
 
   assume_role {
     role_arn = "arn:aws:iam::267269328833:role/wellcomecollection-assume_role_hosted_zone_update"
+  }
+
+  default_tags {
+    tags = local.default_tags
   }
 }
