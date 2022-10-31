@@ -1,3 +1,69 @@
+# docs
+
+## User guides
+
+These are guides on how to **use** Archivematica -- if you want to store born-digital packages.
+
+There are also guides in SharePoint and GitBook.
+
+There are three steps to storing some born-digital files in Archivematica:
+
+1.  [Create a transfer package](howto/create-a-transfer-package.md)
+2.  [Upload a transfer package to S3](howto/upload-a-transfer-package-to-s3.md)
+3.  [Check a transfer package is stored](howto/check-a-transfer-package-is-stored.md)
+
+You can also [download a package from storage service].
+
+If you need to use the Archivematica dashboard, you can:
+
+*   [Log in to the dashboard]
+*   [Follow a package through the dashboard]
+*   [Add or remove users](howto/add-or-remove-users.md)
+
+## Developer guides
+
+Design principles:
+
+*   [How Archivematica is different to our other services](developers/how-archivematica-is-different.md)
+*   [Why do we fork Archivematica? How do our forks work?](developers/archivematica-forks.md)
+
+Reference material:
+
+*   The OAIS model
+*   What are our services?
+*   What are the archivematica services?
+*   [How we handle external identifiers](docs/external-identifiers.md)
+
+How to:
+
+*   [How we run Archivematica](developers/how-we-run-archivematica.md)
+*   [How to deploy new images?]
+*   [troubleshooting](developers/troubleshooting.md)
+*   [Setting up SSO]
+*   [Bootstrapping a new instance of Archivematica](developers/bootstrapping.md)
+*   [End-to-end testing]
+*   [SSH into the Archivematica container hosts](howto/ssh-into-container-hosts.md)
+
+---
+
+
+## Lambda development
+
+The `s3_start_transfer` lambda initiates an Archivematica transfer when a file is uploaded to the watched Archivematica bucket (set up as an S3 transfer source in the Archivematica storage service).
+
+If changes need to be made to the lambda, it can be tested with `make lambda-test` and then republished to s3 as a zipfile with `make lambda-publish`. A redeployment will be necessary so that Terraform can pick up the newly published lambda zipfile and upload it to the lambda service.
+
+## Testing your changes to Archivematica
+
+Once you've deployed a new version of Archivematica, you may want to test your changes by running a transfer package.
+
+1.  In the workflow account, find the Lambda **archivematica-start_test_transfer-staging** (or prod).
+2.  Run this Lambda.
+    This will upload a new package to the Archivematica hot folder.
+3.  Follow the progress of the package on the dashboard at <https://archivematica.wellcomecollection.org/transfer/>
+
+---
+
 # archivematica-infra
 
 These docs are intended for platform developers who are setting up our Archivematica instance or writing new features for Archivematica.
