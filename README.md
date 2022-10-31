@@ -56,11 +56,11 @@ Successfully stored archives are then sent to iiif-builder, which uses the METS 
 
 
 
-Documentation
+## Documentation
 
-We have documentation about the storage service, which includes:
+We have [documentation](./docs) about our Archivematica deployment, which includes:
 
-How-to guides explaining how to do common operations, e.g. ingest a new bag or look up a stored bag
+*   How-to guides explaining how to do common operations, e.g. create a new transfer package
 Reference material explaining how the storage service works
 Notes for developers who want to modify or extend the storage service
 
@@ -92,7 +92,10 @@ We distinguish between two categories of born-digital archive:
 
 ## License
 
-MIT/Archivematica mix.
+This repository includes some code from the Archivematica repository, which is licensed from Artefactual under AGPL v3.0.
+There are separate LICENSE files in the root of trees that contain AGPL code.
+
+The remainder of the repository is released under the MIT license.
 
 
 
@@ -132,6 +135,7 @@ how to:
 *   troubleshooting
 *   setting up SSO
 *   bootstrapping
+*   end-to-end testing
 
 ---
 
