@@ -66,6 +66,17 @@ Notes for developers who want to modify or extend the storage service
 
 
 
+## Repo layout
+
+*   [`archivematica-apps`](./archivematica-apps) – our [forked versions](./docs/developers/archivematica-forks.md) of the core Archivematica apps.
+*   [`azure_ad_login`](./azure_ad_login) – instructions for configuring SSO for Archivematica.
+*   [`born_digital_listener`](./born_digital_listener) – a Lambda that sends notifications of newly-stored born digital material to iiif-builder, so it can build IIIF Presentation manifests.
+*   [`docs`](./docs) – documentation and instructions.
+*   [`lambdas`](./lambdas) – a couple of glue functions that provide additional functionality beyond the core Archivematica apps.
+*   [`terraform`](./terraform) – Terraform configurations for our two deployments of Archivematica in AWS, including databases and services.
+
+
+
 ## Usage
 
 We run two instances of Archivematica at Wellcome:

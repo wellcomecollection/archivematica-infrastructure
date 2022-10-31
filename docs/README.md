@@ -27,47 +27,25 @@ Design principles:
 *   [How Archivematica is different to our other services](developers/how-archivematica-is-different.md)
 *   [Why do we fork Archivematica? How do our forks work?](developers/archivematica-forks.md)
 
-diff to other applications
+Reference material:
 
-reference material:
+*   The OAIS model
+*   What are our services?
+*   What are the archivematica services?
+*   [How we handle external identifiers](docs/external-identifiers.md)
 
-*   the OAIS model
-*   what are our services?
-*   what are the archivematica services?
-*   external identifiers
-*   repo layout
+How to:
 
-how to:
-
-  *   [How we run Archivematica](developers/how-we-run-archivematica.md)
-*   How to deploy new images?
-*   how do forks work?
-*   troubleshooting
-*   setting up SSO
-*   bootstrapping
-*   end-to-end testing
+*   [How we run Archivematica](developers/how-we-run-archivematica.md)
+*   [How to deploy new images?]
+*   [troubleshooting](developers/troubleshooting.md)
+*   [Setting up SSO]
+*   [Bootstrapping a new instance of Archivematica](developers/bootstrapping.md)
+*   [End-to-end testing]
 *   [SSH into the Archivematica container hosts](howto/ssh-into-container-hosts.md)
 
 ---
 
-
-## Our Archivematica repositories
-
-Our Archivematica code is split across three repositories:
-
-*   This repo - infrastructure definitions in Terraform
-*   [wellcomecollection/archivematica](https://github.com/wellcomecollection/archivematica) – a forked version of the Artefactual repo.
-    Originally this fork diverged more substantially from the Artefactual repo when we were adding support for OpenID Connect; at this point the difference is slight and we'll probably switch to using code from upstream.
-*   [wellcomecollection/archivematica-storage-service](https://github.com/wellcomecollection/archivematica-storage-service) – a forked version of the Artefactual repo.
-    This fork adds support for the [Wellcome storage service](https://github.com/wellcomecollection/storage-service) to Archivematica.
-
-## Other documentation
-
-You might find these docs helpful:
-
-*   [Troubleshooting](docs/troubleshooting.md) -- notes on problems we've seen in our deployment, and how to fix them.
-*   [Authentication with Azure AD](docs/authentication.md) -- notes on how staff log in to Archivematica.
-*   [Bootstrapping a stack](docs/bootstrapping.md) -- how we set up a fresh instance of Archivematica.
 
 ## Lambda development
 
