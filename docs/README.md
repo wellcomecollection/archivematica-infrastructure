@@ -131,9 +131,3 @@ If you don't want to wait for Travis, you can deploy a service manually from the
     We should do that automatically.
 
     Tracked by <https://github.com/wellcometrust/platform/issues/3471>
-
-
-## How to
-
-*   [SSH into the Archivematica container hosts](howto/ssh-into-container-hosts.md)
-
