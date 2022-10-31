@@ -22,10 +22,12 @@ If you need to use the Archivematica dashboard, you can:
 
 ## Developer guides
 
-design principles:
+Design principles:
 
-*   why do we have forks? how do forks work? contribute upstream where possible
-*   diff to other applications
+*   [How Archivematica is different to our other services](developers/how-archivematica-is-different.md)
+*   [Why do we fork Archivematica? How do our forks work?](developers/archivematica-forks.md)
+
+diff to other applications
 
 reference material:
 
@@ -37,6 +39,7 @@ reference material:
 
 how to:
 
+  *   [How we run Archivematica](developers/how-we-run-archivematica.md)
 *   How to deploy new images?
 *   how do forks work?
 *   troubleshooting
