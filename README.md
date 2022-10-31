@@ -28,6 +28,8 @@ graph LR
 Archivematica is an open-source application created by [Artefactual].
 We run a lightly modified version that adds support for our storage service.
 
+This repo contains everything that defines our Archivematica deployment.
+
 [our storage service]: https://github.com/wellcomecollection/storage-service
 [METS file]: https://en.wikipedia.org/wiki/Metadata_Encoding_and_Transmission_Standard
 [Artefactual]: https://www.artefactual.com/
