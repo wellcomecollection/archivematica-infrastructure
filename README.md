@@ -56,6 +56,16 @@ Successfully stored archives are then sent to iiif-builder, which uses the METS 
 
 
 
+Documentation
+
+We have documentation about the storage service, which includes:
+
+How-to guides explaining how to do common operations, e.g. ingest a new bag or look up a stored bag
+Reference material explaining how the storage service works
+Notes for developers who want to modify or extend the storage service
+
+
+
 ## Usage
 
 We run two instances of Archivematica at Wellcome:
@@ -78,11 +88,50 @@ We distinguish between two categories of born-digital archive:
 [storage_environments]: https://github.com/wellcomecollection/storage-service#usage
 [accno]: https://en.wikipedia.org/wiki/Accession_number_(cultural_property)
 
-How get archives out? FZP
 
-different to our other applications
 
-contribute upstream where possible
+## License
+
+MIT/Archivematica mix.
+
+
+
+
+## How-to
+
+see also SharePoint docs
+
+*   create a transfer package
+*   Upload a transfer package
+*   Check a package is stored
+*   Download a package from storage service
+
+archivematica dashboard:
+
+*   log in to AM dashboard
+*   following a package
+*   add/remove users
+
+## developer information
+
+design principles:
+
+*   why do we have forks? how do forks work? contribute upstream where possible
+*   diff to other applications
+
+reference material:
+
+*   what are the services?
+*   external identifiers
+*   repo layout
+
+how to:
+
+*   How to deploy new images?
+*   how do forks work?
+*   troubleshooting
+*   setting up SSO
+*   bootstrapping
 
 ---
 
