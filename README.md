@@ -61,8 +61,8 @@ Successfully stored archives are then sent to iiif-builder, which uses the METS 
 We have [documentation](./docs) about our Archivematica deployment, which includes:
 
 *   How-to guides explaining how to do common operations, e.g. create a new transfer package
-Reference material explaining how the storage service works
-Notes for developers who want to modify or extend the storage service
+*   Reference material explaining how the storage service works
+*   Notes for developers who want to modify or extend the storage service
 
 
 
