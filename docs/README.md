@@ -18,7 +18,7 @@ If you need to use the Archivematica dashboard, you can:
 
 *   [Log in to the dashboard]
 *   [Follow a package through the dashboard]
-*   [Add or remove users]
+*   [Add or remove users](howto/add-or-remove-users.md)
 
 ## Developer guides
 
