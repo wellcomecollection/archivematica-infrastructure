@@ -2,6 +2,8 @@
 
 It can be useful to SSH into the Archivematica container hosts for debugging.
 
+There's [an unmaintained script](https://github.com/alexwlchan/pathscripts/blob/ef34c4f4dd32403bade2a304751458fbddd27412/ssh_to_archivematica), or you can follow the instructions below.
+
 The Archivematica container hosts aren't connected directly to the Internet; instead you have to go through the bastion host.
 There are only a handful of EC2 instances in the workflow account:
 

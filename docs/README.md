@@ -1,6 +1,16 @@
-## How-to
+# docs
 
-see also SharePoint docs
+## User guides
+
+These are guides on how to **use** Archivematica -- if you want to store born-digital packages.
+
+There are also guides in SharePoint and GitBook.
+
+There are three steps to storing some born-digital files in Archivematica:
+
+1.  [Create a transfer package](howto/create-a-transfer-package.md)
+
+*   Create a transfer package
 
 *   create a transfer package
 *   Upload a transfer package
@@ -13,7 +23,7 @@ archivematica dashboard:
 *   following a package
 *   add/remove users
 
-## developer information
+## Developer guides
 
 design principles:
 
@@ -22,6 +32,7 @@ design principles:
 
 reference material:
 
+*   the OAIS model
 *   what are our services?
 *   what are the archivematica services?
 *   external identifiers
@@ -35,6 +46,7 @@ how to:
 *   setting up SSO
 *   bootstrapping
 *   end-to-end testing
+*   [SSH into the Archivematica container hosts](howto/ssh-into-container-hosts.md)
 
 ---
 
