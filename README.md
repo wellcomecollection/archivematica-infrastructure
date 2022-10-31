@@ -1,16 +1,38 @@
 # archivematica-infrastructure
 
-[![Build Status](https://travis-ci.org/wellcomecollection/archivematica-infra.svg?branch=main)](https://travis-ci.org/wellcomecollection/archivematica-infra)
+[![Build status](https://badge.buildkite.com/110c72015ef5319e8fbec009b7f3e477ccc7ccab1a732e5194.svg)](https://buildkite.com/wellcomecollection/archivematica-infrastructure)
 
-Archivematica is a service for processing born-digital archives.
+Archivematica is a open-source service for processing born-digital archives.
+This includes:
 
-Users upload a transfer package which contains their files (e.g. a set of catalogued files), which get processed by Archivematica.
-The processing includes file format identification, virus scanning, and checksum creation – and eventually returns a BagIt bag which is uploaded to the [Wellcome storage service](https://github.com/wellcomecollection/storage-service).
+*   Identifying file formats
+*   Scanning for viruses
+*   Adding fixity checksums
 
-<img src="docs/images/high_level_architecture.svg">
+It then creates a BagIt bag, which it sends to [our storage service] for permanent storage.
+The bag includes a [METS file], which can be used by iiif-builder to construct a IIIF Presentation manifest to describe this archive.
 
-We run Archivematica in Docker containers in Amazon ECS.
-This repo contains our Terraform configurations that define our Archivematica deployment.
+```mermaid
+graph LR
+    S[(S3)] -->|transfer package| Ar{Archivematica}
+    Ar -->|BagIt bag| WSS[(Wellcome<br/>storage service)]
+    WSS --> I{IIIF builder}
+
+    classDef archivematicaNode fill:#e9702e,stroke:#e9702e,fill-opacity:0.15
+    class Ar archivematicaNode
+
+    classDef genericNode fill:#e8e8e8,stroke:#8f8f8f
+    class S,WSS,I genericNode
+```
+
+Archivematica is an open-source application created by [Artefactual].
+We run a lightly modified version that adds support for our storage service.
+
+[our storage service]: https://github.com/wellcomecollection/storage-service
+[METS file]: https://en.wikipedia.org/wiki/Metadata_Encoding_and_Transmission_Standard
+[Artefactual]: https://www.artefactual.com/
+
+---
 
 ## Environments
 
