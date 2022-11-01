@@ -30,9 +30,9 @@ Our deployment is designed to:
 
 ```mermaid
 graph LR
-    S[(S3)] -->|transfer package| Ar{Archivematica}
+    S[(S3)] -->|transfer package| Ar[Archivematica]
     Ar -->|BagIt bag| WSS[(Wellcome<br/>storage service)]
-    WSS --> I{IIIF builder}
+    WSS --> I[IIIF builder]
 
     classDef archivematicaNode fill:#e9702e,stroke:#e9702e,fill-opacity:0.15
     class Ar archivematicaNode

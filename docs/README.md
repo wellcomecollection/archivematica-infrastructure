@@ -30,9 +30,9 @@ Design principles:
 Reference material:
 
 *   The OAIS model
+*   [What are the Archivematica apps?](developers/archivematica-apps.md)
 *   What are our services?
-*   What are the archivematica services?
-*   [How we handle external identifiers](docs/external-identifiers.md)
+*   [How we handle external identifiers](developers/external-identifiers.md)
 
 How to:
 
