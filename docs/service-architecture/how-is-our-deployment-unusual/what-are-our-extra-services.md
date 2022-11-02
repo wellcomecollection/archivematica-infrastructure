@@ -2,7 +2,7 @@
 
 We've written several of our own services which sit around Archivematica.
 
-<figure><img src="../.gitbook/assets/Untitled 2 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Untitled 2 (1).png" alt=""><figcaption></figcaption></figure>
 
 The [**s3\_start\_transfer Lambda**](https://github.com/wellcomecollection/archivematica-infrastructure/tree/main/lambdas/s3\_start\_transfer) watches for uploads to the S3 transfer bucket. It checks that new transfer packages are correctly formatted, and if so, it sends them to Archivematica for processing. It uploads a feedback log explaining if the package was accepted.
 

@@ -1,18 +1,20 @@
 # Introduction
 
-Archivematica is an open-source service for processing born-digital archives, which we use to:
+**We use Archivematica to process and store our born-digital archives.**
 
-* Analyse files in the archive – including virus scanning, file format identification, and fixity checking
-* Create a metadata description of the archive that can be read by downstream applications
-* Upload the archive to our permanent cloud storage
+This processing includes:
 
-The original application was created by [Artefactual](https://www.artefactual.com/), and we run a lightly modified fork.
+* Analysing files in the archive, like virus scanning, file format identification, and fixity checking
+* Creating a metadata description of the archive that can be read by downstream applications
+* Uploading the archive to our permanent cloud storage
+
+It's an open-source application created by [Artefactual](https://www.artefactual.com/), and we run a lightly modified fork.
 
 This GitBook space contains information about our Archivematica deployment, including:
 
 * How-to guides explaining how to do common operations, e.g. create a new transfer package
-* Reference material explaining how the storage service works
-* Notes for developers who want to modify or extend the storage service
+* Reference material explaining how Archivematica works
+* Notes for developers who want to modify or extend our Archivematica deployment
 
 It supplements the information in [the first-party Archivematica docs](https://www.archivematica.org/en/), by adding information specific to Wellcome’s deployment.\
 \
@@ -26,7 +28,7 @@ There are also guides in SharePoint and GitBook.
 
 There are three steps to storing some born-digital files in Archivematica:
 
-1. [Create a transfer package](howto/create-a-transfer-package.md)
+1. [Create a transfer package](broken-reference)
 2. [Upload a transfer package to S3](storing-born-digital-files/upload-a-transfer-package-to-s3.md)
 3. [Check a transfer package is stored](storing-born-digital-files/check-a-transfer-package-is-stored.md)
 
@@ -36,31 +38,31 @@ If you need to use the Archivematica dashboard, you can:
 
 * \[Log in to the dashboard]
 * \[Follow a package through the dashboard]
-* [Add or remove users](howto/add-or-remove-users.md)
+* [Add or remove users](administering-archivematica/user-management/add-or-remove-users.md)
 
 ### Developer guides
 
 Design principles:
 
 * [How Archivematica is different to our other services](developers/how-archivematica-is-different.md)
-* [Why do we fork Archivematica? How do our forks work?](developers/archivematica-forks.md)
+* [Why do we fork Archivematica? How do our forks work?](service-architecture/how-is-our-deployment-unusual/archivematica-forks.md)
 
 Reference material:
 
 * The OAIS model
-* [What are the Archivematica apps?](service-architecture/archivematica-apps.md)
+* [What are the Archivematica apps?](service-architecture/how-does-archivematica-work/archivematica-apps.md)
 * What are our services?
-* [How we handle external identifiers](developers/external-identifiers.md)
+* [How we handle external identifiers](service-architecture/how-is-our-deployment-unusual/external-identifiers.md)
 
 How to:
 
 * [How we run Archivematica](broken-reference)
 * \[How to deploy new images?]
-* [troubleshooting](developers/troubleshooting.md)
+* [troubleshooting](broken-reference)
 * \[Setting up SSO]
-* [Bootstrapping a new instance of Archivematica](developers/bootstrapping.md)
+* [Bootstrapping a new instance of Archivematica](administering-archivematica/bootstrapping.md)
 * \[End-to-end testing]
-* [SSH into the Archivematica container hosts](howto/ssh-into-container-hosts.md)
+* [SSH into the Archivematica container hosts](debugging-archivematica/ssh-into-container-hosts.md)
 
 ***
 
