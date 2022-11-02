@@ -1,6 +1,6 @@
 # Table of contents
 
-* [archivematica-infrastructure](README.md)
+* [archivematica-infrastructure](gitbook-README.md)
 * [Archivematica apps](archivematica-apps/README.md)
   * [archivematica](archivematica-apps/archivematica-storage-service/README.md)
   * [archivematica](archivematica-apps/archivematica/README.md)
