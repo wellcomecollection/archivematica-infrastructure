@@ -5,6 +5,8 @@ The Archivematica dashboard is a web app that allows you to monitor the progress
 * prod is [https://archivematica.wellcomecollection.org/](https://archivematica.wellcomecollection.org/)
 * staging is [https://archivematica-stage.wellcomecollection.org/](https://archivematica-stage.wellcomecollection.org/)
 
+If you have access to Archivematica, you should be able to log in using your Azure AD credentials. If not, ask in the #wc-preservation channel in Slack for help logging in.
+
 This is what it looks like:
 
 <figure><img src="../.gitbook/assets/Screenshot 2022-11-02 at 19.05.14.png" alt=""><figcaption></figcaption></figure>
