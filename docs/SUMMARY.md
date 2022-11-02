@@ -13,11 +13,12 @@
   * [Troubleshooting](developers/troubleshooting.md)
 * [howto](howto/README.md)
   * [How to add or remove users](howto/add-or-remove-users.md)
-  * [How to check a transfer package is stored](howto/check-a-transfer-package-is-stored.md)
   * [How to create a transfer package](howto/create-a-transfer-package.md)
   * [SSH into the Archivematica container hosts](howto/ssh-into-container-hosts.md)
-  * [How to upload a transfer package to S3](howto/upload-a-transfer-package-to-s3.md)
 
-## Using Archivematica
+## Storing born-digital files
 
-* [Creating a transfer package](using-archivematica/creating-a-transfer-package.md)
+* [Creating a transfer package](storing-born-digital-files/creating-a-transfer-package.md)
+* [Upload a transfer package to S3](storing-born-digital-files/upload-a-transfer-package-to-s3.md)
+* [Check a package was stored successfully](storing-born-digital-files/check-a-transfer-package-is-stored.md)
+* [Downloading a package from the storage service](storing-born-digital-files/downloading-a-package-from-the-storage-service.md)

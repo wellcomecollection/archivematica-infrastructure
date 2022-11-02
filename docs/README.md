@@ -27,8 +27,8 @@ There are also guides in SharePoint and GitBook.
 There are three steps to storing some born-digital files in Archivematica:
 
 1. [Create a transfer package](howto/create-a-transfer-package.md)
-2. [Upload a transfer package to S3](howto/upload-a-transfer-package-to-s3.md)
-3. [Check a transfer package is stored](howto/check-a-transfer-package-is-stored.md)
+2. [Upload a transfer package to S3](storing-born-digital-files/upload-a-transfer-package-to-s3.md)
+3. [Check a transfer package is stored](storing-born-digital-files/check-a-transfer-package-is-stored.md)
 
 You can also \[download a package from storage service].
 
