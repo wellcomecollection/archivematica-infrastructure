@@ -16,4 +16,4 @@ Archivematica is made up of seven different apps. This is a brief summary of tho
 
 
 
-    <figure><img src="../.gitbook/assets/Untitled 2 (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../.gitbook/assets/Untitled 2 (1) (1).png" alt=""><figcaption></figcaption></figure>

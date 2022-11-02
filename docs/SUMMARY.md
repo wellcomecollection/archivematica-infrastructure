@@ -26,3 +26,4 @@
 * [What are the Archivematica apps?](service-architecture/archivematica-apps.md)
 * [What are our extra services?](service-architecture/what-are-our-extra-services.md)
 * [Unusual aspects of our deployment](service-architecture/unusual-aspects-of-our-deployment.md)
+* [How it fits into the wider platform](service-architecture/how-it-fits-into-the-wider-platform.md)
