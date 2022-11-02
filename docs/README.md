@@ -30,3 +30,5 @@ It should be read in conjunction with [the first-party Archivematica docs](https
 ## Repo
 
 All our Archivematica-related code is in [https://github.com/wellcomecollection/archivematica-infrastructure](https://github.com/wellcomecollection/archivematica-infrastructure)
+
+The READMEs in the repo have instructions for specific procedures, e.g. how to deploy specific applications. This GitBook is more high-level design and troubleshooting information.
