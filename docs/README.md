@@ -14,7 +14,7 @@ This GitBook space contains information about our Archivematica deployment, incl
 
 * How-to guides explaining how to do common operations, e.g. create a new transfer package
 * Reference material explaining how Archivematica works
-* Notes for developers who want to modify or extend our Archivematica deployment
+* Notes for developers who want to administer or debug our Archivematica deployment
 
 It supplements the information in [the first-party Archivematica docs](https://www.archivematica.org/en/), by adding information specific to Wellcome’s deployment.\
 \
