@@ -8,7 +8,7 @@ This processing includes:
 * Creating a metadata description of the archive that can be read by downstream applications
 * Uploading the archive to our permanent cloud storage
 
-Archivematica is an open-source application created by [Artefactual](https://www.artefactual.com/), and we run a lightly modified fork.
+Archivematica is an open-source application created by [Artefactual](https://www.artefactual.com/).
 
 ## Requirements
 
@@ -19,10 +19,10 @@ Archivematica is an open-source application created by [Artefactual](https://www
 
 ## Documentation
 
-This GitBook space contains information about our Archivematica deployment, including:
+This GitBook space is meant for developers at Wellcome Collection to understand how our Archivematica deployment works, so they can debug issues or administer it. This includes:
 
 * How-to guides explaining how to do common operations, e.g. create a new transfer package
 * Reference material explaining how Archivematica works
 * Notes for developers who want to administer or debug our Archivematica deployment
 
-It supplements the information in [the first-party Archivematica docs](https://www.archivematica.org/en/), by adding information specific to Wellcome’s deployment.
+It should be read in conjunction with [the first-party Archivematica docs](https://www.archivematica.org/en/), because those docs mostly contain information specific to Wellcome.
