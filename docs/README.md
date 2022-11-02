@@ -26,3 +26,7 @@ This GitBook space is meant for developers at Wellcome Collection to understand 
 * Notes for developers who want to administer or debug our Archivematica deployment
 
 It should be read in conjunction with [the first-party Archivematica docs](https://www.archivematica.org/en/), because those docs mostly contain information specific to Wellcome.
+
+## Repo
+
+All our Archivematica-related code is in [https://github.com/wellcomecollection/archivematica-infrastructure](https://github.com/wellcomecollection/archivematica-infrastructure)
