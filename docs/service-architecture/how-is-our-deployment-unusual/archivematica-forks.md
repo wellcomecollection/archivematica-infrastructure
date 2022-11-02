@@ -25,7 +25,7 @@ The overlay is designed to balance a few competing concerns:
 
 The overlay is best explained with an example:
 
-![Screenshot of a file tree. There's a folder called "vendor", which contains "src", which contains "archivematicaCommon", which contains "lib", which contains "storageService.artefactual.py" and "storageService.wellcome.py"](../../developers/overlay\_example.png)
+![Screenshot of a file tree. There's a folder called "vendor", which contains "src", which contains "archivematicaCommon", which contains "lib", which contains "storageService.artefactual.py" and "storageService.wellcome.py"](../../../archivematica-apps/archivematica/overlay\_example.png)
 
 This represents a Wellcome-specific version of the file `src/archivematicaCommon/lib/storageService.py` in the core Archivematica repo. When we build the Docker image, these files replace the upstream versions.
 

@@ -2,7 +2,7 @@
 
 Most of our services run as Docker containers in ECS, on Fargate.
 
-We do package the Archivematica apps as Docker containers, but they run on a single EC2 instance with [a shared EBS volume](../how-does-archivematica-work/working-storage-mysql-redis-and-ebs.md#shared-file-system-ebs), not in Fargate.
+We do package the Archivematica apps as Docker containers, but they run on a single EC2 instance with [a shared EBS volume](../../about-our-deployment/working-storage-mysql-redis-and-ebs.md#shared-file-system-ebs), not in Fargate.
 
 This mimics how Archivematica expects to be run: all the services on the same server. We still package the services as Docker containers, orchestrated by ECS, so things behave similar to our other services -- but we're mounting a persistent EBS volume inside the containers to provide the shared file system.
 
