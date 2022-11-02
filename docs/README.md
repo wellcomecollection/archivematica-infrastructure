@@ -19,7 +19,9 @@ Archivematica is an open-source application created by [Artefactual](https://www
 
 ## Documentation
 
-This GitBook space is meant for developers at Wellcome Collection to understand how our Archivematica deployment works, so they can debug issues or administer it. This includes:
+This GitBook space is meant for staff at Wellcome Collection to understand how our Archivematica deployment works, so they can use it, debug issues, and administer our deployment.
+
+This includes:
 
 * How-to guides explaining how to do common operations, e.g. create a new transfer package
 * Reference material explaining how Archivematica works
@@ -31,4 +33,4 @@ It should be read in conjunction with [the first-party Archivematica docs](https
 
 All our Archivematica-related code is in [https://github.com/wellcomecollection/archivematica-infrastructure](https://github.com/wellcomecollection/archivematica-infrastructure)
 
-The READMEs in the repo have instructions for specific procedures, e.g. how to deploy specific applications. This GitBook is more high-level design and troubleshooting information.
+The READMEs in the repo have instructions for specific procedures, e.g. how to deploy specific applications. This GitBook is meant to be a bit higher-level.
