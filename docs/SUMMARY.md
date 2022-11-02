@@ -8,6 +8,7 @@
 * [Upload a transfer package to S3](storing-born-digital-files/upload-a-transfer-package-to-s3.md)
 * [Check a package was stored successfully](storing-born-digital-files/check-a-transfer-package-is-stored.md)
 * [Downloading a package from the storage service](storing-born-digital-files/downloading-a-package-from-the-storage-service.md)
+* [Following a package in the dashboard](storing-born-digital-files/following-a-package-in-the-dashboard.md)
 
 ## Service architecture
 
@@ -29,6 +30,8 @@
 * [User management](administering-archivematica/user-management/README.md)
   * [How to add or remove users](administering-archivematica/user-management/add-or-remove-users.md)
   * [Authentication with Azure AD](administering-archivematica/user-management/authentication.md)
+* [Upgrading to a new version of Archivematica](administering-archivematica/upgrading-to-a-new-version-of-archivematica.md)
+* [Running an end-to-end test](administering-archivematica/running-an-end-to-end-test.md)
 
 ## Debugging Archivematica
 
