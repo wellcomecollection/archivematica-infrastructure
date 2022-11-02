@@ -14,7 +14,7 @@ We use Amazon RDS as our MySQL database.
 
 ## Task manager: Redis/ElastiCache
 
-Archivematica uses a Redis instance to manage in-flight tasks (see [Gearman, ElastiCache, and the MCP server/client](../service-architecture/how-does-archivematica-work/gearman-elasticache-and-the-mcp-server-client.md) for more details).
+Archivematica uses a Redis instance to manage in-flight tasks (see [Gearman, ElastiCache, and the MCP server/client](gearman-elasticache-and-the-mcp-server-client.md) for more details).
 
 We use Amazon ElastiCache as our Redis instance.
 

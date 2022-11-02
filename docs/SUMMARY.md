@@ -27,7 +27,7 @@
 
 * [Using Wellcome catalogue identifiers](about-our-deployment/external-identifiers.md)
 * [Different environments](about-our-deployment/different-environments.md)
-* [Working storage: MySQL, Redis, and EBS](about-our-deployment/working-storage-mysql-redis-and-ebs.md)
+* [Working storage: MySQL, Redis, and EBS](service-architecture/how-does-archivematica-work/working-storage-mysql-redis-and-ebs.md)
 
 ## Administering Archivematica
 

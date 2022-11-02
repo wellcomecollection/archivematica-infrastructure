@@ -33,4 +33,4 @@ It should be read in conjunction with [the first-party Archivematica docs](https
 
 All our Archivematica-related code is in [https://github.com/wellcomecollection/archivematica-infrastructure](https://github.com/wellcomecollection/archivematica-infrastructure)
 
-The READMEs in the repo have instructions for specific procedures, e.g. how to deploy specific applications. This GitBook is meant to be a bit higher-level.
+The READMEs in the repo have instructions for specific procedures, e.g. how to create new Docker images. This GitBook is meant to be a bit higher-level.
