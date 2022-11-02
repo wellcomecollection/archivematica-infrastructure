@@ -48,13 +48,13 @@ Design principles:
 Reference material:
 
 * The OAIS model
-* [What are the Archivematica apps?](developers/archivematica-apps.md)
+* [What are the Archivematica apps?](service-architecture/archivematica-apps.md)
 * What are our services?
 * [How we handle external identifiers](developers/external-identifiers.md)
 
 How to:
 
-* [How we run Archivematica](developers/how-we-run-archivematica.md)
+* [How we run Archivematica](broken-reference)
 * \[How to deploy new images?]
 * [troubleshooting](developers/troubleshooting.md)
 * \[Setting up SSO]
