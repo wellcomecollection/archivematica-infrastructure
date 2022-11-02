@@ -22,8 +22,12 @@
   * [What are our extra services?](service-architecture/how-is-our-deployment-unusual/what-are-our-extra-services.md)
   * [ECS containers on EC2, not Fargate](service-architecture/how-is-our-deployment-unusual/unusual-aspects-of-our-deployment.md)
   * [Why we forked Archivematica](service-architecture/how-is-our-deployment-unusual/archivematica-forks.md)
-  * [Using Wellcome catalogue identifiers](service-architecture/how-is-our-deployment-unusual/external-identifiers.md)
 * [How it fits into the wider platform](service-architecture/how-it-fits-into-the-wider-platform.md)
+
+## About our deployment
+
+* [Using Wellcome catalogue identifiers](about-our-deployment/external-identifiers.md)
+* [Different environments](about-our-deployment/different-environments.md)
 
 ## Administering Archivematica
 
