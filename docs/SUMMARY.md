@@ -1,6 +1,7 @@
 # Table of contents
 
 * [Introduction](README.md)
+* [High-level design](high-level-design.md)
 
 ## Storing born-digital files
 
