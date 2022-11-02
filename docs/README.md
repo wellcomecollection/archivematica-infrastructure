@@ -12,8 +12,6 @@ Archivematica is an open-source application created by [Artefactual](https://www
 
 ## Requirements
 
-Our deployment is intended to:
-
 * Allow archivists to manage our born-digital collections
 * Ensure our born-digital collections are processed consistently and stored safely
 * Provide metadata in a consistent format that we can (eventually) use to display born-digital archives on wellcomecollection.org
