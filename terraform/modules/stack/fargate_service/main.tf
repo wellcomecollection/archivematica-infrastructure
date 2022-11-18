@@ -16,9 +16,6 @@ module "service" {
   cpu    = var.cpu
   memory = var.memory
 
-  deployment_service_env  = var.namespace
-  deployment_service_name = var.name
-
   desired_task_count = var.desired_task_count
 
   launch_type = "FARGATE"
