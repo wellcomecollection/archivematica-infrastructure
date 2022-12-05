@@ -48,6 +48,11 @@ def has_matching_bag(*, archivematica_transfer_id, external_identifier, files_in
     #
     # This may be possible in future, see
     # https://github.com/wellcomecollection/storage-service/issues/1028
+    #
+    # If a transfer package contains lots of XML files, this lookup may
+    # fail because the METS file wasn't in the first 10,000 results.
+    # If that occurs, we should consider scheduling the storage service
+    # work in the ticket above, and
     query = {
         "query": {
             "bool": {
@@ -59,7 +64,7 @@ def has_matching_bag(*, archivematica_transfer_id, external_identifier, files_in
         },
         "_source": ["name"],
         "sort": [{"createdDate": {"order": "desc"}}],
-        "size": 100,
+        "size": 10000,
     }
 
     req = urllib.request.Request(
