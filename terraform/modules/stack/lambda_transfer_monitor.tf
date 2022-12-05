@@ -59,7 +59,7 @@ resource "aws_iam_role_policy" "allow_reading_transfer_monitor_secrets" {
 # in a consistent order.
 
 resource "aws_cloudwatch_event_rule" "every_monday_at_6_15" {
-  name                = "trigger_transfer_monitor"
+  name                = "trigger_transfer_monitor_${var.namespace}"
   schedule_expression = "cron(15 6 ? * MON *)"
 }
 
