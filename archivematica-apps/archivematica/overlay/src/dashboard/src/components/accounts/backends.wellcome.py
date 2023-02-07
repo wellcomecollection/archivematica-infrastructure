@@ -55,6 +55,10 @@ class CustomOIDCBackend(OIDCAuthenticationBackend):
 
         info = {}
 
+        from pprint import pprint
+        pprint(id_info)
+        pprint(access_info)
+
         for oidc_attr, user_attr in settings.OIDC_ACCESS_ATTRIBUTE_MAP.items():
             assert user_attr not in info
             info[user_attr] = access_info[oidc_attr]
