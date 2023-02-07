@@ -50,6 +50,7 @@ class CustomOIDCBackend(OIDCAuthenticationBackend):
         Extract user details from JSON web tokens
         These map to fields on the user field.
         """
+        print(repr(id_token))
         id_info = json.loads(JWS.from_compact(id_token).payload.decode("utf-8"))
         access_info = json.loads(JWS.from_compact(access_token).payload.decode("utf-8"))
 
