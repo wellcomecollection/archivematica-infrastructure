@@ -51,7 +51,8 @@ class CustomOIDCBackend(OIDCAuthenticationBackend):
         These map to fields on the user field.
         """
         print(repr(id_token))
-        id_info = json.loads(JWS.from_compact(id_token).payload.decode("utf-8"))
+        id_info = json.loads(JWS.from_compact(id_token.encode('utf8')).payload.decode("utf-8"))
+        print(repr(access_token))
         access_info = json.loads(JWS.from_compact(access_token).payload.decode("utf-8"))
 
         info = {}
