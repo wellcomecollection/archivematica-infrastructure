@@ -21,3 +21,5 @@ echo "*** Pushing $LOCAL_IMAGE_TAG to $REMOTE_IMAGE_TAG"
 docker tag "$LOCAL_IMAGE_TAG" "$REMOTE_IMAGE_TAG"
 docker push "$REMOTE_IMAGE_TAG"
 docker rmi "$REMOTE_IMAGE_TAG"
+
+buildkite-agent annotate --style info "Published image $LOCAL_IMAGE_TAG"
