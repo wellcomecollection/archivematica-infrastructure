@@ -59,7 +59,7 @@ class CustomOIDCBackend(OIDCAuthenticationBackend):
         pprint(id_info)
         pprint(access_info)
 
-        info['email'] = id_info['upn']
+        info['email'] = access_info['upn']
 
         # for oidc_attr, user_attr in settings.OIDC_ACCESS_ATTRIBUTE_MAP.items():
         #     assert user_attr not in info
