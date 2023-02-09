@@ -58,8 +58,9 @@ def _write_log(sess, logger, bucket, key, result, tags=None):
         )
 
 
-def verify_s3_package(*, s3, logger, bucket, key):
+def verify_s3_package(sess, *, logger, bucket, key):
     print(f"Running verifications on s3://{bucket}/{key}")
+    s3 = sess.resource("s3")
     s3_object = s3.Object(bucket, key)
     s3_file = S3File(s3_object=s3_object)
 
@@ -79,7 +80,7 @@ def verify_s3_package(*, s3, logger, bucket, key):
 
     with zipfile.ZipFile(s3_file) as zf:
         if not verify_package(logger=logger, zip_file=zf, verifications=verifications):
-            _write_log(logger, bucket=bucket, key=key, result="failed")
+            _write_log(sess, logger, bucket=bucket, key=key, result="failed")
             raise VerificationFailure("One of the verifications failed!")
 
 
@@ -117,7 +118,7 @@ def run_transfer(sess, *, bucket, key):
     try:
         try:
             verify_s3_package(
-                s3=sess.resource("s3"), logger=logger, bucket=bucket, key=key
+                sess, logger=logger, bucket=bucket, key=key
             )
         except VerificationFailure:
             print(f"Verification error in s3://{bucket}/{key}")
