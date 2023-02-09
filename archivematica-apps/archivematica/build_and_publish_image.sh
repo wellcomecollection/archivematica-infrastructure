@@ -36,5 +36,5 @@ pushd $(mktemp -d)
 
   docker push "$ECR_IMAGE_TAG"
 
-  buildkite-agent annotate --append --style info "Published image $ARCHIVEMATICA_TAG-$CURRENT_COMMIT\n"
+  buildkite-agent annotate --append --style info "Published image $ARCHIVEMATICA_TAG-$CURRENT_COMMIT<br/>"
 popd
