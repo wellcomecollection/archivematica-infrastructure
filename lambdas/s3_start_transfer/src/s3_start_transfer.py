@@ -117,9 +117,7 @@ def run_transfer(sess, *, bucket, key):
     # See https://github.com/wellcomecollection/platform/issues/4614
     try:
         try:
-            verify_s3_package(
-                sess, logger=logger, bucket=bucket, key=key
-            )
+            verify_s3_package(sess, logger=logger, bucket=bucket, key=key)
         except VerificationFailure:
             print(f"Verification error in s3://{bucket}/{key}")
             return
