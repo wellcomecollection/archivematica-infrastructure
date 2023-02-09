@@ -22,4 +22,4 @@ docker tag "$LOCAL_IMAGE_TAG" "$REMOTE_IMAGE_TAG"
 docker push "$REMOTE_IMAGE_TAG"
 docker rmi "$REMOTE_IMAGE_TAG"
 
-buildkite-agent annotate --append --style info "Published image $LOCAL_IMAGE_TAG"
+buildkite-agent annotate --append --style info "Published image $LOCAL_IMAGE_TAG\n"
