@@ -4,31 +4,27 @@ data "archive_file" "deployment_package" {
   output_path = "${var.name}.zip"
 }
 
-resource "aws_lambda_function" "lambda_function" {
-  description   = var.description
-  function_name = var.name
+module "lambda_function" {
+  source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.1.1"
+
+  description = var.description
+  name        = var.name
 
   filename         = data.archive_file.deployment_package.output_path
   source_code_hash = data.archive_file.deployment_package.output_base64sha256
 
   handler = var.handler
 
-  role    = aws_iam_role.iam_role.arn
   runtime = "python3.8"
   timeout = var.timeout
 
-  environment {
+  environment = {
     variables = var.environment
   }
 
-  dead_letter_config {
+  dead_letter_config = {
     target_arn = aws_sqs_queue.lambda_dlq.arn
   }
-}
-
-resource "aws_iam_role_policy_attachment" "basic_execution_role" {
-  role       = aws_iam_role.iam_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_cloudwatch_metric_alarm" "lambda_alarm" {

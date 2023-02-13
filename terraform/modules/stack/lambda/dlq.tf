@@ -3,7 +3,7 @@ resource "aws_sqs_queue" "lambda_dlq" {
 }
 
 resource "aws_iam_role_policy" "lambda_dlq" {
-  role   = aws_iam_role.iam_role.name
+  role   = module.lambda_function.lambda_role.name
   policy = data.aws_iam_policy_document.lambda_dlq.json
 }
 
