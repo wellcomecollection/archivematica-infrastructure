@@ -21,4 +21,11 @@ resource "aws_elasticache_cluster" "archivematica" {
 
   subnet_group_name  = aws_elasticache_subnet_group.archivematica.name
   security_group_ids = [aws_security_group.interservice.id]
+
+  # For some reason Terraform wants this to alternately be 7.x/7.0,
+  # so just tell it to ignore it.  When we come to upgrade it, we can
+  # remove this `ignore_changes`.
+  lifecycle {
+    ignore_changes = [engine_version]
+  }
 }

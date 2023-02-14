@@ -7,13 +7,19 @@ locals {
 
 resource "aws_s3_bucket" "archivematica_ingests" {
   bucket = local.ingests_bucket_name
+}
 
-  lifecycle_rule {
+resource "aws_s3_bucket_lifecycle_configuration" "archivematica_ingests" {
+  bucket = aws_s3_bucket.archivematica_ingests.id
+
+  rule {
+    id = "expire_after_30_days"
+
     expiration {
       days = "30"
     }
 
-    enabled = true
+    status = "Enabled"
   }
 }
 
