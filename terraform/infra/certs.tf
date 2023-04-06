@@ -1,6 +1,7 @@
-resource "aws_acm_certificate" "cert" {
-  domain_name       = "archivematica.wellcomecollection.org"
-  validation_method = "DNS"
+module "cert" {
+  source = "github.com/wellcomecollection/terraform-aws-acm-certificate?ref=v1.0.0"
+
+  domain_name = "archivematica.wellcomecollection.org"
 
   # The order of these names must match the order in the ACM Console, or Terraform
   # keeps trying to recreate the resource.  I'm not sure why this particular
@@ -11,8 +12,10 @@ resource "aws_acm_certificate" "cert" {
     "archivematica-storage-service.wellcomecollection.org",
   ]
 
-  lifecycle {
-    create_before_destroy = true
+  zone_id = data.aws_route53_zone.zone.id
+
+  providers = {
+    aws.dns = aws.dns
   }
 }
 
@@ -20,35 +23,4 @@ data "aws_route53_zone" "zone" {
   provider = aws.dns
 
   name = "wellcomecollection.org."
-}
-
-resource "aws_route53_record" "cert_validation" {
-  provider = aws.dns
-
-  for_each = {
-    for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
-  name = each.value.name
-  type = each.value.type
-
-  records = [
-    each.value.record
-  ]
-
-  zone_id = data.aws_route53_zone.zone.id
-
-  ttl = 60
-}
-
-resource "aws_acm_certificate_validation" "validation" {
-  certificate_arn = aws_acm_certificate.cert.arn
-
-  validation_record_fqdns = toset([
-    for cv in aws_route53_record.cert_validation : cv.fqdn
-  ])
 }
