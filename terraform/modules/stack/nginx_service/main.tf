@@ -57,7 +57,7 @@ module "service" {
     },
     {
       name      = "staging-data"
-      host_path = "/var/archivematica/storage_service"
+      host_path = "/ebs/var/archivematica/storage_service"
     },
   ]
 
