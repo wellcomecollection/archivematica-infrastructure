@@ -39,16 +39,26 @@ resource "aws_rds_cluster_instance" "archivematica" {
   db_subnet_group_name = aws_db_subnet_group.archivematica.name
   publicly_accessible  = false
 
-  # Note: right-sizing this instance is tricky.  We previously had
-  # a db.r5.large, which has 1000 max connections, but looking in the
-  # RDS metrics we could see most of those were going unused.
+  # Note: right-sizing this instance has been historically tricky.
+  # This is the history of our sizes, and the max connections, which has
+  # traditionally been our limiting factor:
   #
-  # We've downgraded to a smaller instance with 135 max connections
-  # to reduce costs; we may need to step it up again if this turns out
-  # to be too little.  Unfortunately there's nothing between 135 and 1000!
+  #     db.r5.large       1000
+  #     db.t4g.large       135
+  #     db.t4g.medium       90
+  #
+  # In our earliest Archivematica deployments, we needed those 1000 connections
+  # even though they were mostly underused, because there was nothing in
+  # between.  More recently, we've noticed Archivematica using far fewer
+  # connections, and we've reduced this instance size.
+  #
+  # My guess is that newer versions of Archivematica are better at handling
+  # database connections -- it's doing the same work with fewer connections.
+  # The errors are pretty obvious if/when this goes wrong, but noting the
+  # previous settings for context.
   #
   # See https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Managing.Performance.html
-  instance_class = "db.t4g.large"
+  instance_class = "db.t4g.medium"
 
   engine         = aws_rds_cluster.archivematica.engine
   engine_version = aws_rds_cluster.archivematica.engine_version
