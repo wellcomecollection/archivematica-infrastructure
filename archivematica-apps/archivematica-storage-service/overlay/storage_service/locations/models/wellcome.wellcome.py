@@ -559,6 +559,11 @@ class WellcomeStorageService(S3SpaceModelMixin):
                 _("Failed to store package %(path)s") %
                 {'path': src_path})
 
+        # Clean up the package when we're done, regardless of what happened --
+        # it avoids the Archivematica disk filling up, and this can be
+        # rebuilt later.
+        os.unlink(src_path)
+
     class Meta(S3SpaceModelMixin.Meta):
         verbose_name = _("Wellcome Storage Service")
 
