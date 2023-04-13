@@ -16,4 +16,6 @@ module "critical" {
   rds_password = local.rds_password
 
   unpacker_task_role_arn = data.terraform_remote_state.storage_service_staging.outputs.unpacker_task_role_arn
+
+  ebs_volume_size = 100
 }

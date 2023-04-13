@@ -4,9 +4,7 @@ locals {
 
   ebs_name = var.namespace == "prod" ? local.prod_ebs_name : local.alt_ebs_name
 
-  # Don't use as much EBS storage (and cost!) in the staging environment
-  # as in prod.
-  ebs_volume_size = var.namespace == "prod" ? 2000 : 275
+  ebs_volume_size = var.ebs_volume_size
 }
 
 resource "aws_ebs_volume" "ebs" {
