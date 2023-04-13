@@ -7,14 +7,15 @@ At time of writing, we run two Archivematica instances:
 
 These are the steps for creating a new stack.
 
-1. [Create a new ACM certificate (maybe)](bootstrapping.md#step1)
-2. [Create a new Terraform stack](bootstrapping.md#step2)
-3. [Create the Archivematica databases](bootstrapping.md#step3)
-4. [Run the Django database migrations](bootstrapping.md#step4)
-5. [Create initial users](bootstrapping.md#step5)
-6. [Connect to the Wellcome Archival Storage](bootstrapping.md#step6)
-7. [Connect to the transfer source bucket](bootstrapping.md#step7)
-8. [Set up the default processing configuration](bootstrapping.md#step8)
+1. [Create a new ACM certificate (maybe)](#step1)
+2. [Create a new Terraform stack](#step2)
+3. [Create the Archivematica databases](#step3)
+4. [Run the Django database migrations](#step4)
+5. [Create initial users](#step5)
+6. [Connect to the Wellcome Archival Storage](#step6)
+7. [Connect to the transfer source bucket](#step7)
+8. [Configure the local filesystem storage](#step8)
+9. [Set up the default processing configuration](#step9)
 
 ## 1. Create a new ACM certificate (maybe) <a href="#step_1" id="step_1"></a>
 
@@ -160,11 +161,11 @@ This step tells Archivematica how to write to the Wellcome Archival Storage.
 
 Here's what a successfully configured space looks like:
 
-![](../developers/storage\_space.png)
+![](storage_space.png)
 
 and location:
 
-![](../developers/storage\_location.png)
+![](storage_location.png)
 
 ## 7. Connect to the transfer source bucket <a href="#step_7" id="step_7"></a>
 
@@ -195,7 +196,19 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
     You need to create locations for `/born-digital` and `/born-digital-accessions`.
 
-## 8. Set up the default processing configuration <a href="#step_8" id="step_8"></a>
+## 8. Configure the local filesystem storage <a href="#step_8" id="step_8"></a>
+
+1.  Log in to the Archivematica Storage Service (e.g. at [https://archivematica-storage-service.wellcomecollection.org/](https://archivematica-storage-service.wellcomecollection.org/)).
+2.  Select "Spaces" in the top tab bar. The first space should have "Access Protocol: Local Filesystem". Click "Edit Space".
+3.  Select the following options:
+
+    **Path:** `/`
+
+    **Staging path:** `/`
+
+If these are not set, you may get "No space left on device" errors when trying to process larger packages; see [archivematica-infrastructure#128](https://github.com/wellcomecollection/archivematica-infrastructure/issues/128).
+
+## 9. Set up the default processing configuration <a href="#step_9" id="step_9"></a>
 
 1. Log in to the Archivematica Dashboard (e.g. at [https://archivematica.wellcomecollection.org/](https://archivematica.wellcomecollection.org/)).
 2. Select "Administration" in the top tab bar. Select "Processing configuration" in the sidebar.
