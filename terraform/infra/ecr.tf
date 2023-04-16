@@ -1,3 +1,22 @@
+locals {
+  ecr_policy_only_keep_the_last_100_images = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Only keep the last 100 images in a repo"
+        selection = {
+          tagStatus   = "any"
+          countType   = "imageCountMoreThan"
+          countNumber = 100
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+}
+
 resource "aws_ecr_repository" "services" {
   for_each = toset([
     "archivematica-mcp-client",
@@ -9,6 +28,13 @@ resource "aws_ecr_repository" "services" {
   ])
 
   name = "weco/${each.key}"
+}
+
+resource "aws_ecr_lifecycle_policy" "only_keep_the_last_100_images" {
+  for_each = aws_ecr_repository.services
+
+  repository = each.value.name
+  policy     = local.ecr_policy_only_keep_the_last_100_images
 }
 
 resource "aws_ecr_repository" "clamavd" {
