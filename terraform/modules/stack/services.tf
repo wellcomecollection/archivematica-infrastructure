@@ -42,8 +42,8 @@ module "gearman_service" {
     "--redis-port=${var.redis_port}",
   ]
 
-  cpu    = 512
-  memory = 1024
+  cpu    = 256
+  memory = 512
 
   cluster_arn  = aws_ecs_cluster.archivematica.id
   namespace_id = aws_service_discovery_private_dns_namespace.archivematica.id
