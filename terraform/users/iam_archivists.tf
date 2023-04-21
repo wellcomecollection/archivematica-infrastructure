@@ -20,6 +20,14 @@ data "aws_iam_policy_document" "allow_s3_upload" {
   }
 
   statement {
+    actions = ["s3:*"]
+
+    resources = [
+      "arn:aws:s3:::wellcomecollection-born-digital-transfer/*",
+    ]
+  }
+
+  statement {
     actions = [
       "s3:List*",
     ]
