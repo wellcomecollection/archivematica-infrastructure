@@ -171,133 +171,132 @@ def get_wellcome_identifier(src_path, package_uuid, space):
     # Unpack the tar.gz to a temporary directory.  We run tar in a subprocess
     # because it's CPU intensive and we don't want to hang the main Archivematica
     # thread.
-    temp_dir = tempfile.mkdtemp()
+    with tempfile.TemporaryDirectory() as temp_dir:
+        try:
+            subprocess.check_call(
+                ["tar", "-xzf", src_path, "-C", temp_dir],
+                stdout=FNULL,
+                stderr=FNULL
+            )
+        except subprocess.CalledProcessError as err:
+            LOGGER.debug("Error uncompressing tar.gz bag: %r", err)
+            raise NoWellcomeIdentifierFound()
 
-    try:
+        # There should be a single directory in the temporary directory -- the
+        # uncompressed bag.
+        if len(os.listdir(temp_dir)) != 1:
+            LOGGER.debug(
+                "Unable to identify root of bag in: os.listdir(%r) = %r",
+                temp_dir, os.listdir(temp_dir)
+            )
+            raise NoWellcomeIdentifierFound()
+
+        # Inside the bag, we look for the METS.xml file that contains information
+        # about the package.  If we can't find it unambiguously, give up.
+        bag_dir = os.path.join(temp_dir, os.listdir(temp_dir)[0])
+        assert os.path.exists(bag_dir)
+        LOGGER.debug("Expanded bag into directory %s" % bag_dir)
+
+        mets_path = os.path.join(bag_dir, "data/METS.%s.xml" % package_uuid)
+
+        transfer_mets_path = _find_transfer_mets_path(bag_dir)
+
+        if not os.path.isfile(mets_path):
+            LOGGER.warn("Unable to find METS file in bag at path: %r", mets_path)
+            raise NoWellcomeIdentifierFound()
+
+        if not os.path.isfile(transfer_mets_path):
+            LOGGER.warn(
+                "Unable to find transfer METS file in bag at path: %r", transfer_mets_path)
+            raise NoWellcomeIdentifierFound()
+
+        # Try to get some identifiers from the METS files.  We try to use the
+        # Dublin Core identifiers first, if not the accession number, and if
+        # both of those fail we fall back to the package UUID.
+        try:
+            LOGGER.debug("Looking for Dublin-Core identifiers in the METS")
+            wellcome_identifier = WellcomeIdentifier(
+                space=space,
+                external_identifier=get_common_prefix(extract_dc_identifiers(mets_path)),
+                internal_identifier=package_uuid
+            )
+        except NoCommonPrefix as err:
+            LOGGER.debug("No common prefix in the Dublin-Core identifiers")
+            LOGGER.debug("Looking for accession numbers in the transfer METS")
+            try:
+                accession_numbers = list(
+                    extract_accession_identifiers(transfer_mets_path)
+                )
+                LOGGER.debug("Found accession numbers: %r", accession_numbers)
+                external_identifier = get_common_prefix(accession_numbers)
+
+                if not space.endswith("-accessions"):
+                    space = "%s-accessions" % space
+
+                wellcome_identifier = WellcomeIdentifier(
+                    space=space,
+                    external_identifier=external_identifier,
+                    internal_identifier=package_uuid
+                )
+            except NoCommonPrefix:
+                LOGGER.debug("No common prefix in the accession numbers")
+                raise NoWellcomeIdentifierFound()
+
+        # If this is a test package, we divert it to a separate space.  This prefix
+        # for the dc.identifier is deliberately chosen to be one that would never
+        # appear in a real catalogue record.
+        if wellcome_identifier.external_identifier.startswith("archivematica-dev/TEST"):
+            wellcome_identifier = wellcome_identifier.with_space("testing")
+
+        LOGGER.debug("Detected Wellcome identifier as %s", wellcome_identifier)
+
+        # At this point, we've found a common prefix and it's non-empty.
+        # Write it back into the bag, then compress the bag back up under
+        # the original path.
+        #
+        # Recreate the checksums in the manifests, because we've edited
+        # the bag-info.txt.  Note: we run this in a subprocess to avoid
+        # locking up the main thread.
+        script = (
+            "import sys, bagit; "
+            "bag = bagit.Bag(sys.argv[1]); "
+            "bag.info['External-Identifier'] = sys.argv[2]; "
+            "bag.info['Internal-Sender-Identifier'] = sys.argv[3]; "
+            "bag.save(manifests=True)"
+        )
         subprocess.check_call(
-            ["tar", "-xzf", src_path, "-C", temp_dir],
+            [
+                "python",
+                "-c",
+                script,
+                bag_dir,
+                wellcome_identifier.external_identifier,
+                wellcome_identifier.internal_identifier
+            ],
             stdout=FNULL,
             stderr=FNULL
         )
-    except subprocess.CalledProcessError as err:
-        LOGGER.debug("Error uncompressing tar.gz bag: %r", err)
-        raise NoWellcomeIdentifierFound()
 
-    # There should be a single directory in the temporary directory -- the
-    # uncompressed bag.
-    if len(os.listdir(temp_dir)) != 1:
-        LOGGER.debug(
-            "Unable to identify root of bag in: os.listdir(%r) = %r",
-            temp_dir, os.listdir(temp_dir)
-        )
-        raise NoWellcomeIdentifierFound()
-
-    # Inside the bag, we look for the METS.xml file that contains information
-    # about the package.  If we can't find it unambiguously, give up.
-    bag_dir = os.path.join(temp_dir, os.listdir(temp_dir)[0])
-    assert os.path.exists(bag_dir)
-    LOGGER.debug("Expanded bag into directory %s" % bag_dir)
-
-    mets_path = os.path.join(bag_dir, "data/METS.%s.xml" % package_uuid)
-
-    transfer_mets_path = _find_transfer_mets_path(bag_dir)
-
-    if not os.path.isfile(mets_path):
-        LOGGER.warn("Unable to find METS file in bag at path: %r", mets_path)
-        raise NoWellcomeIdentifierFound()
-
-    if not os.path.isfile(transfer_mets_path):
-        LOGGER.warn(
-            "Unable to find transfer METS file in bag at path: %r", transfer_mets_path)
-        raise NoWellcomeIdentifierFound()
-
-    # Try to get some identifiers from the METS files.  We try to use the
-    # Dublin Core identifiers first, if not the accession number, and if
-    # both of those fail we fall back to the package UUID.
-    try:
-        LOGGER.debug("Looking for Dublin-Core identifiers in the METS")
-        wellcome_identifier = WellcomeIdentifier(
-            space=space,
-            external_identifier=get_common_prefix(extract_dc_identifiers(mets_path)),
-            internal_identifier=package_uuid
-        )
-    except NoCommonPrefix as err:
-        LOGGER.debug("No common prefix in the Dublin-Core identifiers")
-        LOGGER.debug("Looking for accession numbers in the transfer METS")
+        # Recompress the bag.  We write it to a temporary path first, so if we
+        # corrupt something, the original tar.gz is preserved.
         try:
-            accession_numbers = list(
-                extract_accession_identifiers(transfer_mets_path)
-            )
-            LOGGER.debug("Found accession numbers: %r", accession_numbers)
-            external_identifier = get_common_prefix(accession_numbers)
+            subprocess.check_call([
+                "tar",
 
-            if not space.endswith("-accessions"):
-                space = "%s-accessions" % space
+                # Compress to /src_path.tmp using gzip compression (-z)
+                "-czvf", src_path + ".tmp",
 
-            wellcome_identifier = WellcomeIdentifier(
-                space=space,
-                external_identifier=external_identifier,
-                internal_identifier=package_uuid
-            )
-        except NoCommonPrefix:
-            LOGGER.debug("No common prefix in the accession numbers")
-            raise NoWellcomeIdentifierFound()
+                # cd into temp_dir first, then compress everything it contains.
+                # This means all the files in the tar.gz are relative, not
+                # absolute paths to /tmp/...
+                "-C", temp_dir, "."
+            ], stdout=FNULL, stderr=FNULL)
+        except subprocess.CalledProcessError as err:
+            LOGGER.debug("Error repacking bag as tar.gz: %r" % err)
 
-    # If this is a test package, we divert it to a separate space.  This prefix
-    # for the dc.identifier is deliberately chosen to be one that would never
-    # appear in a real catalogue record.
-    if wellcome_identifier.external_identifier.startswith("archivematica-dev/TEST"):
-        wellcome_identifier = wellcome_identifier.with_space("testing")
-
-    LOGGER.debug("Detected Wellcome identifier as %s", wellcome_identifier)
-
-    # At this point, we've found a common prefix and it's non-empty.
-    # Write it back into the bag, then compress the bag back up under
-    # the original path.
-    #
-    # Recreate the checksums in the manifests, because we've edited
-    # the bag-info.txt.  Note: we run this in a subprocess to avoid
-    # locking up the main thread.
-    script = (
-        "import sys, bagit; "
-        "bag = bagit.Bag(sys.argv[1]); "
-        "bag.info['External-Identifier'] = sys.argv[2]; "
-        "bag.info['Internal-Sender-Identifier'] = sys.argv[3]; "
-        "bag.save(manifests=True)"
-    )
-    subprocess.check_call(
-        [
-            "python",
-            "-c",
-            script,
-            bag_dir,
-            wellcome_identifier.external_identifier,
-            wellcome_identifier.internal_identifier
-        ],
-        stdout=FNULL,
-        stderr=FNULL
-    )
-
-    # Recompress the bag.  We write it to a temporary path first, so if we
-    # corrupt something, the original tar.gz is preserved.
-    try:
-        subprocess.check_call([
-            "tar",
-
-            # Compress to /src_path.tmp using gzip compression (-z)
-            "-czvf", src_path + ".tmp",
-
-            # cd into temp_dir first, then compress everything it contains.
-            # This means all the files in the tar.gz are relative, not
-            # absolute paths to /tmp/...
-            "-C", temp_dir, "."
-        ], stdout=FNULL, stderr=FNULL)
-    except subprocess.CalledProcessError as err:
-        LOGGER.debug("Error repacking bag as tar.gz: %r" % err)
-
-    # This rename should be atomic.
-    os.rename(src_path + ".tmp", src_path)
-    return wellcome_identifier
+        # This rename should be atomic.
+        os.rename(src_path + ".tmp", src_path)
+        return wellcome_identifier
 
 
 class S3SpaceModelMixin(models.Model):
@@ -559,6 +558,11 @@ class WellcomeStorageService(S3SpaceModelMixin):
             raise StorageException(
                 _("Failed to store package %(path)s") %
                 {'path': src_path})
+
+        # Clean up the package when we're done, regardless of what happened --
+        # it avoids the Archivematica disk filling up, and this can be
+        # rebuilt later.
+        os.unlink(src_path)
 
     class Meta(S3SpaceModelMixin.Meta):
         verbose_name = _("Wellcome Storage Service")

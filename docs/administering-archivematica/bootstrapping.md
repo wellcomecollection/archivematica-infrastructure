@@ -7,14 +7,16 @@ At time of writing, we run two Archivematica instances:
 
 These are the steps for creating a new stack.
 
-1. [Create a new ACM certificate (maybe)](bootstrapping.md#step1)
-2. [Create a new Terraform stack](bootstrapping.md#step2)
-3. [Create the Archivematica databases](bootstrapping.md#step3)
-4. [Run the Django database migrations](bootstrapping.md#step4)
-5. [Create initial users](bootstrapping.md#step5)
-6. [Connect to the Wellcome Archival Storage](bootstrapping.md#step6)
-7. [Connect to the transfer source bucket](bootstrapping.md#step7)
-8. [Set up the default processing configuration](bootstrapping.md#step8)
+1. [Create a new ACM certificate (maybe)](#step1)
+2. [Create a new Terraform stack](#step2)
+3. [Format the EBS volume](#ebs)
+4. [Create the Archivematica databases](#databases)
+5. [Run the Django database migrations](#step4)
+6. [Create initial users](#step5)
+7. [Connect to the Wellcome Archival Storage](#step6)
+8. [Connect to the transfer source bucket](#step7)
+9. [Configure the local filesystem storage](#step8)
+10. [Set up the default processing configuration](#step9)
 
 ## 1. Create a new ACM certificate (maybe) <a href="#step_1" id="step_1"></a>
 
@@ -36,7 +38,48 @@ Each Archivematica instance has two Terraform stacks:
 
 You need to create the critical\_NAME stack first, then stack\_NAME. Make sure to change the config values before you plan/apply!
 
-## 3. Create the Archivematica databases <a href="#step_3" id="step_3"></a>
+## 3. Format the EBS volume <a href="#ebs" id="ebs"></a>
+
+When you first create a Terraform stack, you'll create a large EBS volume -- this is where Archivematica stores any currently-processing packages.
+This volume needs to be formatted before it can be used.
+
+To format the volume:
+
+1.  SSH into the EC2 container host.
+2.  Run the command `df -h`.  You should see output something like:
+
+    ```console
+    $ df -h
+    Filesystem      Size  Used Avail Use% Mounted on
+    devtmpfs         16G     0   16G   0% /dev
+    tmpfs            16G     0   16G   0% /dev/shm
+    tmpfs            16G  1.9M   16G   1% /run
+    tmpfs            16G     0   16G   0% /sys/fs/cgroup
+    /dev/nvme0n1p1   30G   15G   15G  51% /
+    tmpfs           3.1G     0  3.1G   0% /run/user/1000
+    ```
+
+    If you see an entry "Mounted on: `/ebs`" then this task has already been completed, and you can move to creating the Archivematica databases.
+
+3.  Run `sudo bash /format_ebs_volume.sh`, then reboot the instance by running `sudo reboot`.
+
+4.  When the instance has rebooted, SSH back in and run `df -h` again. This time you should see an entry "Mounted on: `/ebs`", for example:
+
+    ```console
+    $ df -h
+    Filesystem      Size  Used Avail Use% Mounted on
+    devtmpfs         16G     0   16G   0% /dev
+    tmpfs            16G     0   16G   0% /dev/shm
+    tmpfs            16G  1.9M   16G   1% /run
+    tmpfs            16G     0   16G   0% /sys/fs/cgroup
+    /dev/nvme0n1p1   30G   15G   15G  51% /
+    /dev/nvme1n1    246G  320K  234G   1% /ebs
+    tmpfs           3.1G     0  3.1G   0% /run/user/1000
+    ```
+
+    This means the volume has been successfully formatted and mounted.
+
+## 4. Create the Archivematica databases <a href="#databases" id="databases"></a>
 
 When you first create your Archivematica stack, you'll notice that none of the tasks stay up for very long. If you look in the logs, you'll see them crashing with this error:
 
@@ -67,7 +110,7 @@ To fix this:
     CREATE DATABASE MCP;
     ```
 
-## 4. Run the Django database migrations <a href="#step_4" id="step_4"></a>
+## 5. Run the Django database migrations <a href="#step_4" id="step_4"></a>
 
 Once the databases have been created, we need to run Django migrations.
 
@@ -87,7 +130,7 @@ To fix this:
     docker exec -it $(docker ps | grep storage-service | grep app | awk '{print $1}') python /src/storage_service/manage.py migrate
     ```
 
-## 5. Create initial users <a href="#step_5" id="step_5"></a>
+## 6. Create initial users <a href="#step_5" id="step_5"></a>
 
 When you see the dashboard and storage service are both running (you get a login page if you visit their URLs), you can create the initial users.
 
@@ -121,7 +164,7 @@ docker exec -it $(docker ps | grep dashboard | grep app | awk '{print $1}') \
     --site-url="DASHBOARD_HOSTNAME"
 ```
 
-## 6. Connect to the Wellcome Archival Storage <a href="#step_6" id="step_6"></a>
+## 7. Connect to the Wellcome Archival Storage <a href="#step_6" id="step_6"></a>
 
 This step tells Archivematica how to write to the Wellcome Archival Storage.
 
@@ -160,13 +203,13 @@ This step tells Archivematica how to write to the Wellcome Archival Storage.
 
 Here's what a successfully configured space looks like:
 
-![](../developers/storage\_space.png)
+![](storage_space.png)
 
 and location:
 
-![](../developers/storage\_location.png)
+![](storage_location.png)
 
-## 7. Connect to the transfer source bucket <a href="#step_7" id="step_7"></a>
+## 8. Connect to the transfer source bucket <a href="#step_7" id="step_7"></a>
 
 This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
@@ -195,7 +238,19 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
     You need to create locations for `/born-digital` and `/born-digital-accessions`.
 
-## 8. Set up the default processing configuration <a href="#step_8" id="step_8"></a>
+## 9. Configure the local filesystem storage <a href="#step_8" id="step_8"></a>
+
+1.  Log in to the Archivematica Storage Service (e.g. at [https://archivematica-storage-service.wellcomecollection.org/](https://archivematica-storage-service.wellcomecollection.org/)).
+2.  Select "Spaces" in the top tab bar. The first space should have "Access Protocol: Local Filesystem". Click "Edit Space".
+3.  Select the following options:
+
+    **Path:** `/`
+
+    **Staging path:** `/`
+
+If these are not set, you may get "No space left on device" errors when trying to process larger packages; see [archivematica-infrastructure#128](https://github.com/wellcomecollection/archivematica-infrastructure/issues/128).
+
+## 10. Set up the default processing configuration <a href="#step_9" id="step_9"></a>
 
 1. Log in to the Archivematica Dashboard (e.g. at [https://archivematica.wellcomecollection.org/](https://archivematica.wellcomecollection.org/)).
 2. Select "Administration" in the top tab bar. Select "Processing configuration" in the sidebar.
