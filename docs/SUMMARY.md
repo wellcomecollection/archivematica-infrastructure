@@ -40,6 +40,7 @@
 
 ## Debugging Archivematica
 
+* [Where to find application logs](debugging-archivematica/where-to-find-application-logs.md)
 * [Troubleshooting known errors](debugging-archivematica/troubleshooting-known-errors/README.md)
   * [Timeout waiting for network interface provisioning to complete](debugging-archivematica/troubleshooting-known-errors/troubleshooting.md)
   * [401 Unauthorized when the s3\_start\_transfer Lambda tries to run](debugging-archivematica/troubleshooting-known-errors/troubleshooting-1.md)
