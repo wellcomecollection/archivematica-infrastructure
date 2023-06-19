@@ -6,11 +6,10 @@ resource "aws_iam_role_policy" "storage_service_task_role_policy" {
 data "aws_iam_policy_document" "storage_service_aws_permissions" {
   statement {
     actions = [
-      "s3:Put*",
+      "s3:PutObject",
     ]
 
     resources = [
-      var.ingests_bucket_arn,
       "${var.ingests_bucket_arn}/*",
     ]
   }
