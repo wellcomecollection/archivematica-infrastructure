@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "allow_instance_scaling" {
 }
 
 resource "aws_iam_role_policy" "allow_instance_scaling" {
-  role = aws_iam_role.scheduler.name
+  role   = aws_iam_role.scheduler.name
   policy = data.aws_iam_policy_document.allow_instance_scaling.json
 }
 
