@@ -33,6 +33,11 @@ data "aws_iam_policy_document" "allow_instance_scaling" {
   }
 }
 
+resource "aws_iam_role_policy" "allow_instance_scaling" {
+  role = aws_iam_role.scheduler.name
+  policy = data.aws_iam_policy_document.allow_instance_scaling.json
+}
+
 resource "aws_scheduler_schedule" "instances_scale_up" {
   name       = "archivematica-instances-scale-up"
   group_name = "default"
@@ -63,14 +68,14 @@ resource "aws_scheduler_schedule" "instances_scale_down" {
   }
 
   # Run it each Monday
-  schedule_expression = "cron(0 18 ? * MON,TUE,WED,THUR,FRI *)"
+  schedule_expression = "cron(0 * ? * MON,TUE,WED,THUR,FRI *)"
 
   target {
     arn      = "arn:aws:scheduler:::aws-sdk:ec2:stopInstances"
     role_arn = aws_iam_role.scheduler.arn
 
     input = jsonencode({
-      InstanceIds = module.stack.ec2_instance_arns
+      InstanceIds = module.stack.ec2_instance_ids
     })
   }
 }
