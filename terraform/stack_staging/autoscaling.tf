@@ -68,7 +68,7 @@ resource "aws_scheduler_schedule" "instances_scale_down" {
   }
 
   # Run it each Monday
-  schedule_expression = "cron(0 * ? * MON,TUE,WED,THUR,FRI *)"
+  schedule_expression = "cron(0 18 ? * MON,TUE,WED,THUR,FRI *)"
 
   target {
     arn      = "arn:aws:scheduler:::aws-sdk:ec2:stopInstances"
