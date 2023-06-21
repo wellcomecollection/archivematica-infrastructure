@@ -54,7 +54,7 @@ resource "aws_scheduler_schedule" "instances_scale_up" {
     role_arn = aws_iam_role.scheduler.arn
 
     input = jsonencode({
-      InstanceIds = module.stack.ec2_instance_arns
+      InstanceIds = module.stack.ec2_instance_ids
     })
   }
 }
