@@ -80,3 +80,8 @@ variable "deployment_minimum_healthy_percent" {
 variable "deployment_maximum_percent" {
   type = number
 }
+
+variable "turn_off_outside_office_hours" {
+  type    = bool
+  default = false
+}

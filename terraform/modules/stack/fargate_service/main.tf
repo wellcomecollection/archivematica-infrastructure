@@ -32,6 +32,8 @@ module "service" {
 
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
+
+  turn_off_outside_office_hours = true
 }
 
 module "app_container" {
