@@ -5,7 +5,7 @@
 # pretty expensive.  By my estimate, this will save ~$350/mo.
 
 resource "aws_iam_role" "scheduler" {
-  name               = "archivematica-instance-scheduler"
+  name               = "archivematica-${var.namespace}-instance-scheduler"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "allow_instance_scaling" {
       "ec2:stopInstances",
     ]
 
-    resources = module.stack.ec2_instance_arns
+    resources = module.cluster.ec2_instance_arns
   }
 }
 
@@ -39,7 +39,7 @@ resource "aws_iam_role_policy" "allow_instance_scaling" {
 }
 
 resource "aws_scheduler_schedule" "instances_scale_up" {
-  name       = "archivematica-instances-scale-up"
+  name       = "archivematica-${var.namespace}-instances-scale-up"
   group_name = "default"
 
   flexible_time_window {
@@ -47,20 +47,20 @@ resource "aws_scheduler_schedule" "instances_scale_up" {
   }
 
   # Run it each Monday
-  schedule_expression = "cron(0 8 ? * MON,TUE,WED,THUR,FRI *)"
+  schedule_expression = "cron(0 7 ? * MON,TUE,WED,THUR,FRI *)"
 
   target {
     arn      = "arn:aws:scheduler:::aws-sdk:ec2:startInstances"
     role_arn = aws_iam_role.scheduler.arn
 
     input = jsonencode({
-      InstanceIds = module.stack.ec2_instance_ids
+      InstanceIds = module.cluster.ec2_instance_ids
     })
   }
 }
 
 resource "aws_scheduler_schedule" "instances_scale_down" {
-  name       = "archivematica-instances-scale-down"
+  name       = "archivematica-${var.namespace}-instances-scale-down"
   group_name = "default"
 
   flexible_time_window {
@@ -68,14 +68,14 @@ resource "aws_scheduler_schedule" "instances_scale_down" {
   }
 
   # Run it each Monday
-  schedule_expression = "cron(0 18 ? * MON,TUE,WED,THUR,FRI *)"
+  schedule_expression = "cron(0 19 ? * MON,TUE,WED,THUR,FRI *)"
 
   target {
     arn      = "arn:aws:scheduler:::aws-sdk:ec2:stopInstances"
     role_arn = aws_iam_role.scheduler.arn
 
     input = jsonencode({
-      InstanceIds = module.stack.ec2_instance_ids
+      InstanceIds = module.cluster.ec2_instance_ids
     })
   }
 }
