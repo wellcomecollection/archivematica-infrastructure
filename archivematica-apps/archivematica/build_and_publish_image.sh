@@ -3,7 +3,7 @@
 set -o errexit
 set -o nounset
 
-ARCHIVEMATICA_TAG=v1.13.2
+ARCHIVEMATICA_TAG=v1.14.1
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
