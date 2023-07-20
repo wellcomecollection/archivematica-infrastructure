@@ -26,7 +26,7 @@ if __name__ == "__main__":
         lambda: {"artefactual": None, "wellcome": None}
     )
 
-    for fp in get_file_paths_under(overlay_dir):
+    for fp in sorted(get_file_paths_under(overlay_dir)):
         base_path = fp.replace(".artefactual", "").replace(".wellcome", "")
 
         if ".artefactual" in fp:
