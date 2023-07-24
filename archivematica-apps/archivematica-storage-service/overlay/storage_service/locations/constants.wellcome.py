@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from . import forms
 from . import models
 
@@ -88,6 +86,11 @@ PROTOCOL = {
             "assume_rsync_daemon",
             "rsync_password",
         ],
+    },
+    models.Space.RCLONE: {
+        "model": models.RClone,
+        "form": forms.RCloneForm,
+        "fields": ["remote_name", "container"],
     },
     models.Space.SWIFT: {
         "model": models.Swift,

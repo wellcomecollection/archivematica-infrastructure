@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Restore using await_for_async in storageService.py
 
@@ -15,23 +14,19 @@ but unless we can speed up the storage service this is unlikely.
 That commit refers to Artefactual issue #780, we should watch that also.
 
 """
-from __future__ import absolute_import
-
 import logging
 import os
 import platform
 import time
+import urllib
 
-from django.conf import settings as django_settings
+import archivematicaFunctions as am
 import requests
+from common_metrics import ss_api_timer
+from django.conf import settings as django_settings
 from requests.auth import AuthBase
-from six.moves import map
-import six.moves.urllib as urllib
-import six
 
 # archivematicaCommon
-import archivematicaFunctions as am
-from common_metrics import ss_api_timer
 
 
 LOGGER = logging.getLogger("archivematica.common")
@@ -62,7 +57,7 @@ class ApiKeyAuth(AuthBase):
         self.apikey = apikey or am.get_setting("storage_service_apikey", None)
 
     def __call__(self, r):
-        r.headers["Authorization"] = "ApiKey {0}:{1}".format(self.username, self.apikey)
+        r.headers["Authorization"] = f"ApiKey {self.username}:{self.apikey}"
         return r
 
 
@@ -85,11 +80,11 @@ def _storage_api_session(timeout=django_settings.STORAGE_SERVICE_CLIENT_QUICK_TI
     class HTTPAdapterWithTimeout(requests.adapters.HTTPAdapter):
         def __init__(self, timeout=None, *args, **kwargs):
             self.timeout = timeout
-            super(HTTPAdapterWithTimeout, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def send(self, *args, **kwargs):
             kwargs["timeout"] = self.timeout
-            return super(HTTPAdapterWithTimeout, self).send(*args, **kwargs)
+            return super().send(*args, **kwargs)
 
     session = requests.session()
     session.auth = ApiKeyAuth()
@@ -133,7 +128,7 @@ def create_pipeline(
 ):
     pipeline = {
         "uuid": am.get_setting("dashboard_uuid"),
-        "description": "Archivematica on {}".format(platform.node()),
+        "description": f"Archivematica on {platform.node()}",
         "create_default_locations": create_default_locations,
         "shared_path": shared_path,
         "api_username": api_username,
@@ -224,9 +219,7 @@ def get_first_location(**kwargs):
     except IndexError:
         # No locations were found.  Catch the IndexError from the .[0] lookup,
         # and show a more helpful error in the logs.
-        kwargs_string = ", ".join(
-            "%s=%r" % (key, value) for (key, value) in kwargs.items()
-        )
+        kwargs_string = ", ".join(f"{key}={value!r}" for (key, value) in kwargs.items())
         raise ResourceNotFound(
             "No locations found for %s.  Please check your storage service config."
             % kwargs_string
@@ -274,7 +267,7 @@ def location_description_from_slug(aip_location_slug):
 
 
 def get_default_location(purpose):
-    url = _storage_service_url() + "location/default/{}".format(purpose)
+    url = _storage_service_url() + f"location/default/{purpose}"
     with ss_api_timer(function="get_default_location"):
         response = _storage_api_session().get(url)
     response.raise_for_status()
@@ -373,10 +366,10 @@ def copy_files(source_location, destination_location, files):
     # string.
     for file_ in move_files["files"]:
         try:
-            file_["source"] = six.ensure_str(file_["source"])
+            file_["source"] = str(file_["source"])
         except UnicodeDecodeError:
             try:
-                file_["source"] = six.ensure_str(file_["source"], encoding="latin-1")
+                file_["source"] = str(file_["source"], encoding="latin-1")
             except UnicodeError:
                 pass
 
@@ -555,7 +548,7 @@ def extract_file_url(file_uuid, relative_path):
 
 
 def extract_file(uuid, relative_path, save_path):
-    """ Fetches `relative_path` from package with `uuid` and saves to `save_path`. """
+    """Fetches `relative_path` from package with `uuid` and saves to `save_path`."""
     url = _storage_service_url() + "file/" + uuid + "/extract_file/"
     params = {"relative_path_to_file": relative_path}
     with ss_api_timer(function="extract_file"):
@@ -610,7 +603,7 @@ def request_reingest(package_uuid, reingest_type, processing_config):
 
 
 def request_file_deletion(uuid, user_id, user_email, reason_for_deletion):
-    """ Returns the server response. """
+    """Returns the server response."""
 
     api_request = {
         "event_reason": reason_for_deletion,
@@ -639,7 +632,7 @@ def get_file_metadata(**kwargs):
     with ss_api_timer(function="get_file_metadata"):
         response = _storage_api_slow_session().get(url, params=kwargs)
     if 400 <= response.status_code < 500:
-        raise ResourceNotFound("No file found for arguments: {}".format(kwargs))
+        raise ResourceNotFound(f"No file found for arguments: {kwargs}")
     return response.json()
 
 
@@ -662,7 +655,7 @@ def index_backlogged_transfer_contents(transfer_uuid, file_set):
     with ss_api_timer(function="index_backlogged_transfer_contents"):
         response = _storage_api_slow_session().put(url, json=file_set)
     if 400 <= response.status_code < 500:
-        raise Error("Unable to add files to transfer: {}".format(response.text))
+        raise Error(f"Unable to add files to transfer: {response.text}")
 
 
 def reindex_file(transfer_uuid):
@@ -679,7 +672,7 @@ def download_package(package_uuid, download_directory):
     amclient.directory = download_directory
     local_filename = amclient.download_package(package_uuid)
     if local_filename is None:
-        raise Error("Unable to download package {}".format(local_filename))
+        raise Error(f"Unable to download package {local_filename}")
     return local_filename
 
 
@@ -704,7 +697,7 @@ def filter_packages(
     """
     if pipeline_uuid is None:
         pipeline_uuid = am.get_dashboard_uuid()
-    origin_pipeline = "/api/v2/pipeline/{}/".format(pipeline_uuid)
+    origin_pipeline = f"/api/v2/pipeline/{pipeline_uuid}/"
 
     if filter_replicas:
         return [

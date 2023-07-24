@@ -3,11 +3,17 @@
 set -o errexit
 set -o nounset
 
-ARCHIVEMATICA_TAG=v1.13.2
+if (( $# != 1 ))
+then
+  echo "Usage: $0 <SERVICE>" >&2
+  exit 1
+fi
+
+ARCHIVEMATICA_TAG=v1.14.1
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
-CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" archivematica-apps/archivematica)
+CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" $ROOT/archivematica-apps/archivematica)
 
 eval $(aws ecr get-login --no-include-email)
 

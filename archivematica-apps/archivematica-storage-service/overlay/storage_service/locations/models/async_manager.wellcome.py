@@ -10,7 +10,6 @@
 # with the tasks we're responsible for.  And when expiring old entries from the
 # database, it doesn't matter if another AsyncManager does our job for us.
 
-from __future__ import absolute_import
 import datetime
 import logging
 import threading
@@ -19,8 +18,8 @@ import traceback
 
 from django.utils import timezone
 
-from .asynchronous import Async  # noqa
 from .. import metrics
+from .asynchronous import Async  # noqa
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ MAX_TASK_AGE_SECONDS = datetime.timedelta(seconds=86400)
 WATCHDOG_POLL_SECONDS = 5
 
 
-class RunningTask(object):
+class RunningTask:
     def __init__(self):
         self.async_id = None
         self.thread = None
@@ -49,7 +48,7 @@ class RunningTask(object):
         self.error = None
 
 
-class AsyncManager(object):
+class AsyncManager:
     running_tasks = []
     lock = threading.Lock()
 
