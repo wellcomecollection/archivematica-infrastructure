@@ -37,6 +37,7 @@
   * [Authentication with Azure AD](administering-archivematica/user-management/authentication.md)
 * [Upgrading to a new version of Archivematica](administering-archivematica/upgrading-to-a-new-version-of-archivematica.md)
 * [Running an end-to-end test](administering-archivematica/running-an-end-to-end-test.md)
+* [Clearing old transfers from the dashboard](administering-archivematica/clearing-old-transfers-from-the-dashboard.md)
 
 ## Debugging Archivematica
 
@@ -47,5 +48,7 @@
   * ["pull access denied" when running containers (and other ECS agent issues)](debugging-archivematica/troubleshooting-known-errors/troubleshooting-2.md)
   * ["Unauthorized for url" when logging in](debugging-archivematica/troubleshooting-known-errors/troubleshooting-3.md)
   * ["gearman.errors.ExceededConnectionAttempts: Exceeded 1 connection attempt(s)" in MCP server](debugging-archivematica/troubleshooting-known-errors/exceeded-gearman-connection-attempts.md)
+  * [NotADirectoryError in the Extract zipped transfer stage](debugging-archivematica/not-a-directory-in-the-extract-zipped-transfer-stage.md)
+
 * [Restarting services if a task is stuck](debugging-archivematica/restarting-services-if-a-task-is-stuck.md)
 * [SSH into the Archivematica container hosts](debugging-archivematica/ssh-into-container-hosts.md)
