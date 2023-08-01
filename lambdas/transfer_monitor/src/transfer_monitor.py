@@ -194,7 +194,7 @@ def post_to_slack(*, webhook_url, results, days_to_check, environment):
         raise Exception(f"{err} - {err.read()}")
 
 
-def main(event, _):
+def run_transfer_lambda():
     sess = boto3.Session()
 
     transfer_bucket = os.environ["TRANSFER_BUCKET"]
@@ -207,6 +207,7 @@ def main(event, _):
     results = {"succeeded": [], "failed": []}
 
     for s3_obj in get_recent_objects(sess, bucket=transfer_bucket, days=days_to_check):
+        print(f"Inspecting {s3_obj['Key']}")
         if "Archivematica-TransferId" not in s3_obj["Tags"]:
             continue
 
@@ -244,3 +245,11 @@ def main(event, _):
             pass
 
         sess.client("s3").delete_object(**kwargs)
+
+
+def main(event, _):
+    run_transfer_lambda()
+
+
+if __name__ == '__main__':
+    run_transfer_lambda()

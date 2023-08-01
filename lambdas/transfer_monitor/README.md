@@ -12,6 +12,16 @@ It uses the tags written by the [s3_start_transfer Lambda](../s3_start_transfer)
 
 
 
+## Testing the Lambda locally
+
+You can test the Lambda by running it locally with the `run_lambda.sh` script, for example:
+
+```
+bash run_lambda.sh prod
+```
+
+
+
 ## Deployment
 
 This Lambda is automatically deployed with the latest version whenever you apply Terraform in `stack_staging` or `stack_prod`.
