@@ -3,6 +3,11 @@ module "stack" {
 
   namespace = "staging"
 
+  # Normally we turn off the Archivematica services outside working hours,
+  # but we've temporarily disabled this while Artefactual are doing testing
+  # with our Archivematica instance as part of a3m testing.
+  turn_off_outside_office_hours = false
+
   redis_server = data.terraform_remote_state.critical.outputs.redis_server
   redis_port   = data.terraform_remote_state.critical.outputs.redis_port
 
