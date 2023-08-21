@@ -33,7 +33,7 @@ module "service" {
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
 
-  turn_off_outside_office_hours = true
+  turn_off_outside_office_hours = var.turn_off_outside_office_hours
 }
 
 module "app_container" {

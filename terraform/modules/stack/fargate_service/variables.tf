@@ -38,3 +38,7 @@ variable "command" {
   default = null
   type    = list(string)
 }
+
+variable "turn_off_outside_office_hours" {
+  type = bool
+}

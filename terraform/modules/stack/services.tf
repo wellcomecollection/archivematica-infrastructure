@@ -53,6 +53,8 @@ module "gearman_service" {
   interservice_security_group_id   = var.interservice_security_group_id
   service_egress_security_group_id = var.service_egress_security_group_id
   service_lb_security_group_id     = var.service_lb_security_group_id
+
+  turn_off_outside_office_hours = var.turn_off_outside_office_hours
 }
 
 module "fits_service" {
@@ -112,6 +114,8 @@ module "clamav_service" {
   interservice_security_group_id   = var.interservice_security_group_id
   service_egress_security_group_id = var.service_egress_security_group_id
   service_lb_security_group_id     = var.service_lb_security_group_id
+
+  turn_off_outside_office_hours = var.turn_off_outside_office_hours
 }
 
 module "mcp_server_service" {

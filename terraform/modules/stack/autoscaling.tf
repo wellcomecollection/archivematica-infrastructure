@@ -5,6 +5,8 @@
 # pretty expensive.  By my estimate, this will save ~$350/mo.
 
 resource "aws_iam_role" "scheduler" {
+  count = var.turn_off_outside_office_hours ? 1 : 0
+
   name               = "archivematica-${var.namespace}-instance-scheduler"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
@@ -34,11 +36,15 @@ data "aws_iam_policy_document" "allow_instance_scaling" {
 }
 
 resource "aws_iam_role_policy" "allow_instance_scaling" {
-  role   = aws_iam_role.scheduler.name
+  count = var.turn_off_outside_office_hours ? 1 : 0
+
+  role   = aws_iam_role.scheduler[0].name
   policy = data.aws_iam_policy_document.allow_instance_scaling.json
 }
 
 resource "aws_scheduler_schedule" "instances_scale_up" {
+  count = var.turn_off_outside_office_hours ? 1 : 0
+
   name       = "archivematica-${var.namespace}-instances-scale-up"
   group_name = "default"
 
@@ -51,7 +57,7 @@ resource "aws_scheduler_schedule" "instances_scale_up" {
 
   target {
     arn      = "arn:aws:scheduler:::aws-sdk:ec2:startInstances"
-    role_arn = aws_iam_role.scheduler.arn
+    role_arn = aws_iam_role.scheduler[0].arn
 
     input = jsonencode({
       InstanceIds = module.cluster.ec2_instance_ids
@@ -60,6 +66,8 @@ resource "aws_scheduler_schedule" "instances_scale_up" {
 }
 
 resource "aws_scheduler_schedule" "instances_scale_down" {
+  count = var.turn_off_outside_office_hours ? 1 : 0
+
   name       = "archivematica-${var.namespace}-instances-scale-down"
   group_name = "default"
 
@@ -72,7 +80,7 @@ resource "aws_scheduler_schedule" "instances_scale_down" {
 
   target {
     arn      = "arn:aws:scheduler:::aws-sdk:ec2:stopInstances"
-    role_arn = aws_iam_role.scheduler.arn
+    role_arn = aws_iam_role.scheduler[0].arn
 
     input = jsonencode({
       InstanceIds = module.cluster.ec2_instance_ids

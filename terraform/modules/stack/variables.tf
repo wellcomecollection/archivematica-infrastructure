@@ -69,3 +69,8 @@ variable "aws_region" {
 
 variable "azure_tenant_id" {}
 variable "oidc_client_id" {}
+
+variable "turn_off_outside_office_hours" {
+  default = true
+  type    = bool
+}
