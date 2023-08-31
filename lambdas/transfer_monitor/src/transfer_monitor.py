@@ -98,7 +98,6 @@ def get_recent_objects(sess, *, bucket, days):
 
     for page in paginator.paginate(Bucket=bucket):
         for s3_obj in page["Contents"]:
-
             # Vanilla Python can only create offset-naive datetimes, whereas
             # the S3 API returns a UTC datetime which is offset-aware.  Trying
             # to compare the two gives an error:

@@ -14,8 +14,10 @@ docker run --tty --rm \
 	"public.ecr.aws/hashicorp/terraform:light" fmt -recursive
 
 docker run --tty --rm \
-	--volume "$ROOT:/repo" \
-	"$ECR_REGISTRY/wellcome/format_python:112"
+  --volume "$ROOT":/repo \
+  --workdir /repo \
+  760097843905.dkr.ecr.eu-west-1.amazonaws.com/pyfound/black \
+  black --exclude ".lambda_zips/|.terraform/|target/" .
 
 # We don't want to autoformat files which are copied out of an Artefactual
 # repo; it would muddy the diffs.
