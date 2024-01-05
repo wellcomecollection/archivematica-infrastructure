@@ -15,7 +15,10 @@ SERVICE="$1"
 ROOT=$(git rev-parse --show-toplevel)
 CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" $ROOT/archivematica-apps/archivematica)
 
-eval $(aws ecr get-login --no-include-email)
+aws ecr get-login-password \
+| docker login \
+    --username AWS \
+    --password-stdin 299497370133.dkr.ecr.eu-west-1.amazonaws.com
 
 pushd $(mktemp -d)
 
