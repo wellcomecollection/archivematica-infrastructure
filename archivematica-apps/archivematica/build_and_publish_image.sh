@@ -41,7 +41,7 @@ pushd $(mktemp -d)
   echo "*** Pushing to ECR"
 
   ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$CURRENT_COMMIT"
-  docker tag "hack_archivematica-$SERVICE" "$ECR_IMAGE_TAG"
+  docker tag "hack-archivematica-$SERVICE" "$ECR_IMAGE_TAG"
 
   docker push "$ECR_IMAGE_TAG"
 
