@@ -12,7 +12,10 @@ CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" archivematica-apps/$SERVICE_ID)
 ROOT=$(git rev-parse --show-toplevel)
 
 echo "*** Logging in to ECR Private"
-eval $(aws ecr get-login --no-include-email --registry-ids "$ACCOUNT_ID")
+aws ecr get-login-password \
+| docker login \
+    --username AWS \
+    --password-stdin 299497370133.dkr.ecr.eu-west-1.amazonaws.com
 
 LOCAL_IMAGE_TAG="$SERVICE_ID:$CURRENT_COMMIT"
 REMOTE_IMAGE_TAG="$ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/weco/$LOCAL_IMAGE_TAG"

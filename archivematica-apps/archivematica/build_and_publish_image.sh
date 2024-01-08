@@ -15,7 +15,10 @@ SERVICE="$1"
 ROOT=$(git rev-parse --show-toplevel)
 CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" $ROOT/archivematica-apps/archivematica)
 
-eval $(aws ecr get-login --no-include-email)
+aws ecr get-login-password \
+| docker login \
+    --username AWS \
+    --password-stdin 299497370133.dkr.ecr.eu-west-1.amazonaws.com
 
 pushd $(mktemp -d)
 
@@ -38,7 +41,7 @@ pushd $(mktemp -d)
   echo "*** Pushing to ECR"
 
   ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$CURRENT_COMMIT"
-  docker tag "hack_archivematica-$SERVICE" "$ECR_IMAGE_TAG"
+  docker tag "hack-archivematica-$SERVICE" "$ECR_IMAGE_TAG"
 
   docker push "$ECR_IMAGE_TAG"
 
