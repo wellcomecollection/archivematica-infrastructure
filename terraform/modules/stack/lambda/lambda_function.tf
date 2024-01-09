@@ -15,8 +15,8 @@ module "lambda_function" {
 
   handler = var.handler
 
-  runtime = "python3.10"
-  timeout = var.timeout
+  runtime     = "python3.10"
+  timeout     = var.timeout
   memory_size = var.memory_size
 
   environment = {
