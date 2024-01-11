@@ -1,4 +1,4 @@
-FROM clamav/clamav:0.105
+FROM clamav/clamav:1.2
 
 RUN sed -i 's/^Foreground .*$/Foreground true/g' /etc/clamav/clamd.conf && \
     echo "TCPSocket 3310" >> /etc/clamav/clamd.conf && \
