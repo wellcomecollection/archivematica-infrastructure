@@ -19,7 +19,7 @@ locals {
     mcp_client         = "v1.14.1-3abac53f15ab2a9ae60f79f68e0ef0c9eb81191c"
     mcp_server         = "v1.14.1-3abac53f15ab2a9ae60f79f68e0ef0c9eb81191c"
     am_storage_service = "v0.20.1-1b8e2c65aff6913122a7de72bc9027f36cf68129"
-    clamavd            = "120f7da2bd3a1377974ae1f5523711694d1ba11c"
+    clamavd            = "f60df7b65fe0e405d89191053f7196a1769e4ccf"
     nginx              = "120f7da2bd3a1377974ae1f5523711694d1ba11c"
   }
 }
