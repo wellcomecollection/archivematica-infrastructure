@@ -6,6 +6,7 @@ There's [an unmaintained script](https://github.com/alexwlchan/pathscripts/blob/
 
 The Archivematica container hosts aren't connected directly to the Internet; instead you have to go through the bastion host. There are only a handful of EC2 instances in the workflow account:
 
+
 Steps:
 
 1. Download the `wellcomedigitalworkflow` SSH key from Secrets Manager in the platform account.
@@ -24,6 +25,7 @@ Steps:
 5. Find the DNS names of the instances:
    * the public DNS name of the bastion instance
    * the private DNS name of the container instance
+
 6.  SSH through the instances. I feel like there's probably a way to do this a single tunneling command, but I find it easier to move keys around:
 
     ```shell
@@ -37,3 +39,10 @@ Steps:
     # (on the bastion)
     ssh -i key_on_bastion ec2-user@CONTAINER_HOST
     ```
+
+## Interesting locations on the file system
+
+If you are trying to fix an issue with failing ingests, you may wish to look at these locations:
+
+- `/ebs/pipeline-data/`: The folders containing "processing storage" for archivematica (including `currentlyProcessing`)
+- `/ebs/var/archivematica/storage_service/`: The archivematica-storage-service working storage
