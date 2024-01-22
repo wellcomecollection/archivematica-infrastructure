@@ -28,10 +28,10 @@ Steps:
 
     ```shell
     # Upload the SSH key to the bastion instance
-    scp -i key_on_local ec2-user@BASTION_HOST:key_on_bastion
+    scp -i key_on_local key_on_local ec2-user@BASTION_HOST:key_on_bastion
 
     # SSH into the bastion instance
-    ssh -i key_on_local ec2-user@BASTION_HOST
+    ssh -i key_on_local key_on_local ec2-user@BASTION_HOST
 
     # SSH from the bastion instance into the private instance
     # (on the bastion)
