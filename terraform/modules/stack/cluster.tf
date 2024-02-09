@@ -22,4 +22,6 @@ module "cluster" {
   #
   # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI
   instance_type = "c5.4xlarge"
+
+  container_host_ami = var.container_host_ami
 }

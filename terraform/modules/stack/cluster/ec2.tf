@@ -14,6 +14,7 @@ module "container_host" {
   instance_type = var.instance_type
 
   ebs_volume_id = var.ebs_volume_id
+  container_host_ami = var.container_host_ami
 }
 
 module "bastion_host" {

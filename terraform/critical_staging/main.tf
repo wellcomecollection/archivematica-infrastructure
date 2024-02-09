@@ -9,7 +9,6 @@ module "critical" {
   }
 
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets
-
   vpc_id = data.terraform_remote_state.workflow.outputs.vpc_id
 
   rds_username = local.rds_username
