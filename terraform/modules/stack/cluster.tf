@@ -24,4 +24,5 @@ module "cluster" {
   instance_type = "c5.4xlarge"
 
   container_host_ami = var.container_host_ami
+  bastion_host_ami = var.bastion_host_ami
 }

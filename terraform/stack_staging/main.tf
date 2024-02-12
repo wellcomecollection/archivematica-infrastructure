@@ -1,13 +1,18 @@
-locals {
-    collection-ecs-optimised-x86-image = "amazon-linux-2-ecs-collection-x86*"
-}
-
 data "aws_ami" "container_host_ami" {
   most_recent = true
   owners      = ["self"]
   filter {
     name   = "name"
-    values = [local.collection-ecs-optimised-x86-image ]
+    values = ["weco-amzn2-ecs-optimised-hvm-x86_64*"]
+  }
+}
+
+data "aws_ami" "bastion_host_ami" {
+  most_recent = true
+  owners      = ["self"]
+  filter {
+    name   = "name"
+    values = ["weco-amzn2-hvm-x86_64*"]
   }
 }
 
@@ -66,6 +71,7 @@ module "stack" {
   service_lb_security_group_id     = data.terraform_remote_state.workflow.outputs.service_lb_security_group_id
 
   container_host_ami = data.aws_ami.container_host_ami.image_id
+  bastion_host_ami = data.aws_ami.bastion_host_ami.image_id
 
   admin_cidr_ingress = local.admin_cidr_ingress
 

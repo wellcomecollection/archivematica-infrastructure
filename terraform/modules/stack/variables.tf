@@ -78,7 +78,9 @@ variable "turn_off_outside_office_hours" {
 variable "container_host_ami" {
   description = "The AMI to use for the container host"
   type = string
-  # TODO: Remove this default once we have switched to looking up by name
-  default = "ami-0851c53aff84212c3"
 }
 
+variable "bastion_host_ami" {
+  description = "The AMI to use for the bastion host"
+  type = string
+}

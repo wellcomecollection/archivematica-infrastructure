@@ -30,11 +30,9 @@ variable "instance_type" {
   description = "AWS instance type"
 }
 
-variable "image_id" {
-  description = "ID of the AMI to use on the instances"
-
-  # Amazon Linux AMI
-  default = "ami-9cbe9be5"
+variable "bastion_host_ami" {
+  description = "The AMI to use for the bastion host"
+  type = string
 }
 
 variable "user_data" {

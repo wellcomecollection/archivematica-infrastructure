@@ -28,4 +28,6 @@ module "bastion_host" {
 
   key_name    = var.key_name
   subnet_list = var.public_subnets
+  bastion_host_ami = var.bastion_host_ami
+
 }
