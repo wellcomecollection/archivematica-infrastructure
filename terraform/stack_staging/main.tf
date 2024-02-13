@@ -71,7 +71,7 @@ module "stack" {
   service_lb_security_group_id     = data.terraform_remote_state.workflow.outputs.service_lb_security_group_id
 
   container_host_ami = data.aws_ami.container_host_ami.image_id
-  bastion_host_ami = data.aws_ami.bastion_host_ami.image_id
+  bastion_host_ami   = data.aws_ami.bastion_host_ami.image_id
 
   admin_cidr_ingress = local.admin_cidr_ingress
 

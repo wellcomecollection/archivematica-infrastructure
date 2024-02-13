@@ -32,7 +32,7 @@ variable "instance_type" {
 
 variable "bastion_host_ami" {
   description = "The AMI to use for the bastion host"
-  type = string
+  type        = string
 }
 
 variable "user_data" {
