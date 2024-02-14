@@ -13,7 +13,8 @@ module "container_host" {
 
   instance_type = var.instance_type
 
-  ebs_volume_id = var.ebs_volume_id
+  ebs_volume_id      = var.ebs_volume_id
+  container_host_ami = var.container_host_ami
 }
 
 module "bastion_host" {
@@ -25,6 +26,8 @@ module "bastion_host" {
 
   controlled_access_cidr_ingress = var.controlled_access_cidr_ingress
 
-  key_name    = var.key_name
-  subnet_list = var.public_subnets
+  key_name         = var.key_name
+  subnet_list      = var.public_subnets
+  bastion_host_ami = var.bastion_host_ami
+
 }

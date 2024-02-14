@@ -5,7 +5,7 @@ resource "aws_volume_attachment" "ebs" {
 }
 
 resource "aws_instance" "container_host" {
-  ami = "ami-0851c53aff84212c3"
+  ami = var.container_host_ami
 
   instance_type = var.instance_type
 
