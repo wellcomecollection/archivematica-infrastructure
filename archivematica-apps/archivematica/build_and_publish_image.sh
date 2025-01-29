@@ -9,7 +9,7 @@ then
   exit 1
 fi
 
-ARCHIVEMATICA_TAG=v1.14.1
+ARCHIVEMATICA_TAG=v1.17.0
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
@@ -41,7 +41,7 @@ pushd $(mktemp -d)
   echo "*** Pushing to ECR"
 
   ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$CURRENT_COMMIT"
-  docker tag "hack-archivematica-$SERVICE" "$ECR_IMAGE_TAG"
+  docker tag "am-archivematica-$SERVICE" "$ECR_IMAGE_TAG"
 
   docker push "$ECR_IMAGE_TAG"
 
