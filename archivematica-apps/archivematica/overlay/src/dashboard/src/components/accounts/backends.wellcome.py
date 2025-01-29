@@ -2,6 +2,7 @@ import json
 
 from components.helpers import generate_api_key
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django_auth_ldap.backend import LDAPBackend
 from django_cas_ng.backends import CASBackend
 from josepy.jws import JWS
@@ -42,14 +43,60 @@ class CustomOIDCBackend(OIDCAuthenticationBackend):
     Provide OpenID Connect authentication
     """
 
+    def get_settings(self, attr, *args):
+        if attr in [
+            "OIDC_RP_CLIENT_ID",
+            "OIDC_RP_CLIENT_SECRET",
+            "OIDC_OP_AUTHORIZATION_ENDPOINT",
+            "OIDC_OP_TOKEN_ENDPOINT",
+            "OIDC_OP_USER_ENDPOINT",
+            "OIDC_OP_JWKS_ENDPOINT",
+            "OIDC_OP_LOGOUT_ENDPOINT",
+        ]:
+            # Retrieve the request object stored in the instance.
+            request = getattr(self, "request", None)
+
+            if request:
+                provider_name = request.session.get("providername")
+
+                if provider_name and provider_name in settings.OIDC_PROVIDERS:
+                    provider_settings = settings.OIDC_PROVIDERS.get(provider_name, {})
+                    value = provider_settings.get(attr)
+
+                    if value is None:
+                        raise ImproperlyConfigured(
+                            f"Setting {attr} for provider {provider_name} not found"
+                        )
+                    return value
+
+        # If request is None or provider_name session var is not set or attr is
+        # not in the list, call the superclass's get_settings method.
+        return OIDCAuthenticationBackend.get_settings(attr, *args)
+
+    def authenticate(self, request, **kwargs):
+        self.request = request
+        self.OIDC_RP_CLIENT_ID = self.get_settings("OIDC_RP_CLIENT_ID")
+        self.OIDC_RP_CLIENT_SECRET = self.get_settings("OIDC_RP_CLIENT_SECRET")
+        self.OIDC_OP_TOKEN_ENDPOINT = self.get_settings("OIDC_OP_TOKEN_ENDPOINT")
+        self.OIDC_OP_USER_ENDPOINT = self.get_settings("OIDC_OP_USER_ENDPOINT")
+        self.OIDC_OP_JWKS_ENDPOINT = self.get_settings("OIDC_OP_JWKS_ENDPOINT")
+
+        return super().authenticate(request, **kwargs)
+
     def get_userinfo(self, access_token, id_token, verified_id):
         """
         Extract user details from JSON web tokens
         These map to fields on the user field.
         """
-        access_info = json.loads(JWS.from_compact(access_token.encode('utf8')).payload.decode("utf-8"))
 
-        info = {'email': access_info['upn']}
+        def decode_token(token):
+            sig = JWS.from_compact(token.encode("utf-8"))
+            payload = sig.payload.decode("utf-8")
+            return json.loads(payload)
+
+        access_info = decode_token(access_token)
+
+        info = {"email": access_info["upn"]}
 
         return info
 
@@ -63,7 +110,7 @@ class CustomOIDCBackend(OIDCAuthenticationBackend):
         #
         # Using `get_or_create_user()` instead of `create_user()` means we
         # can control the creation of users with `OIDC_CREATE_USER`.
-        user = super(CustomOIDCBackend, self).get_or_create_user(user_info)
+        user = super().get_or_create_user(user_info)
 
         if user is not None:
             for attr, value in user_info.items():

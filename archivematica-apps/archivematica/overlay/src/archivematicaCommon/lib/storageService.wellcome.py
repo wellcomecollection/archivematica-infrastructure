@@ -14,6 +14,7 @@ but unless we can speed up the storage service this is unlikely.
 That commit refers to Artefactual issue #780, we should watch that also.
 
 """
+
 import logging
 import os
 import platform
@@ -25,9 +26,6 @@ import requests
 from common_metrics import ss_api_timer
 from django.conf import settings as django_settings
 from requests.auth import AuthBase
-
-# archivematicaCommon
-
 
 LOGGER = logging.getLogger("archivematica.common")
 
@@ -303,7 +301,6 @@ def wait_for_async(response):
     This function may raise exceptions. The caller can expect them to be
     instances of ``requests.exceptions.RequestException``.
     """
-    min_poll_seconds = 2
     poll_timeout_seconds = 600
 
     response.raise_for_status()
@@ -313,7 +310,9 @@ def wait_for_async(response):
     #
     # There's a better way of constructing this but it works and there are
     # other issues I want to fix.
-    poll_url = (_storage_service_url().replace('/api/v2', '/') + response.headers["Location"]).replace('///', '/')
+    poll_url = (
+        _storage_service_url().replace("/api/v2", "/") + response.headers["Location"]
+    ).replace("///", "/")
 
     # We'll enter this loop while waiting for the Wellcome storage to store
     # a package.  This isn't a fast process, so treat it as an exponential backoff.
@@ -323,7 +322,8 @@ def wait_for_async(response):
     while True:
         LOGGER.info(
             "Polling for response at %s; if not completed will wait %d seconds",
-            poll_url, poll_seconds
+            poll_url,
+            poll_seconds,
         )
         poll_response = _storage_api_session(timeout=poll_timeout_seconds).get(poll_url)
         poll_response.raise_for_status()
@@ -373,9 +373,12 @@ def copy_files(source_location, destination_location, files):
             except UnicodeError:
                 pass
 
-    url = _storage_service_url() + "location/" + destination_location["uuid"] + "/async/"
+    url = (
+        _storage_service_url() + "location/" + destination_location["uuid"] + "/async/"
+    )
     try:
-        response = _storage_api_session().post(url, json=move_files)
+        with ss_api_timer(function="copy_files"):
+            response = _storage_api_session().post(url, json=move_files)
         return (wait_for_async(response), None)
     except requests.exceptions.RequestException as e:
         LOGGER.warning("Unable to move files with %s because %s", move_files, e)
@@ -468,7 +471,8 @@ def create_file(
         try:
             session = _storage_api_session()
             url = _storage_service_url() + "file/async/"
-            response = session.post(url, json=new_file, allow_redirects=False)
+            with ss_api_timer(function="create_file"):
+                response = session.post(url, json=new_file, allow_redirects=False)
             ret = wait_for_async(response)
         except requests.exceptions.RequestException as err:
             LOGGER.warning(errmsg, new_file, err)
@@ -526,9 +530,7 @@ def download_file_url(file_uuid):
     """
     storage_service_url = _storage_service_url()
     params = _storage_api_params()
-    download_url = "{base_url}file/{uuid}/download/?{params}".format(
-        base_url=storage_service_url, uuid=file_uuid, params=params
-    )
+    download_url = f"{storage_service_url}file/{file_uuid}/download/?{params}"
     return download_url
 
 
@@ -538,12 +540,7 @@ def extract_file_url(file_uuid, relative_path):
     """
     storage_service_url = _storage_service_url()
     api_params = _storage_api_params()
-    download_url = "{base_url}file/{uuid}/extract_file/?relative_path_to_file={path}&{params}".format(
-        base_url=storage_service_url,
-        uuid=file_uuid,
-        path=relative_path,
-        params=api_params,
-    )
+    download_url = f"{storage_service_url}file/{file_uuid}/extract_file/?relative_path_to_file={relative_path}&{api_params}"
     return download_url
 
 
@@ -566,9 +563,7 @@ def pointer_file_url(file_uuid):
     """
     storage_service_url = _storage_service_url()
     params = _storage_api_params()
-    download_url = "{base_url}file/{uuid}/pointer_file/?{params}".format(
-        base_url=storage_service_url, uuid=file_uuid, params=params
-    )
+    download_url = f"{storage_service_url}file/{file_uuid}/pointer_file/?{params}"
     return download_url
 
 
@@ -739,8 +734,6 @@ def retrieve_storage_location_description(aip_location_slug, logger=None):
         location_description = response.get(KEY_PATH, "")
     if logger:
         logger.info(
-            "Storage location retrieved: {} ({})".format(
-                location_description, aip_location_slug
-            )
+            f"Storage location retrieved: {location_description} ({aip_location_slug})"
         )
     return location_description
