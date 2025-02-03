@@ -29,7 +29,7 @@ We use two metadata files in our transfer packages:
     ```
 
     In both cases, the CSV only ever has `objects/` as the filename.
-* `rights.csv`, [which contains the rights information](https://app.gitbook.com/o/-LumfFcEMKx4gYXKAZTQ/s/ZZCA7ig38ZIKLAnLhUp8/)
+* `rights.csv`, [which contains the rights information](https://app.gitbook.com/o/-LumfFcEMKx4gYXKAZTQ/s/ZZCA7ig38ZIKLAnLhUp8/) \[[https://github.com/wellcomecollection/archivematica-infrastructure/issues/113](https://github.com/wellcomecollection/archivematica-infrastructure/issues/113)]
 
 ## Compressing the package
 
