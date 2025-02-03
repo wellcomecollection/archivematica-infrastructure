@@ -4,7 +4,7 @@ A **transfer package** is a zip file containing the born-digital files you want 
 
 The files can be in any structure, including folders and subfolders.
 
-![An example transfer package. There's a folder called "transfer\_package", which contains three images and a folder called "metadata". The metadata folder contains a single file, metadata.csv.](../howto/transfer\_package.png)
+![An example transfer package. There's a folder called "transfer\_package", which contains three images and a folder called "metadata". The metadata folder contains a single file, metadata.csv.](../howto/transfer_package.png)
 
 The metadata files **must** be stored in a top-level folder called `metadata`.
 
@@ -29,17 +29,15 @@ We use two metadata files in our transfer packages:
     ```
 
     In both cases, the CSV only ever has `objects/` as the filename.
-*   `rights.csv`, which contains the rights information.
-
-    \[**TODO:** Document how this file is structured. See [https://github.com/wellcomecollection/archivematica-infrastructure/issues/113](https://github.com/wellcomecollection/archivematica-infrastructure/issues/113)]
+* `rights.csv`, [which contains the rights information](https://app.gitbook.com/o/-LumfFcEMKx4gYXKAZTQ/s/ZZCA7ig38ZIKLAnLhUp8/)
 
 ## Compressing the package
 
 The files **must** be in the top-level of the zip; there can't be an enclosing folder.
 
-| ❌                                                                                                                                      | ✅                                                                                                                                    |
-| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| ![Selecting the enclosing folder, then right-clicking and 'Compress folder', in the macOS Finder](../howto/transfer\_package\_bad.png) | ![Selecting all the top-level files, then right-clicking and 'Compress', in the macOS Finder.](../howto/transfer\_package\_good.png) |
+| ❌                                                                                                                                    | ✅                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| ![Selecting the enclosing folder, then right-clicking and 'Compress folder', in the macOS Finder](../howto/transfer_package_bad.png) | ![Selecting all the top-level files, then right-clicking and 'Compress', in the macOS Finder.](../howto/transfer_package_good.png) |
 
 ## See also
 
