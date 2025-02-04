@@ -14,11 +14,12 @@ import logging
 import threading
 import time
 import traceback
+from typing import List
 
 from django.utils import timezone
 
 from .. import metrics
-from .asynchronous import Async  # noqa
+from .asynchronous import Async
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ class RunningTask:
 
 
 class AsyncManager:
-    running_tasks = []
+    running_tasks: List[Async] = []
     lock = threading.Lock()
 
     @staticmethod
