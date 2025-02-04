@@ -1,13 +1,16 @@
 import base64
 import json
 import os
+import pathlib
 import shutil
 import uuid
+from unittest import mock
 from urllib.parse import urlparse
 
-import vcr
+import pytest
 from administration import roles
 from django.contrib.auth.models import User
+from django.test import Client
 from django.test import TestCase
 from django.urls import reverse
 from locations import models
@@ -15,12 +18,12 @@ from locations.api.sword.views import _parse_name_and_content_urls_from_mets_fil
 
 from . import TempDirMixin
 
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-FIXTURES_DIR = os.path.abspath(os.path.join(THIS_DIR, "..", "fixtures", ""))
+FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures"
 
 
 class TestSpaceAPI(TempDirMixin, TestCase):
-    fixtures = ["base.json"]
+    fixture_files = ["base.json"]
+    fixtures = [FIXTURES_DIR / f for f in fixture_files]
 
     def setUp(self):
         super().setUp()
@@ -190,7 +193,8 @@ class TestSpaceAPI(TempDirMixin, TestCase):
 
 
 class TestLocationAPI(TempDirMixin, TestCase):
-    fixtures = ["base.json", "pipelines.json", "package.json"]
+    fixture_files = ["base.json", "pipelines.json", "package.json"]
+    fixtures = [FIXTURES_DIR / f for f in fixture_files]
 
     def setUp(self):
         super().setUp()
@@ -323,7 +327,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
 
     def test_cant_move_from_non_existant_locations(self):
         data = {
-            "origin_location": "/api/v2/location/dne1aacf-8492-4382-8ef3-262cc5420dne/",
+            "origin_location": "/api/v2/location/13ec52e6-773f-4f73-a6a8-043f285f6168/",
             "files": [{"source": "foo", "destination": "bar"}],
             "pipeline": "/api/v2/pipeline/b25f6b71-3ebf-4fcc-823c-1feb0a2553dd/",
         }
@@ -343,7 +347,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
             "pipeline": "/api/v2/pipeline/b25f6b71-3ebf-4fcc-823c-1feb0a2553dd/",
         }
         response = self.client.post(
-            "/api/v2/location/dne086c8-232e-4b9e-bb03-98fbc7a7966a/",
+            "/api/v2/location/d898b2d0-bd63-4d4e-884b-ea3df9a8f56d/",
             data=json.dumps(data),
             content_type="application/json",
         )
@@ -541,7 +545,8 @@ class TestLocationAPI(TempDirMixin, TestCase):
 
 
 class TestPackageAPI(TempDirMixin, TestCase):
-    fixtures = ["base.json", "package.json", "arkivum.json"]
+    fixture_files = ["base.json", "package.json", "arkivum.json"]
+    fixtures = [FIXTURES_DIR / f for f in fixture_files]
 
     def setUp(self):
         super().setUp()
@@ -552,13 +557,13 @@ class TestPackageAPI(TempDirMixin, TestCase):
         )
         # Set up locations with fixtures
         shutil.copy(os.path.join(FIXTURES_DIR, "working_bag.zip"), str(self.tmpdir))
-        self.test_location.relative_path = FIXTURES_DIR[1:]
+        self.test_location.relative_path = str(FIXTURES_DIR.relative_to(os.sep))
         self.test_location.save()
         models.Space.objects.filter(uuid="6fb34c82-4222-425e-b0ea-30acfd31f52e").update(
             path=str(self.tmpdir)
         )
         ss_int = models.Location.objects.get(purpose="SS")
-        ss_int.relative_path = str(ss_internal)[1:]
+        ss_int.relative_path = str(ss_internal.relative_to(os.sep))
         ss_int.save()
         # Set Arkivum package request ID
         models.Package.objects.filter(
@@ -838,17 +843,32 @@ class TestPackageAPI(TempDirMixin, TestCase):
     def test_download_package_not_exist(self):
         """It should return 404 for a non-existant package."""
         response = self.client.get(
-            "/api/v2/file/dnednedn-edne-dned-nedn-ednednednedn/download/",
+            "/api/v2/file/280bf046-ba55-4d44-94b4-685b3fec1770/download/",
             data={"chunk_number": 1},
         )
         assert response.status_code == 404
 
-    @vcr.use_cassette(
-        os.path.join(
-            FIXTURES_DIR, "vcr_cassettes", "arkivum_update_package_status.yaml"
-        )
+    @mock.patch(
+        "requests.get",
+        side_effect=[
+            mock.Mock(
+                **{
+                    "status_code": 200,
+                    "json.return_value": {
+                        "id": "2e75c8ad-cded-4f7e-8ac7-85627a116e39",
+                        "status": "Scheduled",
+                        "originalSize": "775702",
+                        "actualSize": "775702",
+                        "originalChecksum": "5a44c7ba5bbe4ec867233d67e4806848",
+                        "originalChecksumAlgorithm": "md5",
+                        "originalCompressionAlgorithm": "",
+                        "fileInformation": {"replicationState": "yellow"},
+                    },
+                }
+            )
+        ],
     )
-    def test_download_package_arkivum_not_available(self):
+    def test_download_package_arkivum_not_available(self, requests_get):
         """It should return 202 if the file is in Arkivum but only on tape."""
         response = self.client.get(
             "/api/v2/file/c0f8498f-b92e-4a8b-8941-1b34ba062ed8/download/"
@@ -861,12 +881,11 @@ class TestPackageAPI(TempDirMixin, TestCase):
             == "File is not locally available.  Contact your storage administrator to fetch it."
         )
 
-    @vcr.use_cassette(
-        os.path.join(
-            FIXTURES_DIR, "vcr_cassettes", "api_download_package_arkivum_error.yaml"
-        )
+    @mock.patch(
+        "requests.get",
+        side_effect=[mock.Mock(**{"status_code": 404})],
     )
-    def test_download_package_arkivum_error(self):
+    def test_download_package_arkivum_error(self, requests_get):
         """It should return 502 error from Arkivum."""
         response = self.client.get(
             "/api/v2/file/c0f8498f-b92e-4a8b-8941-1b34ba062ed8/download/"
@@ -908,12 +927,20 @@ class TestPackageAPI(TempDirMixin, TestCase):
         content = self._decode_response_content(response)
         assert content == "test"
 
-    @vcr.use_cassette(
-        os.path.join(
-            FIXTURES_DIR, "vcr_cassettes", "arkivum_update_package_status.yaml"
-        )
+    @mock.patch(
+        "requests.get",
+        side_effect=[
+            mock.Mock(
+                **{
+                    "status_code": 200,
+                    "json.return_value": {
+                        "fileInformation": {"replicationState": "yellow"},
+                    },
+                }
+            )
+        ],
     )
-    def test_download_file_arkivum_not_available(self):
+    def test_download_file_arkivum_not_available(self, requests_get):
         """It should return 202 if the file is in Arkivum but only on tape."""
         response = self.client.get(
             "/api/v2/file/c0f8498f-b92e-4a8b-8941-1b34ba062ed8/extract_file/",
@@ -927,12 +954,11 @@ class TestPackageAPI(TempDirMixin, TestCase):
             == "File is not locally available.  Contact your storage administrator to fetch it."
         )
 
-    @vcr.use_cassette(
-        os.path.join(
-            FIXTURES_DIR, "vcr_cassettes", "api_download_package_arkivum_error.yaml"
-        )
+    @mock.patch(
+        "requests.get",
+        side_effect=[mock.Mock(**{"status_code": 404})],
     )
-    def test_download_file_arkivum_error(self):
+    def test_download_file_arkivum_error(self, requests_get):
         """It should return 502 error from Arkivum."""
         response = self.client.get(
             "/api/v2/file/c0f8498f-b92e-4a8b-8941-1b34ba062ed8/extract_file/",
@@ -953,7 +979,9 @@ class TestPackageAPI(TempDirMixin, TestCase):
 
     def _test_request_view_updates_package_status(self, view_name, expected_status):
         # Create a pipeline and an AIP
-        pipeline = models.Pipeline.objects.create()
+        pipeline = models.Pipeline.objects.create(
+            uuid="7e3ef632-2633-4c7c-820b-a828229e8613"
+        )
         aip_uuid = self._create_aip()
         # Call the request view
         self.client.post(
@@ -961,7 +989,7 @@ class TestPackageAPI(TempDirMixin, TestCase):
             data=json.dumps(
                 {
                     "event_reason": "Some justification",
-                    "pipeline": pipeline.uuid,
+                    "pipeline": str(pipeline.uuid),
                     "user_email": "test@example.com",
                     "user_id": User.objects.get(username="test").id,
                 }
@@ -997,7 +1025,8 @@ class TestSwordAPI(TestCase):
 
 
 class TestPipelineAPI(TestCase):
-    fixtures = ["base.json"]
+    fixture_files = ["base.json"]
+    fixtures = [FIXTURES_DIR / f for f in fixture_files]
 
     def setUp(self):
         self.user = User.objects.get(username="test")
@@ -1049,7 +1078,7 @@ class TestPipelineAPI(TestCase):
         assert response.status_code == 201
 
         pipeline = models.Pipeline.objects.get(uuid=data["uuid"])
-        pipeline.parse_and_fix_url(pipeline.remote_name) == urlparse(
+        assert pipeline.parse_and_fix_url(pipeline.remote_name) == urlparse(
             data["remote_name"]
         )
 
@@ -1065,6 +1094,304 @@ class TestPipelineAPI(TestCase):
         )
         assert response.status_code == 201
         pipeline = models.Pipeline.objects.get(uuid=data["uuid"])
-        pipeline.parse_and_fix_url(pipeline.remote_name) == urlparse(
+        assert pipeline.parse_and_fix_url(pipeline.remote_name) == urlparse(
             "http://192.168.0.10"
         )
+
+
+@pytest.fixture
+def internal_processing_location(db, tmp_path):
+    space_dir = tmp_path / "space"
+    space_dir.mkdir()
+
+    staging_dir = space_dir / "staging"
+    staging_dir.mkdir()
+
+    return models.Location.objects.create(
+        space=models.Space.objects.create(
+            access_protocol=models.Space.LOCAL_FILESYSTEM,
+            path=space_dir,
+            staging_path=staging_dir,
+        ),
+        purpose=models.Location.STORAGE_SERVICE_INTERNAL,
+        relative_path=staging_dir.relative_to(space_dir),
+    )
+
+
+@pytest.fixture
+def aip_storage_location(db):
+    space = models.Space.objects.create(
+        access_protocol=models.Space.S3,
+    )
+    models.S3.objects.create(space=space)
+
+    return models.Location.objects.create(
+        space=space,
+        purpose=models.Location.AIP_STORAGE,
+        relative_path="aips",
+    )
+
+
+@pytest.fixture
+def compressed_bag_fixture_path():
+    return FIXTURES_DIR / "working_bag.zip"
+
+
+@pytest.fixture
+def s3_resource(compressed_bag_fixture_path, aip_storage_location):
+    """Mock the S3 bucket interactions in S3.move_to_storage_service."""
+
+    def download_file(_key, dest_file):
+        shutil.copy(compressed_bag_fixture_path, dest_file)
+
+    return mock.Mock(
+        **{
+            "Bucket.side_effect": [
+                mock.Mock(
+                    **{
+                        "download_file.side_effect": download_file,
+                    }
+                ),
+                mock.Mock(
+                    **{
+                        "objects.filter.return_value": [
+                            mock.Mock(
+                                key=f"{aip_storage_location.relative_path}/{compressed_bag_fixture_path.name}"
+                            )
+                        ]
+                    }
+                ),
+            ]
+        }
+    )
+
+
+@mock.patch("boto3.resource")
+def test_s3_space_deletes_temporary_files_after_extracting_file(
+    resource,
+    admin_client,
+    compressed_bag_fixture_path,
+    s3_resource,
+    aip_storage_location,
+    internal_processing_location,
+):
+    # Mock the S3 bucket interactions.
+    resource.side_effect = [s3_resource]
+
+    # Add a compressed AIP to the AIP Storage location.
+    package = models.Package.objects.create(
+        current_location=aip_storage_location,
+        package_type=models.Package.AIP,
+        current_path=compressed_bag_fixture_path.name,
+    )
+
+    # Extract a file from the compressed AIP.
+    response = admin_client.get(
+        reverse(
+            "extract_file_request",
+            kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+        ),
+        {"relative_path_to_file": "working_bag/data/test.txt"},
+    )
+
+    # Verify the response attributes.
+    assert response.status_code == 200
+    assert response["content-type"] == "text/plain"
+    assert response["content-disposition"] == 'attachment; filename="test.txt"'
+
+    # Verify the contents of the extracted file.
+    result = b"".join(response.streaming_content)
+    assert result.decode() == "test"
+
+    # Verify there are no temporary files left in the internal processing location.
+    assert list(pathlib.Path(internal_processing_location.full_path).iterdir()) == []
+
+
+@pytest.fixture
+def space(tmp_path: pathlib.Path) -> models.Space:
+    space_path = tmp_path / "space"
+    space_path.mkdir()
+
+    return models.Space.objects.create(
+        access_protocol=models.Space.LOCAL_FILESYSTEM, path=str(space_path)
+    )
+
+
+@pytest.fixture
+def secondary_aip_location(space: models.Space) -> models.Location:
+    space_path = pathlib.Path(space.path)
+    secondary_aip_location_path = space_path / "aips"
+    secondary_aip_location_path.mkdir()
+
+    return models.Location.objects.create(
+        space=space,
+        purpose=models.Location.AIP_STORAGE,
+        relative_path=str(secondary_aip_location_path.relative_to(space_path)),
+    )
+
+
+@pytest.fixture
+def package(aip_storage_location: models.Location) -> models.Package:
+    return models.Package.objects.create(
+        current_location=aip_storage_location,
+        package_type=models.Package.AIP,
+        current_path="bag.zip",
+        status=models.Package.UPLOADED,
+    )
+
+
+@pytest.mark.django_db
+def test_move_request_fails_if_package_is_in_unexpected_state(
+    admin_client: Client,
+    package: models.Package,
+    secondary_aip_location: models.Location,
+) -> None:
+    package.status = models.Package.MOVING
+    package.save()
+
+    response = admin_client.post(
+        reverse(
+            "move_request",
+            kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+        ),
+        {"location_uuid": secondary_aip_location.uuid},
+    )
+
+    assert response.status_code == 400
+    assert json.loads(response.content.decode()) == {
+        "error": True,
+        "message": f"The file must be in an {models.Package.UPLOADED} state to be moved. Current state: {package.status}",
+    }
+
+
+@pytest.mark.django_db
+def test_move_request_fails_if_location_uuid_is_missing(
+    admin_client: Client, package: models.Package
+) -> None:
+    response = admin_client.post(
+        reverse(
+            "move_request",
+            kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+        )
+    )
+
+    assert response.status_code == 400
+    assert (
+        response.content.decode()
+        == "All of these fields must be provided: location_uuid"
+    )
+
+
+@pytest.mark.django_db
+def test_move_request_fails_if_target_location_does_not_exist(
+    admin_client: Client, package: models.Package
+) -> None:
+    location_uuid = uuid.uuid4()
+
+    response = admin_client.post(
+        reverse(
+            "move_request",
+            kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+        ),
+        {"location_uuid": location_uuid},
+    )
+
+    assert response.status_code == 400
+    assert json.loads(response.content.decode()) == {
+        "error": True,
+        "message": f"Location UUID {location_uuid} failed to return a location",
+    }
+
+
+@pytest.mark.django_db
+def test_move_request_fails_if_target_location_is_origin_location(
+    admin_client: Client, package: models.Package
+) -> None:
+    response = admin_client.post(
+        reverse(
+            "move_request",
+            kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+        ),
+        {"location_uuid": package.current_location.uuid},
+    )
+
+    assert response.status_code == 400
+    assert json.loads(response.content.decode()) == {
+        "error": True,
+        "message": "New location must be different to the current location",
+    }
+
+
+@pytest.mark.django_db
+def test_move_request_fails_if_target_location_purpose_does_not_match(
+    admin_client: Client,
+    package: models.Package,
+    secondary_aip_location: models.Location,
+) -> None:
+    secondary_aip_location.purpose = models.Location.BACKLOG
+    secondary_aip_location.save()
+
+    response = admin_client.post(
+        reverse(
+            "move_request",
+            kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+        ),
+        {"location_uuid": secondary_aip_location.uuid},
+    )
+
+    assert response.status_code == 400
+    assert json.loads(response.content.decode()) == {
+        "error": True,
+        "message": f"New location must have the same purpose as the current location - {package.current_location.purpose}",
+    }
+
+
+@pytest.mark.django_db
+@mock.patch("django.db.models.query.QuerySet.update", return_value=0)
+def test_move_request_fails_if_updating_package_status_fails(
+    update: mock.Mock,
+    admin_client: Client,
+    package: models.Package,
+    secondary_aip_location: models.Location,
+) -> None:
+    response = admin_client.post(
+        reverse(
+            "move_request",
+            kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+        ),
+        {"location_uuid": secondary_aip_location.uuid},
+    )
+
+    assert response.status_code == 400
+    assert json.loads(response.content.decode()) == {
+        "error": True,
+        "message": f"The package must be in an {models.Package.UPLOADED} state to be moved. Current state: {package.status}",
+    }
+    update.assert_called_once_with(status=models.Package.MOVING)
+
+
+@pytest.mark.django_db
+@mock.patch("locations.models.async_manager.AsyncManager.run_task")
+def test_move_request_returns_asyncronous_task_url_in_response_headers(
+    run_task: mock.Mock,
+    admin_client: Client,
+    package: models.Package,
+    secondary_aip_location: models.Location,
+) -> None:
+    task_id = 1
+    run_task.return_value = mock.Mock(id=task_id)
+
+    response = admin_client.post(
+        reverse(
+            "move_request",
+            kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+        ),
+        {"location_uuid": secondary_aip_location.uuid},
+    )
+    assert response.status_code == 202
+
+    assert response.content == b""
+    assert response.headers["Location"] == reverse(
+        "api_dispatch_detail",
+        kwargs={"api_name": "v2", "resource_name": "async", "id": task_id},
+    )
