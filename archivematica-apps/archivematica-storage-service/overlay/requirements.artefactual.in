@@ -1,0 +1,37 @@
+# Base requirements - for all installations
+bagit
+boto3
+brotli
+Django>=4.2,<5
+django-csp
+django-tastypie
+gunicorn
+importlib_resources
+jsonfield
+lxml
+metsrw
+python-gnupg
+python-keystoneclient
+python-swiftclient
+requests
+git+https://github.com/artefactual-labs/python-client-sword2.git@619ee44467dcdb2ab75fab16864ea2e4ded7ffe4#egg=sword2
+whitenoise
+agentarchives
+git+https://github.com/artefactual-labs/django-shibboleth-remoteuser.git@f08a7864d6130416c352981ccf318fff0fd5be58#egg=django-shibboleth-remoteuser
+prometheus_client
+django-prometheus
+
+# LDAP support
+python-ldap
+
+# CAS authentication
+django-cas-ng
+
+# Required for OpenID Connect authentication
+mozilla-django-oidc
+
+# These dependencies dropped support for Python 3.8, so pinning them for now.
+dj-database-url==2.2.0
+django-auth-ldap==5.0.0
+gevent==24.2.1
+pyparsing==3.1.4
