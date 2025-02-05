@@ -6,13 +6,13 @@ import re
 import subprocess
 import tempfile
 import time
+from urllib.parse import urljoin, urlencode
 
 import boto3
 import botocore
 from django.db import models
-from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext_lazy as _
-from django.utils.six.moves.urllib.parse import urljoin, urlencode
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 from wellcome_storage_service import BagNotFound, RequestsOAuthStorageServiceClient as StorageServiceClient
 
 from . import StorageException
@@ -391,7 +391,7 @@ class S3SpaceModelMixin(models.Model):
 
 
 class WellcomeStorageService(S3SpaceModelMixin):
-    space = models.OneToOneField('Space', to_field='uuid')
+    space = models.OneToOneField('Space', on_delete=models.CASCADE, to_field='uuid')
     token_url = models.URLField(max_length=256, help_text=TOKEN_HELP_TEXT)
     api_root_url = models.URLField(max_length=256, help_text=API_HELP_TEXT)
 
