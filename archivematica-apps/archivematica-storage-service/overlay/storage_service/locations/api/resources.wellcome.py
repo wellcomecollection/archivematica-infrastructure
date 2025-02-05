@@ -1,6 +1,5 @@
 # This file contains the base models that individual versioned models
 # are based on. They shouldn't be directly used with Api objects.
-# stdlib, alphabetical
 import json
 import logging
 import os
@@ -8,6 +7,7 @@ import pprint
 import re
 import shutil
 import urllib.parse
+import uuid
 from pathlib import Path
 
 import bagit
@@ -15,15 +15,13 @@ import tastypie.exceptions
 from administration.models import Settings
 from common import utils
 from django.conf import settings
-from django.conf.urls import url
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.http import HttpResponseRedirect
+from django.urls import re_path
 from django.urls import reverse
-from django.utils.translation import ugettext as _
-from locations import signals
-from locations.api.sword import views as sword_views
+from django.utils.translation import gettext as _
 from tastypie import fields
 from tastypie import http
 from tastypie.authentication import ApiKeyAuthentication
@@ -34,9 +32,11 @@ from tastypie.authorization import DjangoAuthorization
 from tastypie.resources import ALL
 from tastypie.resources import ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource
-from tastypie.utils import dict_strip_unicode_keys
 from tastypie.utils import trailing_slash
 from tastypie.validation import CleanedDataFormValidation
+
+from locations import signals
+from locations.api.sword import views as sword_views
 
 from ..constants import PROTOCOL
 from ..forms import SpaceForm
@@ -53,10 +53,6 @@ from ..models import PosixMoveUnsupportedError
 from ..models import Space
 from ..models import StorageException
 from ..models.async_manager import AsyncManager
-
-# Core Django, alphabetical
-# Third party dependencies, alphabetical
-# This project, alphabetical
 
 LOGGER = logging.getLogger(__name__)
 
@@ -109,7 +105,7 @@ class CustomDjangoAuthorization(DjangoAuthorization):
 
 
 def _custom_endpoint(
-    expected_methods=["get"], required_fields=[], required_permission=None
+    expected_methods=("get",), required_fields=None, required_permission=None
 ):
     """
     Decorator for custom endpoints that handles boilerplate code.
@@ -125,6 +121,8 @@ def _custom_endpoint(
     create_list, create_detail, update_list, update_detail, delete_list and
     delete_detail.
     """
+    if required_fields is None:
+        required_fields = []
 
     def decorator(func):
         """The decorator applied to the endpoint"""
@@ -154,7 +152,7 @@ def _custom_endpoint(
                 deserialized = resource.deserialize(
                     request,
                     request.body,
-                    format=request.META.get("CONTENT_TYPE", "application/json"),
+                    format=request.headers.get("content-type", "application/json"),
                 )
                 deserialized = resource.alter_deserialized_detail_data(
                     request, deserialized
@@ -279,7 +277,7 @@ class SpaceResource(ModelResource):
 
     def prepend_urls(self):
         return [
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/browse%s$"
                 % (
                     self._meta.resource_name,
@@ -397,13 +395,13 @@ class LocationResource(ModelResource):
 
     def prepend_urls(self):
         return [
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/default/(?P<purpose>[A-Z]{2})%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("default"),
                 name="default_location",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/browse%s$"
                 % (
                     self._meta.resource_name,
@@ -413,7 +411,7 @@ class LocationResource(ModelResource):
                 self.wrap_view("browse"),
                 name="browse",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/async%s$"
                 % (
                     self._meta.resource_name,
@@ -424,7 +422,7 @@ class LocationResource(ModelResource):
                 name="post_detail_async",
             ),
             # FEDORA/SWORD2 endpoints
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/sword/collection%s$"
                 % (
                     self._meta.resource_name,
@@ -789,13 +787,13 @@ class PackageResource(ModelResource):
 
     def prepend_urls(self):
         return [
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/async%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("obj_create_async"),
                 name="obj_create_async",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/delete_aip%s$"
                 % (
                     self._meta.resource_name,
@@ -805,7 +803,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("delete_aip_request"),
                 name="delete_aip_request",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/recover_aip%s$"
                 % (
                     self._meta.resource_name,
@@ -815,7 +813,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("recover_aip_request"),
                 name="recover_aip_request",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/extract_file%s$"
                 % (
                     self._meta.resource_name,
@@ -825,7 +823,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("extract_file_request"),
                 name="extract_file_request",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/download/(?P<chunk_number>\d+)%s$"
                 % (
                     self._meta.resource_name,
@@ -835,7 +833,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("download_request"),
                 name="download_lockss",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/download%s$"
                 % (
                     self._meta.resource_name,
@@ -845,7 +843,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("download_request"),
                 name="download_request",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/pointer_file%s$"
                 % (
                     self._meta.resource_name,
@@ -855,7 +853,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("pointer_file_request"),
                 name="pointer_file_request",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/check_fixity%s$"
                 % (
                     self._meta.resource_name,
@@ -865,7 +863,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("check_fixity_request"),
                 name="check_fixity_request",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/compress%s$"
                 % (
                     self._meta.resource_name,
@@ -875,7 +873,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("compress_request"),
                 name="compress_request",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/send_callback/post_store%s$"
                 % (
                     self._meta.resource_name,
@@ -885,7 +883,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("aip_store_callback_request"),
                 name="aip_store_callback_request",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/contents%s$"
                 % (
                     self._meta.resource_name,
@@ -895,13 +893,13 @@ class PackageResource(ModelResource):
                 self.wrap_view("manage_contents"),
                 name="manage_contents",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/metadata%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("file_data"),
                 name="file_data",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/reindex%s$"
                 % (
                     self._meta.resource_name,
@@ -912,7 +910,7 @@ class PackageResource(ModelResource):
                 name="reindex_request",
             ),
             # Reingest
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/reingest%s$"
                 % (
                     self._meta.resource_name,
@@ -923,7 +921,7 @@ class PackageResource(ModelResource):
                 name="reingest_request",
             ),
             # Move
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/move%s$"
                 % (
                     self._meta.resource_name,
@@ -934,7 +932,7 @@ class PackageResource(ModelResource):
                 name="move_request",
             ),
             # FEDORA/SWORD2 endpoints
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/sword%s$"
                 % (
                     self._meta.resource_name,
@@ -944,7 +942,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("sword_deposit"),
                 name="sword_deposit",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/sword/media%s$"
                 % (
                     self._meta.resource_name,
@@ -954,7 +952,7 @@ class PackageResource(ModelResource):
                 self.wrap_view("sword_deposit_media"),
                 name="sword_deposit_media",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/sword/state%s$"
                 % (
                     self._meta.resource_name,
@@ -964,15 +962,15 @@ class PackageResource(ModelResource):
                 self.wrap_view("sword_deposit_state"),
                 name="sword_deposit_state",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<%s>\w[\w/-]*)/wellcome_callback%s$"
                 % (
                     self._meta.resource_name,
                     self._meta.detail_uri_name,
-                    trailing_slash()
+                    trailing_slash(),
                 ),
-                self.wrap_view('wellcome_callback'),
-                name="wellcome_callback"
+                self.wrap_view("wellcome_callback"),
+                name="wellcome_callback",
             ),
         ]
 
@@ -1002,6 +1000,10 @@ class PackageResource(ModelResource):
             return int(bundle.data["size"])
         except (ValueError, TypeError, KeyError):
             return 0
+
+    def hydrate_uuid(self, bundle):
+        bundle.data["uuid"] = uuid.UUID(bundle.data["uuid"])
+        return bundle
 
     def hydrate_current_location(self, bundle):
         """Customize unserialization of current_location.
@@ -1102,12 +1104,10 @@ class PackageResource(ModelResource):
             deserialized = self.deserialize(
                 request,
                 request.body,
-                format=request.META.get("CONTENT_TYPE", "application/json"),
+                format=request.headers.get("content-type", "application/json"),
             )
             deserialized = self.alter_deserialized_detail_data(request, deserialized)
-            bundle = self.build_bundle(
-                data=dict_strip_unicode_keys(deserialized), request=request
-            )
+            bundle = self.build_bundle(data=deserialized, request=request)
 
             bundle = super().obj_create(bundle, **kwargs)
 
@@ -1151,7 +1151,12 @@ class PackageResource(ModelResource):
 
         Identical to original function except obj_update_hook added between hydrating the data and saving the object.
         """
-        if not bundle.obj or not self.get_bundle_detail_data(bundle):
+        bundle_detail_data = self.get_bundle_detail_data(bundle) if bundle.obj else None
+        arg_detail_data = kwargs.get(self._meta.detail_uri_name, None)
+
+        if not bundle_detail_data or (
+            arg_detail_data and bundle_detail_data != arg_detail_data
+        ):
             try:
                 lookup_kwargs = self.lookup_kwargs_with_identifiers(bundle, kwargs)
             except Exception:
@@ -1385,7 +1390,7 @@ class PackageResource(ModelResource):
             )
 
         response = utils.download_file_stream(extracted_file_path, temp_dir)
-
+        package.clear_local_tempdirs()
         return response
 
     @_custom_endpoint(expected_methods=["get", "head"])
@@ -1505,7 +1510,7 @@ class PackageResource(ModelResource):
 
             package_dir = os.path.join(tmpdir, basedir)
         else:
-            package_dir = package.full_path()
+            package_dir = package.full_path
             tmpdir = None
 
         safe_files = ("bag-info.txt", "manifest-sha512.txt", "bagit.txt")
@@ -1642,8 +1647,8 @@ class PackageResource(ModelResource):
             response = {
                 "error": True,
                 "message": _(
-                    "The file must be in an %(expected_state) state to be moved. "
-                    "Current state: %(current_state)"
+                    "The file must be in an %(expected_state)s state to be moved. "
+                    "Current state: %(current_state)s"
                 )
                 % {
                     "expected_state": Package.UPLOADED,
@@ -1658,7 +1663,7 @@ class PackageResource(ModelResource):
 
         if not location_uuid:
             return http.HttpBadRequest(
-                _("All of these fields must be provided: " "location_uuid")
+                _("All of these fields must be provided: location_uuid")
             )
 
         try:
@@ -1666,10 +1671,7 @@ class PackageResource(ModelResource):
         except (Location.DoesNotExist, Location.MultipleObjectsReturned):
             response = {
                 "error": True,
-                "message": _(
-                    "Location UUID %(uuid)s \
-                failed to return a location"
-                )
+                "message": _("Location UUID %(uuid)s failed to return a location")
                 % {"uuid": location_uuid},
             }
             return self.create_response(
@@ -1679,9 +1681,7 @@ class PackageResource(ModelResource):
         if location == package.current_location:
             response = {
                 "error": True,
-                "message": _(
-                    "New location must be different " "to the current location"
-                ),
+                "message": _("New location must be different to the current location"),
             }
             return self.create_response(
                 request, response, response_class=http.HttpBadRequest
@@ -1709,8 +1709,8 @@ class PackageResource(ModelResource):
             response = {
                 "error": True,
                 "message": _(
-                    "The package must be in an %(expected_state) state to be moved. "
-                    "Current state: %(current_state)"
+                    "The package must be in an %(expected_state)s state to be moved. "
+                    "Current state: %(current_state)s"
                 )
                 % {
                     "expected_state": Package.UPLOADED,
@@ -1774,9 +1774,7 @@ class PackageResource(ModelResource):
         or package deletion: DEL_REQ.
         """
         LOGGER.info(
-            "Package event: '{}' requested, with package status: '{}'".format(
-                event_type, event_status
-            )
+            f"Package event: '{event_type}' requested, with package status: '{event_status}'"
         )
         LOGGER.debug(pprint.pformat(request_info))
 
@@ -1935,22 +1933,23 @@ class PackageResource(ModelResource):
             ]
         }
         """
-        response = {"success": True, "package": bundle.obj.uuid, "files": []}
+        response = {"success": True, "package": str(bundle.obj.uuid), "files": []}
 
         for f in bundle.obj.file_set.all():
-            response["files"].append(
-                {
-                    attr: getattr(f, attr)
-                    for attr in (
-                        "source_id",
-                        "name",
-                        "source_package",
-                        "checksum",
-                        "accessionid",
-                        "origin",
-                    )
-                }
-            )
+            d = {}
+            for attr in (
+                "source_id",
+                "name",
+                "source_package",
+                "checksum",
+                "accessionid",
+                "origin",
+            ):
+                value = getattr(f, attr)
+                if value is not None:
+                    value = str(value)
+                d[attr] = value
+            response["files"].append(d)
 
         return http.HttpResponse(
             status=200, content=json.dumps(response), content_type="application/json"
@@ -2016,7 +2015,7 @@ class PackageResource(ModelResource):
                     "filename": os.path.basename(f.name),
                     "relative_path": f.name,
                     "fileuuid": f.source_id,
-                    "origin": f.origin,
+                    "origin": str(f.origin) if f.origin is not None else f.origin,
                     "sipuuid": f.source_package,
                 }
             )
@@ -2025,22 +2024,24 @@ class PackageResource(ModelResource):
             content=json.dumps(response), content_type="application/json"
         )
 
-    @_custom_endpoint(expected_methods=['post'])
+    @_custom_endpoint(expected_methods=["post"])
     def wellcome_callback(self, request, bundle, **kwargs):
         LOGGER.debug(
             "Received a callback from the Wellcome Storage Service: "
-            "request=%r, bundle=%r", request, bundle
+            "request=%r, bundle=%r",
+            request,
+            bundle,
         )
         try:
-            package = Package.objects.get(uuid=kwargs['uuid'])
+            package = Package.objects.get(uuid=kwargs["uuid"])
         except Package.DoesNotExist:
-            LOGGER.error('package %s does not exist' % kwargs['uuid'])
+            LOGGER.error("package %s does not exist" % kwargs["uuid"])
             return http.Http404()
-        
+
         ingest = json.loads(request.body)
         handle_ingest(ingest, package)
-        
-        return http.HttpResponse('Wellcome package callback succeeded')
+
+        return http.HttpResponse("Wellcome package callback succeeded")
 
 
 class AsyncResource(ModelResource):
