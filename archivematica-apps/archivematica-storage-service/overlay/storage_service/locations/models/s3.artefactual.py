@@ -1,25 +1,19 @@
-# stdlib, alphabetical
 import logging
 import os
 import pprint
 import re
 from functools import wraps
+from urllib.parse import urlparse
 
 import boto3
 import botocore
 from common import utils
 from django.conf import settings
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from . import StorageException
 from .location import Location
-
-# Core Django, alphabetical
-# Third party dependencies, alphabetical
-# This project, alphabetical
-# This module, alphabetical
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -81,10 +75,11 @@ class S3(models.Model):
             )
             boto_args = {
                 "service_name": "s3",
-                "endpoint_url": self.endpoint_url,
                 "region_name": self.region,
                 "config": config,
             }
+            if not self._is_global_endpoint(self.endpoint_url):
+                boto_args["endpoint_url"] = self.endpoint_url
             if self.access_key_id and self.secret_access_key:
                 boto_args.update(
                     aws_access_key_id=self.access_key_id,
@@ -92,6 +87,9 @@ class S3(models.Model):
                 )
             self._resource = boto3.resource(**boto_args)
         return self._resource
+
+    def _is_global_endpoint(self, url):
+        return urlparse(url).netloc == "s3.amazonaws.com"
 
     @boto_exception
     def _ensure_bucket_exists(self):
@@ -130,7 +128,7 @@ class S3(models.Model):
 
     @property
     def bucket_name(self):
-        return self.bucket or self.space_id
+        return self.bucket or str(self.space_id)
 
     def browse(self, path):
         LOGGER.debug("Browsing s3://%s/%s on S3 storage", self.bucket_name, path)
@@ -184,9 +182,7 @@ class S3(models.Model):
         """
         if delete_path.startswith(os.sep):
             LOGGER.info(
-                "S3 path to delete {} begins with {}; removing from path prior to deletion".format(
-                    delete_path, os.sep
-                )
+                f"S3 path to delete {delete_path} begins with {os.sep}; removing from path prior to deletion"
             )
             delete_path = delete_path.lstrip(os.sep)
         obj = self.resource.Bucket(self.bucket_name).objects.filter(Prefix=delete_path)
@@ -234,7 +230,7 @@ class S3(models.Model):
             # strip leading slash on dest_path
             dest_path = dest_path.lstrip("/")
 
-            for path, dirs, files in os.walk(src_path):
+            for path, _dirs, files in os.walk(src_path):
                 for basename in files:
                     entry = os.path.join(path, basename)
                     dest = entry.replace(src_path, dest_path, 1)

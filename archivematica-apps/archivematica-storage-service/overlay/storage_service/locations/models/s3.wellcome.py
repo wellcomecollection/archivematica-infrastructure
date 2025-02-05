@@ -1,25 +1,19 @@
-# stdlib, alphabetical
 import logging
 import os
 import pprint
 import re
 from functools import wraps
+from urllib.parse import urlparse
 
 import boto3
 import botocore
 from common import utils
 from django.conf import settings
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from . import StorageException
 from .location import Location
-
-# Core Django, alphabetical
-# Third party dependencies, alphabetical
-# This project, alphabetical
-# This module, alphabetical
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -51,7 +45,7 @@ class S3SpaceModelMixin(models.Model):
     aws_assumed_role = models.CharField(
         max_length=256,
         blank=True,
-        verbose_name=_('Assumed AWS IAM Role'),
+        verbose_name=_("Assumed AWS IAM Role"),
     )
     s3_endpoint_url = models.CharField(
         max_length=2048,
@@ -72,25 +66,31 @@ class S3SpaceModelMixin(models.Model):
 
     @property
     def bucket_name(self):
-        return self.s3_bucket or self.space_id
+        return self.s3_bucket or str(self.space_id)
 
     @property
     def s3_resource(self):
         if not hasattr(self, "_s3_resource"):
+            config = botocore.config.Config(
+                connect_timeout=settings.S3_TIMEOUTS, read_timeout=settings.S3_TIMEOUTS
+            )
             boto_args = {
                 "service_name": "s3",
-                "endpoint_url": self.s3_endpoint_url,
                 "region_name": self.s3_region,
+                "config": config,
             }
+            if not self._is_global_endpoint(self.s3_endpoint_url):
+                boto_args["endpoint_url"] = self.s3_endpoint_url
             if self.aws_access_key_id and self.aws_secret_access_key:
                 boto_args.update(
                     aws_access_key_id=self.aws_access_key_id,
                     aws_secret_access_key=self.aws_secret_access_key,
                 )
-
             self._s3_resource = boto3.resource(**boto_args)
-
         return self._s3_resource
+
+    def _is_global_endpoint(self, url):
+        return urlparse(url).netloc == "s3.amazonaws.com"
 
     @boto_exception
     def _ensure_bucket_exists(self):
@@ -109,9 +109,7 @@ class S3SpaceModelMixin(models.Model):
         """
         LOGGER.debug("Test the S3 bucket '%s' exists", self.bucket_name)
         try:
-            loc_info = self.s3_resource.meta.client.head_bucket(
-                Bucket=self.bucket_name
-            )
+            loc_info = self.s3_resource.meta.client.head_bucket(Bucket=self.bucket_name)
             LOGGER.debug("S3 bucket's response: %s", loc_info)
         except botocore.exceptions.ClientError as err:
             error_code = err.response["Error"]["Code"]
@@ -129,13 +127,14 @@ class S3SpaceModelMixin(models.Model):
 
 
 class S3(S3SpaceModelMixin):
-    space = models.OneToOneField("Space", to_field="uuid")
+    space = models.OneToOneField("Space", to_field="uuid", on_delete=models.CASCADE)
 
     class Meta(S3SpaceModelMixin.Meta):
         verbose_name = _("S3")
 
     ALLOWED_LOCATION_PURPOSE = [
         Location.AIP_STORAGE,
+        Location.DIP_STORAGE,
         Location.REPLICATOR,
         Location.TRANSFER_SOURCE,
     ]
@@ -192,12 +191,12 @@ class S3(S3SpaceModelMixin):
         """
         if delete_path.startswith(os.sep):
             LOGGER.info(
-                "S3 path to delete {} begins with {}; removing from path prior to deletion".format(
-                    delete_path, os.sep
-                )
+                f"S3 path to delete {delete_path} begins with {os.sep}; removing from path prior to deletion"
             )
             delete_path = delete_path.lstrip(os.sep)
-        obj = self.s3_resource.Bucket(self.bucket_name).objects.filter(Prefix=delete_path)
+        obj = self.s3_resource.Bucket(self.bucket_name).objects.filter(
+            Prefix=delete_path
+        )
         items = False
         for object_summary in obj:
             items = True
@@ -209,7 +208,7 @@ class S3(S3SpaceModelMixin):
             LOGGER.warning(err_str)
             raise StorageException(err_str)
 
-    def move_to_storage_service(self, src_path, dest_path, dest_space, package=None):
+    def move_to_storage_service(self, src_path, dest_path, dest_space):
         self._ensure_bucket_exists()
         bucket = self.s3_resource.Bucket(self.bucket_name)
 
@@ -217,7 +216,14 @@ class S3(S3SpaceModelMixin):
         src_path = src_path.lstrip("/").rstrip(".")
         dest_path = dest_path.rstrip(".")
 
-        objects = self.s3_resource.Bucket(self.bucket_name).objects.filter(Prefix=src_path)
+        # Directories need to have trailing slashes to ensure they are created
+        # on the staging path.
+        if not utils.package_is_file(dest_path):
+            dest_path = os.path.join(dest_path, "")
+
+        objects = self.s3_resource.Bucket(self.bucket_name).objects.filter(
+            Prefix=src_path
+        )
 
         for objectSummary in objects:
             dest_file = objectSummary.key.replace(src_path, dest_path, 1)
@@ -237,7 +243,7 @@ class S3(S3SpaceModelMixin):
             # strip leading slash on dest_path
             dest_path = dest_path.lstrip("/")
 
-            for path, dirs, files in os.walk(src_path):
+            for path, _dirs, files in os.walk(src_path):
                 for basename in files:
                     entry = os.path.join(path, basename)
                     dest = entry.replace(src_path, dest_path, 1)
