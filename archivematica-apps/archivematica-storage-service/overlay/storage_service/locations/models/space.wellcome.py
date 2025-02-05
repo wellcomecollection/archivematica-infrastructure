@@ -1,4 +1,3 @@
-# stdlib, alphabetical
 import datetime
 import errno
 import logging
@@ -8,21 +7,18 @@ import shutil
 import stat
 import subprocess
 import tempfile
+import uuid
+from typing import Set
 
+from common import fields
 from common import utils
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
-from django_extensions.db.fields import UUIDField
+from django.utils.translation import gettext_lazy as _
 
-# Core Django, alphabetical
-# Third party dependencies, alphabetical
-# This project, alphabetical
+from . import StorageException
 
 LOGGER = logging.getLogger(__name__)
-
-# This module, alphabetical
-from . import StorageException  # noqa: E402
 
 __all__ = ("Space", "PosixMoveUnsupportedError")
 
@@ -52,7 +48,7 @@ def validate_space_path(path):
 #   Run `manage.py makemigrations locations` to create a migration.
 #   Rename the migration after the feature. Eg. 0005_auto_20160331_1337.py -> 0005_dspace.py
 #  locations/tests/test_<spacename>.py
-#   Add class for tests. Example template below
+#   Add class for tests.
 
 # class Example(models.Model):
 #     space = models.OneToOneField('Space', to_field='uuid')
@@ -86,49 +82,21 @@ def validate_space_path(path):
 #         pass
 
 
-# from django.test import TestCase
-# import vcr
-#
-# from locations import models
-#
-# THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-# FIXTURES_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', 'fixtures'))
-#
-# class TestExample(TestCase):
-#
-#     fixtures = ['base.json', 'example.json']
-#
-#     def setUp(self):
-#         self.example_object = models.Example.objects.all()[0]
-#
-#     @vcr.use_cassette(os.path.join(FIXTURES_DIR, 'vcr_cassettes', 'example_browse.yaml'))
-#     def test_browse(self):
-#         pass
-#
-#     @vcr.use_cassette(os.path.join(FIXTURES_DIR, 'vcr_cassettes', 'example_delete.yaml'))
-#     def test_delete(self):
-#         pass
-#
-#     @vcr.use_cassette(os.path.join(FIXTURES_DIR, 'vcr_cassettes', 'example_move_from_ss.yaml'))
-#     def test_move_from_ss(self):
-#         pass
-#
-#     @vcr.use_cassette(os.path.join(FIXTURES_DIR, 'vcr_cassettes', 'example_move_to_ss.yaml'))
-#     def test_move_to_ss(self):
-#         pass
-
-
 class Space(models.Model):
     """Common storage space information.
 
     Knows what protocol to use to access a storage space, but all protocol
     specific information is in children classes with ForeignKeys to Space."""
 
-    uuid = UUIDField(
-        editable=False, unique=True, version=4, help_text=_("Unique identifier")
+    uuid = fields.UUIDField(
+        editable=False,
+        unique=True,
+        help_text=_("Unique identifier"),
+        default=uuid.uuid4,
     )
 
     # Max length 8 (see access_protocol definition)
+    ARCHIPELAGO = "ARCHIPEL"
     ARKIVUM = "ARKIVUM"
     DATAVERSE = "DV"
     DURACLOUD = "DC"
@@ -146,9 +114,19 @@ class Space(models.Model):
     S3 = "S3"
     WELLCOME = "WELLCOME"
     # These will not be displayed in the Space Create GUI (see locations/forms.py)
-    BETA_PROTOCOLS = {}
-    OBJECT_STORAGE = {DATAVERSE, DSPACE, DSPACE_REST, DURACLOUD, RCLONE, SWIFT, S3}
+    BETA_PROTOCOLS: Set[str] = set()
+    OBJECT_STORAGE = {
+        ARCHIPELAGO,
+        DATAVERSE,
+        DSPACE,
+        DSPACE_REST,
+        DURACLOUD,
+        RCLONE,
+        SWIFT,
+        S3,
+    }
     ACCESS_PROTOCOL_CHOICES = (
+        (ARCHIPELAGO, _("Archipelago")),
         (ARKIVUM, _("Arkivum")),
         (DATAVERSE, _("Dataverse")),
         (DURACLOUD, _("DuraCloud")),
@@ -213,11 +191,7 @@ class Space(models.Model):
         app_label = "locations"
 
     def __str__(self):
-        return "{uuid}: {path} ({access_protocol})".format(
-            uuid=self.uuid,
-            access_protocol=self.get_access_protocol_display(),
-            path=self.path,
-        )
+        return f"{self.uuid}: {self.path} ({self.get_access_protocol_display()})"
 
     def clean(self):
         # Object storage spaces do not require a path, or for it to start with /
@@ -458,10 +432,10 @@ class Space(models.Model):
             )
         try:
             self.get_child_space().post_move_from_storage_service(
+                *args,
                 staging_path=staging_path,
                 destination_path=destination_path,
                 package=package,
-                *args,
                 **kwargs,
             )
         except AttributeError:
@@ -624,7 +598,7 @@ class Space(models.Model):
             return
         try:
             os.makedirs(dir_path, mode)
-        except os.error as e:
+        except OSError as e:
             # If the leaf node already exists, that's fine
             if e.errno != errno.EEXIST:
                 LOGGER.warning("Could not create storage directory: %s", e)
@@ -635,7 +609,7 @@ class Space(models.Model):
         # wrap it in a try-catch and ignore the failure.
         try:
             os.chmod(os.path.dirname(path), mode)
-        except os.error as e:
+        except OSError as e:
             LOGGER.warning(e)
 
     def create_rsync_directory(self, destination_path, user, host):
@@ -795,7 +769,7 @@ class Space(models.Model):
                 os.remove(delete_path)
             if os.path.isdir(delete_path):
                 shutil.rmtree(delete_path)
-        except (os.error, shutil.Error):
+        except (OSError, shutil.Error):
             LOGGER.warning("Error deleting package %s", delete_path, exc_info=True)
             raise
 
@@ -834,7 +808,9 @@ class Space(models.Model):
         Deletes `delete_path` in this space, assuming it is locally accessible.
         """
         if not os.path.exists(delete_path):
-            LOGGER.debug("Attempted to delete '%s' but path does not exist")
+            LOGGER.debug(
+                "Attempted to delete '%s' but path does not exist", delete_path
+            )
             return
         self._del_package(delete_path)
         self._delete_quad_dir_structure(delete_path)
@@ -893,7 +869,7 @@ def count_objects_in_directory(path):
     Returns all the files in a directory, including children.
     """
     count = 0
-    for entry in _scandir_files(path):
+    for _entry in _scandir_files(path):
         count += 1
 
         # Limit the number of files counted to keep it from being too slow
