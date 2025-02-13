@@ -13,5 +13,5 @@ variable "ebs_volume_size" {
   type        = number
 }
 variable "snapshot_identifier" {
-  type = string 
+  type = string
 }

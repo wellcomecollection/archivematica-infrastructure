@@ -39,6 +39,6 @@ variable "min_scaling_capacity" {
 }
 
 variable "migration_instance_class" {
-  type = string
+  type    = string
   default = "db.t4g.medium"
 }
