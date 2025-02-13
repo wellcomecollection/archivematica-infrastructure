@@ -10,13 +10,17 @@ output "interservice_security_group_id" {
   value = aws_security_group.interservice.id
 }
 
+// NOTE: In order to switch databases, replace with "value = aws_rds_cluster.archivematica.endpoint"
 output "rds_host" {
   value = aws_rds_cluster.archivematica.endpoint
 }
-
+// NOTE: In order to switch databases, replace with "value = aws_rds_cluster.archivematica.endpoint"
 output "rds_port" {
   value = aws_rds_cluster.archivematica.port
 }
+
+// NOTE: During migration, apply the critical stack first, then the associated stage/prod stack.
+// The prod/stage stack read from the critical stack state outputs when applied!
 
 output "ingests_bucket_arn" {
   value = aws_s3_bucket.archivematica_ingests.arn
