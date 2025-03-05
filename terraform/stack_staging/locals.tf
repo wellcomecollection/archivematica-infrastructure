@@ -15,11 +15,11 @@ locals {
   }
 
   ecr_image_tags = {
-    dashboard          = "v1.14.1-7bdc76e2267b6ca2dc1ff654f89175e0861f58fc"
-    mcp_client         = "v1.14.1-7bdc76e2267b6ca2dc1ff654f89175e0861f58fc"
-    mcp_server         = "v1.14.1-7bdc76e2267b6ca2dc1ff654f89175e0861f58fc"
-    am_storage_service = "v0.20.1-1b8e2c65aff6913122a7de72bc9027f36cf68129"
-    clamavd            = "120f7da2bd3a1377974ae1f5523711694d1ba11c"
+    dashboard          = "v1.17.0-939e7828baa69befbdbce6164d0de49e57a5658e"
+    mcp_client         = "v1.17.0-939e7828baa69befbdbce6164d0de49e57a5658e"
+    mcp_server         = "v1.17.0-939e7828baa69befbdbce6164d0de49e57a5658e"
+    am_storage_service = "v0.23.0-0056cb6e6a46d888bd7d9241ae255746aff96060"
+    clamavd            = "f60df7b65fe0e405d89191053f7196a1769e4ccf"
     nginx              = "120f7da2bd3a1377974ae1f5523711694d1ba11c"
   }
 }
