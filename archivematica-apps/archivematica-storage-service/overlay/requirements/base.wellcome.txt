@@ -54,7 +54,7 @@ django-shibboleth-remoteuser @ git+https://github.com/Brown-University-Library/d
     # via -r base.in
 django-tastypie==0.14.3
     # via -r base.in
-gevent==22.10.2
+gevent==23.9.0
     # via -r base.in
 greenlet==2.0.2
     # via gevent
