@@ -145,13 +145,13 @@ if __name__ == "__main__":
         store_az_client_secret(app_id=app_id, env=env, password=new_password)
         print(f"[{env}] Stored new client secret in Azure")
 
-        secret_id = f"archivematica/{env}/oidc_rp_client_secret"
+        secret_name = f"archivematica/{env}/oidc_rp_client_secret"
         store_secrets_manager_secret(
-            secret_id=secret_id,
+            secret_id=secret_name,
             secret_value=new_password,
             role_arn=WORKFLOW_DEV_ROLE_ARN,
         )
-        print(f"[{env}] Stored client secret in Secrets Manager as {secret_id}")
+        print(f"[{env}] Stored client secret in Secrets Manager as {secret_name}")
 
         cluster_name = f"archivematica-{env}"
 
