@@ -14,7 +14,7 @@ locals {
 
   database_name = var.namespace == "prod" ? local.prod_database_name : local.staging_database_name
 
-  snapshot_identifier = "cluster-snapshot-2025-02"  # Current snapshot identifier
+  snapshot_identifier = "cluster-snapshot-2025-02" # Current snapshot identifier
 }
 
 resource "aws_db_subnet_group" "archivematica" {
@@ -30,7 +30,7 @@ resource "aws_rds_cluster" "archivematica" {
   vpc_security_group_ids = [aws_security_group.database_sg.id]
 
   engine         = "aurora-mysql"
-  engine_version = "8.0.mysql_aurora.3.07.1"  # Updated engine version to MySQL 8.0
+  engine_version = "8.0.mysql_aurora.3.07.1" # Updated engine version to MySQL 8.0
 }
 
 resource "aws_rds_cluster_instance" "archivematica" {
@@ -40,7 +40,7 @@ resource "aws_rds_cluster_instance" "archivematica" {
   cluster_identifier   = aws_rds_cluster.archivematica.id
   db_subnet_group_name = aws_db_subnet_group.archivematica.name
   publicly_accessible  = false
-  instance_class       = "db.t4g.medium"  # Instance size (same as original config)
+  instance_class       = "db.t4g.medium" # Instance size (same as original config)
 
   engine         = aws_rds_cluster.archivematica.engine
   engine_version = aws_rds_cluster.archivematica.engine_version
