@@ -452,7 +452,7 @@ class WellcomeStorageService(S3SpaceModelMixin):
 
         wellcome_identifier = get_wellcome_identifier(
             src_path=src_path,
-            package_uuid=package.uuid,
+            package_uuid=str(package.uuid),
             space=space
         )
 
@@ -473,7 +473,7 @@ class WellcomeStorageService(S3SpaceModelMixin):
         # We don't know if other packages have been ingested to the
         # Wellcome Storage for this identifier -- query for existing bags,
         # and select an ingest type appropriately.
-        if wellcome_identifier.external_identifier == package.uuid:
+        if wellcome_identifier.external_identifier == str(package.uuid):
             ingest_type = "create"
         else:
             try:
@@ -493,7 +493,7 @@ class WellcomeStorageService(S3SpaceModelMixin):
         callback_url = urljoin(
             self.callback_host,
             '%s?%s' % (
-                reverse('wellcome_callback', args=['v2', 'file', package.uuid]),
+                reverse('wellcome_callback', args=['v2', 'file', str(package.uuid)]),
                 urlencode([
                     ("username", self.callback_username),
                     ("api_key", self.callback_api_key),
