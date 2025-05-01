@@ -9,7 +9,7 @@ then
   exit 1
 fi
 
-ARCHIVEMATICA_TAG=v1.17.0
+ARCHIVEMATICA_TAG=v1.17.1
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
