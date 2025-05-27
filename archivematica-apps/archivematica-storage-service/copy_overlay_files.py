@@ -49,6 +49,7 @@ if __name__ == "__main__":
             "storage_service/locations/migrations/0029_auto_20200122_0726.py",
             "storage_service/locations/migrations/0031_merge_20221017_0727.py",
             "storage_service/locations/migrations/0034_merge_20230720_0400.py",
+            "storage_service/locations/migrations/0038_merge_20250527_1404.py",
             "storage_service/locations/models/wellcome.py",
             "tests/locations/fixtures/wellcome.json",
             "tests/locations/test_wellcome.py",
