@@ -53,6 +53,7 @@ from ..models import PosixMoveUnsupportedError
 from ..models import Space
 from ..models import StorageException
 from ..models.async_manager import AsyncManager
+from ..models.wellcome import handle_ingest
 
 LOGGER = logging.getLogger(__name__)
 
