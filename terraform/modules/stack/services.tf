@@ -2,7 +2,6 @@
 # we use ENI trunking to allow us to run vastly more services on a single host.
 # See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/container-instance-eni.html
 locals {
-  fits_cpu            = 3 * 1024
   mcp_server_cpu      = 1 * 1024
   nginx_cpu           = 128
   dashboard_cpu       = 1024
@@ -18,7 +17,6 @@ locals {
 }
 
 locals {
-  fits_hostname     = "${module.fits_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   clamav_hostname   = "${module.clamav_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
   gearmand_hostname = "${module.gearman_service.service_name}.${aws_service_discovery_private_dns_namespace.archivematica.name}"
 
@@ -55,42 +53,6 @@ module "gearman_service" {
   service_lb_security_group_id     = var.service_lb_security_group_id
 
   turn_off_outside_office_hours = var.turn_off_outside_office_hours
-}
-
-module "fits_service" {
-  source = "./ec2_service"
-
-  name = "fits"
-
-  container_image = "artefactual/fits-ngserver:0.8.4"
-
-  mount_points = [
-    {
-      sourceVolume  = "pipeline-data"
-      containerPath = "/var/archivematica/sharedDirectory"
-    },
-    {
-      sourceVolume  = "tmp-data",
-      containerPath = "/tmp"
-    },
-  ]
-
-  cpu    = local.fits_cpu
-  memory = 2048
-
-  # See comment at top of the file about deployments.
-  deployment_minimum_healthy_percent = 0
-  deployment_maximum_percent         = 100
-
-  cluster_arn  = aws_ecs_cluster.archivematica.arn
-  namespace    = var.namespace
-  namespace_id = aws_service_discovery_private_dns_namespace.archivematica.id
-
-  network_private_subnets = var.network_private_subnets
-
-  interservice_security_group_id   = var.interservice_security_group_id
-  service_egress_security_group_id = var.service_egress_security_group_id
-  service_lb_security_group_id     = var.service_lb_security_group_id
 }
 
 module "clamav_service" {
@@ -181,8 +143,6 @@ module "mcp_client_service" {
 
   environment = {
     DJANGO_SETTINGS_MODULE                                         = "settings.common"
-    NAILGUN_SERVER                                                 = local.fits_hostname
-    NAILGUN_PORT                                                   = "2113"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = var.rds_username
     ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = var.rds_password
     ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = var.rds_host
@@ -243,7 +203,7 @@ module "mcp_client_service" {
   #   - Dashboard
   #   - Storage service
   #   - MCP server
-  #   - Fits
+  #   - (Spare slot, used by Fits in the previous versions)
   #   - (Spare slot)
   #
   # The spare slot is to allow the dashboard/storage service to spin up a second
