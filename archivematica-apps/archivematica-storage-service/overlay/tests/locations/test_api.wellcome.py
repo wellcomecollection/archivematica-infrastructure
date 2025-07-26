@@ -82,7 +82,7 @@ class TestSpaceAPI(TempDirMixin, TestCase):
         assert response.status_code == 201
 
         protocol_model = models.S3.objects.get(space_id=response_data["uuid"])
-        assert protocol_model.s3_endpoint_url == data["endpoint_url"]
+        assert protocol_model.s3_endpoint_url == data["s3_endpoint_url"]
 
     def test_browse_doesnt_traverse_up(self):
         space_uuid = str(uuid.uuid4())
