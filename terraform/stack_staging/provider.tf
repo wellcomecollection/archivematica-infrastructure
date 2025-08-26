@@ -45,3 +45,17 @@ provider "aws" {
     tags = local.default_tags
   }
 }
+
+# AWS provider for platform-read_only role assumption
+provider "aws" {
+  region = "eu-west-1"
+  alias  = "platform_read_only"
+
+  assume_role {
+    role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
+  }
+
+  default_tags {
+    tags = local.default_tags
+  }
+}
