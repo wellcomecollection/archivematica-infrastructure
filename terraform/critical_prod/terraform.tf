@@ -4,8 +4,8 @@ terraform {
   backend "s3" {
     assume_role = {
 
-    role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
-}
+      role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
+    }
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/archivematica-infra/critical_prod.tfstate"
     region = "eu-west-1"
@@ -16,9 +16,9 @@ data "terraform_remote_state" "workflow" {
   backend = "s3"
 
   config = {
-   assume_role = {
-    role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
-}
+    assume_role = {
+      role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
+    }
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/workflow.tfstate"
     region = "eu-west-1"
@@ -29,10 +29,10 @@ data "terraform_remote_state" "storage_service_prod" {
   backend = "s3"
 
   config = {
-  assume_role = {
+    assume_role = {
 
-    role_arn = "arn:aws:iam::975596993436:role/storage-read_only"
-}
+      role_arn = "arn:aws:iam::975596993436:role/storage-read_only"
+    }
     bucket = "wellcomecollection-storage-infra"
     key    = "terraform/storage-service/stack_prod.tfstate"
     region = "eu-west-1"
