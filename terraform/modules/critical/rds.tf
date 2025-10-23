@@ -28,7 +28,7 @@ resource "aws_rds_cluster" "archivematica" {
   vpc_security_group_ids = [aws_security_group.database_sg.id]
 
   engine         = "aurora-mysql"
-  engine_version = "8.0.mysql_aurora.3.08.2"
+  engine_version = "5.7.mysql_aurora.2.11.5"
 }
 
 resource "aws_rds_cluster_instance" "archivematica" {
@@ -65,7 +65,7 @@ resource "aws_rds_cluster_instance" "archivematica" {
 
   apply_immediately = false
 
-  db_parameter_group_name = "default.aurora-mysql8.0"
+  db_parameter_group_name = "default.aurora-mysql5.7"
 }
 
 resource "aws_security_group" "database_sg" {
@@ -100,6 +100,7 @@ resource "aws_security_group" "database_sg" {
   }
 }
 
+
 // NOTE: When migration is complete, we can remove the aws_rds_cluster, and aws_rds_cluster_instance resources above.
 
 module "aurora_rds_cluster" {
@@ -115,5 +116,6 @@ module "aurora_rds_cluster" {
 
   snapshot_identifier = var.snapshot_identifier
 
-  engine_version = "8.0.mysql_aurora.3.07.1"
+  engine_version = "8.0.mysql_aurora.3.10.1"
 }
+

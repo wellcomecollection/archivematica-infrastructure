@@ -12,7 +12,7 @@ output "interservice_security_group_id" {
 
 // NOTE: In order to switch databases, replace with "value = aws_rds_cluster.archivematica.endpoint"
 output "rds_host" {
-  value = aws_rds_cluster.archivematica.endpoint
+  value = module.aurora_rds_cluster.rds_host
 }
 // NOTE: In order to switch databases, replace with "value = aws_rds_cluster.archivematica.endpoint"
 output "rds_port" {
