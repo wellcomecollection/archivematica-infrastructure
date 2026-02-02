@@ -21,6 +21,9 @@ module "stack" {
 
   namespace = "prod"
 
+  # Temporary disable Archivematica turn off to allow for big transfers
+  turn_off_outside_office_hours = false
+
   redis_server = data.terraform_remote_state.critical.outputs.redis_server
   redis_port   = data.terraform_remote_state.critical.outputs.redis_port
 
