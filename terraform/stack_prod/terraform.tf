@@ -3,7 +3,7 @@ terraform {
 
   backend "s3" {
     assume_role = {
-    role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
+      role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
     }
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/archivematica-infra/stack_prod.tfstate"
@@ -16,7 +16,7 @@ data "terraform_remote_state" "critical" {
 
   config = {
     assume_role = {
-    role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
+      role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
     }
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/archivematica-infra/critical_prod.tfstate"
@@ -29,7 +29,7 @@ data "terraform_remote_state" "workflow" {
 
   config = {
     assume_role = {
-    role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
+      role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
     }
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/workflow.tfstate"
@@ -42,7 +42,7 @@ data "terraform_remote_state" "infra" {
 
   config = {
     assume_role = {
-    role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
+      role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
     }
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/archivematica-infra/infra.tfstate"
@@ -55,7 +55,7 @@ data "terraform_remote_state" "shared_archivematica" {
 
   config = {
     assume_role = {
-    role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
+      role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
     }
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/archivematica-infra/infra.tfstate"
@@ -68,7 +68,7 @@ data "terraform_remote_state" "shared_infra" {
 
   config = {
     assume_role = {
-    role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
+      role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
     }
     bucket = "wellcomecollection-platform-infra"
     key    = "terraform/platform-infrastructure/shared.tfstate"
@@ -81,7 +81,7 @@ data "terraform_remote_state" "monitoring" {
 
   config = {
     assume_role = {
-    role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
+      role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
     }
     bucket = "wellcomecollection-platform-infra"
     key    = "terraform/monitoring.tfstate"
