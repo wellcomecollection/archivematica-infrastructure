@@ -116,6 +116,6 @@ module "aurora_rds_cluster" {
 
   snapshot_identifier = var.snapshot_identifier
 
-  engine_version = "8.0.mysql_aurora.3.10.1"
+  engine_version = "8.0.mysql_aurora.3.10.3"
 }
 
