@@ -6,30 +6,39 @@ import re
 import subprocess
 import tempfile
 import time
+from urllib.parse import urljoin, urlencode
 
 import boto3
 import botocore
 from django.db import models
-from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext_lazy as _
-from django.utils.six.moves.urllib.parse import urljoin, urlencode
-from wellcome_storage_service import BagNotFound, RequestsOAuthStorageServiceClient as StorageServiceClient
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+from wellcome_storage_service import (
+    BagNotFound,
+    RequestsOAuthStorageServiceClient as StorageServiceClient,
+)
 
 from . import StorageException
 from . import Package
 from .location import Location
 
 
-TOKEN_HELP_TEXT = _('URL of the OAuth token endpoint, e.g. https://auth.wellcomecollection.org/oauth2/token')
-API_HELP_TEXT = _('Root URL of the storage service API, e.g. https://api.wellcomecollection.org/storage/v1')
-CALLBACK_HELP_TEXT = _('Publicly accessible URL of the Archivematica storage service accessible to Wellcome storage service for callback')
+TOKEN_HELP_TEXT = _(
+    "URL of the OAuth token endpoint, e.g. https://auth.wellcomecollection.org/oauth2/token"
+)
+API_HELP_TEXT = _(
+    "Root URL of the storage service API, e.g. https://api.wellcomecollection.org/storage/v1"
+)
+CALLBACK_HELP_TEXT = _(
+    "Publicly accessible URL of the Archivematica storage service accessible to Wellcome storage service for callback"
+)
 
 LOGGER = logging.getLogger(__name__)
 
 
 # The script we use to download a compressed bag from S3.
 # This is run in a subprocess.
-DOWNLOAD_BAG_SCRIPT = '''
+DOWNLOAD_BAG_SCRIPT = """
 import json, sys
 from wellcome_storage_service import download_compressed_bag
 
@@ -38,7 +47,7 @@ dest_path = sys.argv[2]
 top_level_dir=sys.argv[3]
 
 download_compressed_bag(storage_manifest=bag, out_path=dest_path, top_level_dir=top_level_dir)
-'''
+"""
 
 
 def boto_exception(fn):
@@ -56,26 +65,26 @@ def handle_ingest(ingest, package):
     """
     Handle an ingest json response
     """
-    status = ingest['status']['id']
-    if status == 'succeeded':
+    status = ingest["status"]["id"]
+    if status == "succeeded":
         package.status = Package.UPLOADED
         # Strip the directory context from the package path so it is
         # in the format NAME-uuid.tar.gz
         package.current_path = os.path.basename(package.current_path)
-        bag_info = ingest['bag']['info']
+        bag_info = ingest["bag"]["info"]
         package.misc_attributes["wellcome.version"] = bag_info["version"]
 
-        LOGGER.debug('Package path: %s', package.current_path)
-        LOGGER.debug('Package attributes: %s', package.misc_attributes)
+        LOGGER.debug("Package path: %s", package.current_path)
+        LOGGER.debug("Package attributes: %s", package.misc_attributes)
 
         package.save()
 
-    elif status == 'failed':
-        LOGGER.error('Ingest failed')
+    elif status == "failed":
+        LOGGER.error("Ingest failed")
         package.status = Package.FAIL
         package.save()
-        for event in ingest['events']:
-            LOGGER.info('{type}: {description}'.format(**event))
+        for event in ingest["events"]:
+            LOGGER.info("{type}: {description}".format(**event))
 
     else:
         LOGGER.info("Unrecognised package status: %s", status)
@@ -97,7 +106,7 @@ def mkdir_p(dirpath):
             raise
 
 
-FNULL = open(os.devnull, 'w')
+FNULL = open(os.devnull, "w")
 
 
 class WellcomeIdentifier(object):
@@ -116,7 +125,7 @@ class WellcomeIdentifier(object):
         return WellcomeIdentifier(
             space=new_space,
             external_identifier=self.external_identifier,
-            internal_identifier=self.internal_identifier
+            internal_identifier=self.internal_identifier,
         )
 
 
@@ -140,9 +149,7 @@ def _find_transfer_mets_path(bag_dir):
 
     if len(os.listdir(submission_docs_dir)) == 1:
         return os.path.join(
-            submission_docs_dir,
-            os.listdir(submission_docs_dir)[0],
-            "METS.xml"
+            submission_docs_dir, os.listdir(submission_docs_dir)[0], "METS.xml"
         )
     else:
         return None
@@ -174,9 +181,7 @@ def get_wellcome_identifier(src_path, package_uuid, space):
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
             subprocess.check_call(
-                ["tar", "-xzf", src_path, "-C", temp_dir],
-                stdout=FNULL,
-                stderr=FNULL
+                ["tar", "-xzf", src_path, "-C", temp_dir], stdout=FNULL, stderr=FNULL
             )
         except subprocess.CalledProcessError as err:
             LOGGER.debug("Error uncompressing tar.gz bag: %r", err)
@@ -187,7 +192,8 @@ def get_wellcome_identifier(src_path, package_uuid, space):
         if len(os.listdir(temp_dir)) != 1:
             LOGGER.debug(
                 "Unable to identify root of bag in: os.listdir(%r) = %r",
-                temp_dir, os.listdir(temp_dir)
+                temp_dir,
+                os.listdir(temp_dir),
             )
             raise NoWellcomeIdentifierFound()
 
@@ -207,7 +213,9 @@ def get_wellcome_identifier(src_path, package_uuid, space):
 
         if not os.path.isfile(transfer_mets_path):
             LOGGER.warn(
-                "Unable to find transfer METS file in bag at path: %r", transfer_mets_path)
+                "Unable to find transfer METS file in bag at path: %r",
+                transfer_mets_path,
+            )
             raise NoWellcomeIdentifierFound()
 
         # Try to get some identifiers from the METS files.  We try to use the
@@ -217,10 +225,12 @@ def get_wellcome_identifier(src_path, package_uuid, space):
             LOGGER.debug("Looking for Dublin-Core identifiers in the METS")
             wellcome_identifier = WellcomeIdentifier(
                 space=space,
-                external_identifier=get_common_prefix(extract_dc_identifiers(mets_path)),
-                internal_identifier=package_uuid
+                external_identifier=get_common_prefix(
+                    extract_dc_identifiers(mets_path)
+                ),
+                internal_identifier=package_uuid,
             )
-        except NoCommonPrefix as err:
+        except NoCommonPrefix:
             LOGGER.debug("No common prefix in the Dublin-Core identifiers")
             LOGGER.debug("Looking for accession numbers in the transfer METS")
             try:
@@ -236,7 +246,7 @@ def get_wellcome_identifier(src_path, package_uuid, space):
                 wellcome_identifier = WellcomeIdentifier(
                     space=space,
                     external_identifier=external_identifier,
-                    internal_identifier=package_uuid
+                    internal_identifier=package_uuid,
                 )
             except NoCommonPrefix:
                 LOGGER.debug("No common prefix in the accession numbers")
@@ -271,26 +281,31 @@ def get_wellcome_identifier(src_path, package_uuid, space):
                 script,
                 bag_dir,
                 wellcome_identifier.external_identifier,
-                wellcome_identifier.internal_identifier
+                wellcome_identifier.internal_identifier,
             ],
             stdout=FNULL,
-            stderr=FNULL
+            stderr=FNULL,
         )
 
         # Recompress the bag.  We write it to a temporary path first, so if we
         # corrupt something, the original tar.gz is preserved.
         try:
-            subprocess.check_call([
-                "tar",
-
-                # Compress to /src_path.tmp using gzip compression (-z)
-                "-czvf", src_path + ".tmp",
-
-                # cd into temp_dir first, then compress everything it contains.
-                # This means all the files in the tar.gz are relative, not
-                # absolute paths to /tmp/...
-                "-C", temp_dir, "."
-            ], stdout=FNULL, stderr=FNULL)
+            subprocess.check_call(
+                [
+                    "tar",
+                    # Compress to /src_path.tmp using gzip compression (-z)
+                    "-czvf",
+                    src_path + ".tmp",
+                    # cd into temp_dir first, then compress everything it contains.
+                    # This means all the files in the tar.gz are relative, not
+                    # absolute paths to /tmp/...
+                    "-C",
+                    temp_dir,
+                    ".",
+                ],
+                stdout=FNULL,
+                stderr=FNULL,
+            )
         except subprocess.CalledProcessError as err:
             LOGGER.debug("Error repacking bag as tar.gz: %r" % err)
 
@@ -315,7 +330,7 @@ class S3SpaceModelMixin(models.Model):
     aws_assumed_role = models.CharField(
         max_length=256,
         blank=True,
-        verbose_name=_('Assumed AWS IAM Role'),
+        verbose_name=_("Assumed AWS IAM Role"),
     )
     s3_endpoint_url = models.CharField(
         max_length=2048,
@@ -371,9 +386,7 @@ class S3SpaceModelMixin(models.Model):
         """
         LOGGER.debug("Test the S3 bucket '%s' exists", self.bucket_name)
         try:
-            loc_info = self.s3_resource.meta.client.head_bucket(
-                Bucket=self.bucket_name
-            )
+            loc_info = self.s3_resource.meta.client.head_bucket(Bucket=self.bucket_name)
             LOGGER.debug("S3 bucket's response: %s", loc_info)
         except botocore.exceptions.ClientError as err:
             error_code = err.response["Error"]["Code"]
@@ -391,7 +404,7 @@ class S3SpaceModelMixin(models.Model):
 
 
 class WellcomeStorageService(S3SpaceModelMixin):
-    space = models.OneToOneField('Space', to_field='uuid')
+    space = models.OneToOneField("Space", on_delete=models.CASCADE, to_field="uuid")
     token_url = models.URLField(max_length=256, help_text=TOKEN_HELP_TEXT)
     api_root_url = models.URLField(max_length=256, help_text=API_HELP_TEXT)
 
@@ -399,16 +412,18 @@ class WellcomeStorageService(S3SpaceModelMixin):
     app_client_id = models.CharField(max_length=300, blank=True, null=True)
     app_client_secret = models.CharField(max_length=300, blank=True, null=True)
 
-    callback_host = models.URLField(max_length=256, help_text=CALLBACK_HELP_TEXT, blank=True)
+    callback_host = models.URLField(
+        max_length=256, help_text=CALLBACK_HELP_TEXT, blank=True
+    )
     callback_username = models.CharField(max_length=150, blank=True)
     callback_api_key = models.CharField(max_length=256, blank=True)
 
     def browse(self, path):
-        LOGGER.debug('Browsing %s on Wellcome storage', path)
+        LOGGER.debug("Browsing %s on Wellcome storage", path)
         return {
-            'directories': set(),
-            'entries': set(),
-            'properties': {},
+            "directories": set(),
+            "entries": set(),
+            "properties": {},
         }
 
     @property
@@ -421,18 +436,22 @@ class WellcomeStorageService(S3SpaceModelMixin):
         )
 
     def delete_path(self, delete_path):
-        LOGGER.debug('Deleting %s from Wellcome storage', delete_path)
+        LOGGER.debug("Deleting %s from Wellcome storage", delete_path)
 
     def move_to_storage_service(self, src_path, dest_path, dest_space):
-        raise NotImplementedError(_("Wellcome Storage service does not implement fetching packages through Archivematica"))
+        raise NotImplementedError(
+            _(
+                "Wellcome Storage service does not implement fetching packages through Archivematica"
+            )
+        )
 
     def move_from_storage_service(self, src_path, dest_path, package=None):
         """
         Upload an AIP from Archivematica to the Wellcome Storage.
         """
-        LOGGER.debug('Moving %s to %s on Wellcome storage', src_path, dest_path)
+        LOGGER.debug("Moving %s to %s on Wellcome storage", src_path, dest_path)
 
-        s3_temporary_path = dest_path.lstrip('/')
+        s3_temporary_path = dest_path.lstrip("/")
         bucket = self.s3_resource.Bucket(self.s3_bucket)
 
         # The src_path to the package is typically a string of the form
@@ -451,9 +470,7 @@ class WellcomeStorageService(S3SpaceModelMixin):
         space = location.relative_path.strip(os.path.sep)
 
         wellcome_identifier = get_wellcome_identifier(
-            src_path=src_path,
-            package_uuid=package.uuid,
-            space=space
+            src_path=src_path, package_uuid=str(package.uuid), space=space
         )
 
         # The Wellcome Storage reads packages out of S3, so we need to
@@ -467,19 +484,20 @@ class WellcomeStorageService(S3SpaceModelMixin):
         except Exception as err:
             LOGGER.warn("Error uploading %s to S3: %r", src_path, err)
             raise StorageException(
-                _('%(path)s is not a file, may be a directory or not exist') %
-                {'path': src_path})
+                _("%(path)s is not a file, may be a directory or not exist")
+                % {"path": src_path}
+            )
 
         # We don't know if other packages have been ingested to the
         # Wellcome Storage for this identifier -- query for existing bags,
         # and select an ingest type appropriately.
-        if wellcome_identifier.external_identifier == package.uuid:
+        if wellcome_identifier.external_identifier == str(package.uuid):
             ingest_type = "create"
         else:
             try:
                 self.wellcome_client.get_bag(
                     space=wellcome_identifier.space,
-                    external_identifier=wellcome_identifier.external_identifier
+                    external_identifier=wellcome_identifier.external_identifier,
                 )
             except BagNotFound:
                 ingest_type = "create"
@@ -492,22 +510,30 @@ class WellcomeStorageService(S3SpaceModelMixin):
         # See https://github.com/wellcometrust/platform/issues/3534
         callback_url = urljoin(
             self.callback_host,
-            '%s?%s' % (
-                reverse('wellcome_callback', args=['v2', 'file', package.uuid]),
-                urlencode([
-                    ("username", self.callback_username),
-                    ("api_key", self.callback_api_key),
-                ])
-            ))
+            "%s?%s"
+            % (
+                reverse("wellcome_callback", args=["v2", "file", str(package.uuid)]),
+                urlencode(
+                    [
+                        ("username", self.callback_username),
+                        ("api_key", self.callback_api_key),
+                    ]
+                ),
+            ),
+        )
 
         # Record the attributes on the package, so we can use them to
         # retrieve a bag later.
-        package.misc_attributes["wellcome.external_identifier"] = wellcome_identifier.external_identifier
+        package.misc_attributes["wellcome.external_identifier"] = (
+            wellcome_identifier.external_identifier
+        )
         package.misc_attributes["wellcome.space"] = wellcome_identifier.space
 
         LOGGER.info(
             "Uploading to Wellcome Storage with external identifier %s, space %s, ingest type %s",
-            wellcome_identifier.external_identifier, wellcome_identifier.space, ingest_type
+            wellcome_identifier.external_identifier,
+            wellcome_identifier.space,
+            ingest_type,
         )
 
         # For reingests, the package status will still be 'uploaded'
@@ -527,14 +553,14 @@ class WellcomeStorageService(S3SpaceModelMixin):
             callback_url=callback_url,
             ingest_type=ingest_type,
         )
-        LOGGER.info('Ingest_location: %s', location)
+        LOGGER.info("Ingest_location: %s", location)
 
-        LOGGER.debug('Current package status is %s', package.status)
+        LOGGER.debug("Current package status is %s", package.status)
         while package.status == Package.STAGING:
             # Wait for callback to have been called
             for i in range(6):
                 package.refresh_from_db()
-                LOGGER.debug('Polled package; status is %s', package.status)
+                LOGGER.debug("Polled package; status is %s", package.status)
                 time.sleep(10)
                 if package.status != Package.STAGING:
                     break
@@ -546,7 +572,7 @@ class WellcomeStorageService(S3SpaceModelMixin):
                 # It's possible we missed the callback (e.g. Archivematica was unavailable?)
                 # because the storage service won't retry.
                 ingest = self.wellcome_client.get_ingest_from_location(location)
-                if ingest['callback']['status']['id'] == 'processing':
+                if ingest["callback"]["status"]["id"] == "processing":
                     # Just keep waiting for the callback
                     LOGGER.info("Still waiting for callback")
                 else:
@@ -556,8 +582,8 @@ class WellcomeStorageService(S3SpaceModelMixin):
 
         if package.status == Package.FAIL:
             raise StorageException(
-                _("Failed to store package %(path)s") %
-                {'path': src_path})
+                _("Failed to store package %(path)s") % {"path": src_path}
+            )
 
         # Clean up the package when we're done, regardless of what happened --
         # it avoids the Archivematica disk filling up, and this can be
@@ -667,7 +693,7 @@ def extract_accession_identifiers(transfer_mets_path):
 
             match = re.match(
                 r'^<mets:altRecordID TYPE="Accession ID">(?P<identifier>[^<]+)</mets:altRecordID>$',
-                line.strip()
+                line.strip(),
             )
 
             if match is None:

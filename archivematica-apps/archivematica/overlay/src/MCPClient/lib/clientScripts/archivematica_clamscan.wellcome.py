@@ -19,6 +19,7 @@ we skip trying to find any.  Our hope is that this reduces database load.
 See https://github.com/wellcomecollection/archivematica-infrastructure/issues/134
 
 """
+
 # This file is part of Archivematica.
 #
 # Copyright 2010-2017 Artefactual Systems Inc. <http://artefactual.com>
@@ -47,18 +48,15 @@ import uuid
 import django
 
 django.setup()
-from django.db import transaction
-from django.conf import settings as mcpclient_settings
-
-from clamd import (
-    ClamdUnixSocket,
-    ClamdNetworkSocket,
-    BufferTooLongError,
-    ConnectionError,
-)
+from clamd import BufferTooLongError
+from clamd import ClamdNetworkSocket
+from clamd import ClamdUnixSocket
+from clamd import ConnectionError
 from custom_handlers import get_script_logger
 from databaseFunctions import insertIntoEvents
-from main.models import Event, File
+from django.conf import settings as mcpclient_settings
+from django.db import transaction
+from main.models import Event
 
 logger = get_script_logger("archivematica.mcp.client.clamscan")
 
@@ -141,10 +139,9 @@ class ClamdScanner(ScannerBase):
             state, details = result[result_key]
         except Exception as err:
             passed = ClamdScanner.clamd_exception_handler(err)
-        finally:
-            if state == "OK":
-                passed = True
-            return passed, state, details
+        if state == "OK":
+            passed = True
+        return passed, state, details
 
     @staticmethod
     def clamd_exception_handler(err):
@@ -167,7 +164,7 @@ class ClamdScanner(ScannerBase):
             return None
         elif isinstance(err, ConnectionError):
             logger.error(
-                "Clamd ConnectionError. File not scanned. Check Clamd " "output: %s",
+                "Clamd ConnectionError. File not scanned. Check Clamd output: %s",
                 err,
             )
             return None
@@ -243,9 +240,12 @@ def file_already_scanned(file_uuid):
     # for an already-scanned file to come through this check.
     return False
 
-    return Event.objects.filter(
-        file_uuid_id=file_uuid, event_type="virus check"
-    ).exists()
+    return (
+        file_uuid != "None"
+        and Event.objects.filter(
+            file_uuid_id=file_uuid, event_type="virus check"
+        ).exists()
+    )
 
 
 def queue_event(file_uuid, date, scanner, passed, queue):
@@ -254,9 +254,7 @@ def queue_event(file_uuid, date, scanner, passed, queue):
 
     event_detail = ""
     if scanner is not None:
-        event_detail = 'program="{}"; version="{}"; virusDefinitions="{}"'.format(
-            scanner.program(), scanner.version(), scanner.virus_definitions()
-        )
+        event_detail = f'program="{scanner.program()}"; version="{scanner.version()}"; virusDefinitions="{scanner.virus_definitions()}"'
 
     outcome = "Pass" if passed else "Fail"
     logger.info("Recording new event for file %s (outcome: %s)", file_uuid, outcome)
@@ -298,9 +296,8 @@ def get_scanner():
     """
     choice = str(mcpclient_settings.CLAMAV_CLIENT_BACKEND).lower()
     if choice not in SCANNERS_NAMES:
-
         logger.warning(
-            "Unexpected antivirus scanner (CLAMAV_CLIENT_BACKEND):" ' "%s"; using %s.',
+            'Unexpected antivirus scanner (CLAMAV_CLIENT_BACKEND): "%s"; using %s.',
             choice,
             DEFAULT_SCANNER.__name__,
         )
@@ -314,12 +311,12 @@ def get_size(file_uuid, path):
     # if file_uuid != "None":
     #     try:
     #         return File.objects.get(uuid=file_uuid).size
-    #     except File.DoesNotExist:
+    #     except (File.DoesNotExist, ValidationError):
     #         pass
     # Our fallback.
     try:
         return os.path.getsize(path)
-    except:
+    except Exception:
         return None
 
 
@@ -371,7 +368,7 @@ def scan_file(event_queue, file_uuid, path, date, task_uuid):
         else:
             passed, state, details = None, None, None
 
-    except:
+    except Exception:
         logger.error("Unexpected error scanning file %s", path, exc_info=True)
         return 1
     else:

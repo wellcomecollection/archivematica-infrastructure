@@ -9,17 +9,17 @@
 # own copy of AsyncManager, and that's OK: where it matters, we'll only interact
 # with the tasks we're responsible for.  And when expiring old entries from the
 # database, it doesn't matter if another AsyncManager does our job for us.
-
 import datetime
 import logging
 import threading
 import time
 import traceback
+from typing import List
 
 from django.utils import timezone
 
 from .. import metrics
-from .asynchronous import Async  # noqa
+from .asynchronous import Async
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class RunningTask:
 
 
 class AsyncManager:
-    running_tasks = []
+    running_tasks: List[Async] = []
     lock = threading.Lock()
 
     @staticmethod

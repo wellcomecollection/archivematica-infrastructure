@@ -8,6 +8,8 @@ module "critical" {
     aws.digitisation = aws.digitisation
   }
 
+  snapshot_identifier = "archivematicaprod-20251123-before-migration-trimmed"
+
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets
 
   vpc_id = data.terraform_remote_state.workflow.outputs.vpc_id

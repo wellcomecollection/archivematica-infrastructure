@@ -3,7 +3,7 @@
 set -o errexit
 set -o nounset
 
-ARCHIVEMATICA_TAG=v0.20.1
+ARCHIVEMATICA_TAG=v0.23.0
 
 ROOT=$(git rev-parse --show-toplevel)
 CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" "$ROOT"/archivematica-apps/archivematica-storage-service)

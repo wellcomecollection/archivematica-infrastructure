@@ -6,11 +6,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('locations', '0031_merge_20221017_0727'),
-        ('locations', '0033_package_checksum'),
+        ("locations", "0031_merge_20221017_0727"),
+        ("locations", "0033_package_checksum"),
     ]
 
-    operations = [
-    ]
+    operations = []
