@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import re
+import uuid
 from unittest.mock import patch
 
 import boto3
@@ -12,8 +13,9 @@ import s3_start_transfer
 
 
 def _write_transfer_package(
-    s3, *, bucket_name, filename, key="born-digital/transfer_package.zip"
+    sess, *, bucket_name, filename, key="born-digital/transfer_package.zip"
 ):
+    s3 = sess.resource("s3")
     bucket = s3.Bucket(bucket_name)
     bucket.create()
 
@@ -22,7 +24,8 @@ def _write_transfer_package(
     return key
 
 
-def _find_log_object(s3, *, bucket_name):
+def _find_log_object(sess, *, bucket_name):
+    s3 = sess.resource("s3")
     bucket = s3.Bucket(bucket_name)
 
     bucket_objects = list(bucket.objects.all())
@@ -42,13 +45,13 @@ class TestStartTransfer:
     def test_valid_transfer_is_started(
         self, mock_get_target_path, mock_start_transfer, bucket_name
     ):
-        s3 = boto3.resource("s3")
+        sess = boto3.Session()
 
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename="valid_transfer_package.zip"
+            sess, bucket_name=bucket_name, filename="valid_transfer_package.zip"
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
         mock_get_target_path.assert_called_with(
             bucket=bucket_name, directory="born-digital", key="transfer_package.zip"
@@ -66,16 +69,16 @@ class TestStartTransfer:
     def test_valid_accession_transfer_is_started(
         self, mock_get_target_path, mock_start_transfer, bucket_name
     ):
-        s3 = boto3.resource("s3")
+        sess = boto3.Session()
 
         key = _write_transfer_package(
-            s3,
+            sess,
             bucket_name=bucket_name,
             filename="valid_accession_package.zip",
             key="born-digital-accessions/LEMON_1234.zip",
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
         mock_get_target_path.assert_called_with(
             bucket=bucket_name,
@@ -95,15 +98,16 @@ class TestStartTransfer:
     def test_valid_transfer_creates_success_log(
         self, mock_get_target_path, mock_start_transfer, bucket_name
     ):
-        s3 = boto3.resource("s3")
+        mock_start_transfer.return_value = str(uuid.uuid4())
+        sess = boto3.Session()
 
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename="valid_transfer_package.zip"
+            sess, bucket_name=bucket_name, filename="valid_transfer_package.zip"
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
-        log_object = _find_log_object(s3, bucket_name=bucket_name)
+        log_object = _find_log_object(sess, bucket_name=bucket_name)
 
         # Example: born-digital/transfer_package.zip.success.2019-12-13_14-46-09.log
         assert re.match(
@@ -116,14 +120,14 @@ class TestStartTransfer:
 
     @mock_s3
     def test_verification_failure_writes_failed_log(self, bucket_name):
-        s3 = boto3.resource("s3")
+        sess = boto3.Session()
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename="no_metadata_csv.zip"
+            sess, bucket_name=bucket_name, filename="no_metadata_csv.zip"
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
-        log_object = _find_log_object(s3, bucket_name=bucket_name)
+        log_object = _find_log_object(sess, bucket_name=bucket_name)
 
         # Example: born-digital/transfer_package.zip.failed.2019-12-13_14-46-09.log
         assert re.match(
@@ -132,7 +136,7 @@ class TestStartTransfer:
         )
 
         log_text = log_object.get()["Body"].read()
-        assert b"== Check 3: verify_has_a_metadata_csv ==\nCheck failed:" in log_text
+        assert b"== Check 1: verify_has_a_metadata_csv ==\nCheck failed:" in log_text
 
     @mock_s3
     @patch.object(archivematica, "start_transfer")
@@ -149,30 +153,30 @@ class TestStartTransfer:
     def test_verification_failure_does_not_start_transfer(
         self, mock_get_target_path, mock_start_transfer, bucket_name, filename, key
     ):
-        s3 = boto3.resource("s3")
+        sess = boto3.Session()
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename=filename, key=key
+            sess, bucket_name=bucket_name, filename=filename, key=key
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
         mock_get_target_path.assert_not_called()
         mock_start_transfer.assert_not_called()
 
     @mock_s3
     def test_error_while_calling_archivematica_writes_failure_log(self, bucket_name):
-        s3 = boto3.resource("s3")
+        sess = boto3.Session()
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename="valid_transfer_package.zip"
+            sess, bucket_name=bucket_name, filename="valid_transfer_package.zip"
         )
 
         def boom(*args, **kwargs):
             raise ValueError("BOOM!")
 
         with patch.object(archivematica, "get_target_path", boom):
-            s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+            s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
-        log_object = _find_log_object(s3, bucket_name=bucket_name)
+        log_object = _find_log_object(sess, bucket_name=bucket_name)
 
         # Example: born-digital/transfer_package.zip.failed.2019-12-13_14-46-09.log
         assert re.match(
@@ -186,17 +190,17 @@ class TestStartTransfer:
 
 @mock_s3
 def test_main_runs_all_events(bucket_name):
-    s3 = boto3.resource("s3")
+    sess = boto3.Session()
 
     _write_transfer_package(
-        s3,
+        sess,
         bucket_name=bucket_name,
         filename="valid_transfer_package.zip",
         key="born-digital/transfer_package1.zip",
     )
 
     _write_transfer_package(
-        s3,
+        sess,
         bucket_name=bucket_name,
         filename="valid_transfer_package.zip",
         key="born-digital/transfer_package2.zip",
