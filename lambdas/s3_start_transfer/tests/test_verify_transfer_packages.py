@@ -111,7 +111,6 @@ class TestVerifyHasMetadataCsv:
         with pytest.raises(VerificationFailure) as err:
             verify_has_a_metadata_csv(file_listing=file_listing)
 
-
         assert str(err.value).startswith(
             "Your transfer package must have a file ``metadata/metadata.csv``\n"
             "that describes the objects in the package."
@@ -131,7 +130,9 @@ class TestVerifyOnlyMetadataCsvInMetadataDir:
         file_listing = _get_file_listing(name)
 
         with pytest.raises(VerificationFailure) as err:
-            verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing=file_listing)
+            verify_only_metadata_and_rights_csv_in_metadata_dir(
+                file_listing=file_listing
+            )
 
         assert str(err.value).startswith(
             "Your transfer package has unexpected files in the ``metadata/`` folder.\n"
