@@ -95,6 +95,36 @@ class TestStartTransfer:
     @mock_s3
     @patch.object(archivematica, "start_transfer")
     @patch.object(archivematica, "get_target_path")
+    def test_valid_uncatalogued_transfer_is_started(
+        self, mock_get_target_path, mock_start_transfer, bucket_name
+    ):
+        sess = boto3.Session()
+
+        key = _write_transfer_package(
+            sess,
+            bucket_name=bucket_name,
+            # TODO: replace with a valid uncatalogued file.
+            filename="valid_accession_package.zip",
+            key="uncatalogued-material/LEMON_1234.zip",
+        )
+
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
+
+        mock_get_target_path.assert_called_with(
+            bucket=bucket_name,
+            directory="uncatalogued-material",
+            key="LEMON_1234.zip",
+        )
+        mock_start_transfer.assert_called_with(
+            name="LEMON_1234.zip",
+            path=mock_get_target_path.return_value,
+            processing_config="uncatalogued_material",
+            accession_number="1234",
+        )
+
+    @mock_s3
+    @patch.object(archivematica, "start_transfer")
+    @patch.object(archivematica, "get_target_path")
     def test_valid_transfer_creates_success_log(
         self, mock_get_target_path, mock_start_transfer, bucket_name
     ):

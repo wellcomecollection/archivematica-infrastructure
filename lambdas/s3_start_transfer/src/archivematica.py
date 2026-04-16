@@ -191,6 +191,8 @@ def start_transfer(name, path, processing_config, accession_number=None):
 def choose_processing_config(key):
     if key.startswith("born-digital/"):
         return "born_digital"
+    elif key.startswith("uncatalogued-material/"):
+        return "uncatalogued_material"
     elif key.startswith("born-digital-accessions/"):
         return "b_dig_accessions"
     else:

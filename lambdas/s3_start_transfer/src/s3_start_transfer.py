@@ -73,7 +73,9 @@ def verify_s3_package(sess, *, logger, bucket, key):
         verify_only_metadata_and_rights_csv_in_metadata_dir,
     ]
 
-    if key.startswith("born-digital-accessions/"):
+    if key.startswith("born-digital-accessions/") or key.startswith(
+        "uncatalogued-material/"
+    ):
         verifications.append(verify_metadata_csv_has_accession_fields)
     else:
         verifications.append(verify_metadata_csv_has_dc_identifier)

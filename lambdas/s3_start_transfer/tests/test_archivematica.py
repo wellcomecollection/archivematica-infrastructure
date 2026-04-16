@@ -142,6 +142,7 @@ def test_start_transfer_raises_upon_error(mock_am_post):
         ("born-digital/PPABC1.zip", "born_digital"),
         ("born-digital/lexie/PPABC1.zip", "born_digital"),
         ("born-digital-accessions/WT1234.zip", "b_dig_accessions"),
+        ("uncatalogued-material/UM1234.zip", "uncatalogued_material"),
     ],
 )
 def test_choose_processing_config(s3_key, processing_config):

@@ -76,7 +76,10 @@ $ coverage report
 
     The Lambda may be trying to initiate a transfer from part of the bucket which isn't configured as a transfer source in Archivematica.
 
-    We should have two top-level folders configured as transfer sources: `/born-digital` and `/born-digital-accessions`.
+    We should have three top-level folders configured as transfer sources:
+    - `/born-digital`
+    - `/born-digital-accessions` and
+    - `/uncatalogued-material`
     To fix, set up these folders as transfer sources.
 
     See the bootstrapping docs elsewhere in this repo.
