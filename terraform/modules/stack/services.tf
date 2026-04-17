@@ -38,6 +38,7 @@ module "gearman_service" {
     "--queue-type=redis",
     "--redis-server=${var.redis_server}",
     "--redis-port=${var.redis_port}",
+    "--verbose=DEBUG",
   ]
 
   cpu    = 256
