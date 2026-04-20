@@ -240,9 +240,6 @@ def get_wellcome_identifier(src_path, package_uuid, space):
                 LOGGER.debug("Found accession numbers: %r", accession_numbers)
                 external_identifier = get_common_prefix(accession_numbers)
 
-                if not space.endswith("-accessions"):
-                    space = "%s-accessions" % space
-
                 wellcome_identifier = WellcomeIdentifier(
                     space=space,
                     external_identifier=external_identifier,
