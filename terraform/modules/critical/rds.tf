@@ -58,7 +58,7 @@ resource "aws_rds_cluster_instance" "archivematica" {
   # previous settings for context.
   #
   # See https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Managing.Performance.html
-  instance_class = "db.t4g.medium"
+  instance_class = "db.r5.large"
 
   engine         = aws_rds_cluster.archivematica.engine
   engine_version = aws_rds_cluster.archivematica.engine_version
