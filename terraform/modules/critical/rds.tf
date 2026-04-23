@@ -97,7 +97,7 @@ module "aurora_rds_cluster" {
 
   snapshot_identifier = var.snapshot_identifier
 
-    # Note: right-sizing this instance has been historically tricky.
+  # Note: right-sizing this instance has been historically tricky.
   # This is the history of our sizes, and the max connections, which has
   # traditionally been our limiting factor:
   #
