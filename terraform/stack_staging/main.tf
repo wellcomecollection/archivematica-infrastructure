@@ -55,7 +55,7 @@ module "stack" {
   service_egress_security_group_id = data.terraform_remote_state.workflow.outputs.service_egress_security_group_id
   service_lb_security_group_id     = data.terraform_remote_state.workflow.outputs.service_lb_security_group_id
 
-  container_host_ami = data.aws_ami.container_host_ami.image_id
+  container_host_ami = "resolve:ssm:arn:aws:ssm:eu-west-1:299497370133:parameter/imagebuilder/weco-al2023-ecs-optimised-x86_64/latest"
 
   admin_cidr_ingress = local.admin_cidr_ingress
 
