@@ -366,6 +366,9 @@ module "dashboard_service" {
     # storage service is indexed separately in the reporting cluster.
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_SEARCH_ENABLED = false
 
+    # Change the default timeout for S3 browsing from 5s to 300s
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_STORAGE_SERVICE_CLIENT_QUICK_TIMEOUT = 30
+
     # Send the session cookie when Azure redirects back to the OIDC callback.
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_SESSION_COOKIE_SAMESITE = "Lax"
     ARCHIVEMATICA_DASHBOARD_OIDC_AUTHENTICATION               = "true"
