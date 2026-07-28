@@ -8,13 +8,17 @@ from unittest import mock
 from urllib.parse import urlparse
 
 import pytest
-from administration import roles
 from django.contrib.auth.models import User
 from django.test import Client
 from django.test import TestCase
 from django.urls import reverse
-from locations import models
-from locations.api.sword.views import _parse_name_and_content_urls_from_mets_file
+
+from archivematica.storage_service.administration import roles
+from archivematica.storage_service.locations import models
+from archivematica.storage_service.locations import package_request
+from archivematica.storage_service.locations.api.sword.views import (
+    _parse_name_and_content_urls_from_mets_file,
+)
 
 from . import TempDirMixin
 
@@ -48,7 +52,7 @@ class TestSpaceAPI(TempDirMixin, TestCase):
         ).decode("utf8")
         response = self.client.get("/api/v2/space/")
         assert response.status_code == 200
-        response_content = json.loads(response.content)
+        response_content = json.loads(response.text)
         assert len(response_content["objects"]) != 0
 
     def test_non_admins_can_read_detail(self):
@@ -61,7 +65,7 @@ class TestSpaceAPI(TempDirMixin, TestCase):
             "/api/v2/space/7d20c992-bc92-4f92-a794-7161ff2cc08b/"
         )
         assert response.status_code == 200
-        assert response.content
+        assert response.text
 
     def test_create_space(self):
         data = {
@@ -78,7 +82,7 @@ class TestSpaceAPI(TempDirMixin, TestCase):
         response = self.client.post(
             "/api/v2/space/", data=json.dumps(data), content_type="application/json"
         )
-        response_data = json.loads(response.content.decode("utf8"))
+        response_data = json.loads(response.text)
         assert response.status_code == 201
 
         protocol_model = models.S3.objects.get(space_id=response_data["uuid"])
@@ -98,10 +102,7 @@ class TestSpaceAPI(TempDirMixin, TestCase):
             {"path": "/home/foo/../../etc"},
         )
         assert response.status_code == 400
-        assert (
-            "The path parameter must be relative to the space path"
-            in response.content.decode("utf8")
-        )
+        assert "The path parameter must be relative to the space path" in response.text
 
     def test_browse_follow_symlinks(self):
         # Create a directory with two subdirectories and a file
@@ -135,7 +136,7 @@ class TestSpaceAPI(TempDirMixin, TestCase):
         assert response.status_code == 200
 
         # Assert we get the two top level child directories
-        response_content = json.loads(response.content)
+        response_content = json.loads(response.text)
         assert sorted(
             base64.b64decode(e).decode() for e in response_content["directories"]
         ) == ["child_1", "child_2"]
@@ -158,7 +159,7 @@ class TestSpaceAPI(TempDirMixin, TestCase):
         assert response.status_code == 200
 
         # Assert we get the inner text file
-        response_content = json.loads(response.content)
+        response_content = json.loads(response.text)
         assert response_content["directories"] == []
         assert sorted(
             base64.b64decode(e).decode() for e in response_content["entries"]
@@ -228,7 +229,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
         ).decode("utf8")
         response = self.client.get("/api/v2/location/")
         assert response.status_code == 200
-        response_content = json.loads(response.content)
+        response_content = json.loads(response.text)
         assert len(response_content["objects"]) != 0
 
     def test_non_admins_can_read_detail(self):
@@ -241,7 +242,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
             "/api/v2/location/213086c8-232e-4b9e-bb03-98fbc7a7966a/"
         )
         assert response.status_code == 200
-        assert response.content
+        assert response.text
 
     def test_non_admins_cannot_create_location(self):
         self.as_reader()
@@ -274,7 +275,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
         assert response.status_code == 201
 
         # Verify content
-        body = json.loads(response.content.decode("utf8"))
+        body = json.loads(response.text)
         assert body["description"] == data["description"]
         assert body["purpose"] == data["purpose"]
         assert body["path"] == "{}{}".format(space.path, data["relative_path"])
@@ -319,7 +320,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
             data=json.dumps(new_default_ts_location),
             content_type="application/json",
         )
-        body = json.loads(response.content.decode("utf8"))
+        body = json.loads(response.text)
 
         response = _get_default_ts()
         assert response.status_code == 302
@@ -338,7 +339,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
         )
         # Verify error
         assert response.status_code == 404
-        assert "not a link to a valid Location" in response.content.decode("utf8")
+        assert "not a link to a valid Location" in response.text
 
     def test_cant_move_to_non_existant_locations(self):
         data = {
@@ -372,7 +373,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
         )
         # Verify error
         assert response.status_code == 404
-        assert "not a link to a valid Location" in response.content.decode("utf8")
+        assert "not a link to a valid Location" in response.text
 
     def test_cant_move_to_disabled_locations(self):
         # Set posting to location disabled
@@ -417,8 +418,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
         )
         assert response.status_code == 400
         assert (
-            "The path parameter must be relative to the location path"
-            in response.content.decode("utf8")
+            "The path parameter must be relative to the location path" in response.text
         )
 
     def test_browse_follow_symlinks(self):
@@ -468,7 +468,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
         assert response.status_code == 200
 
         # Assert we get the two top level child directories
-        response_content = json.loads(response.content)
+        response_content = json.loads(response.text)
         assert sorted(
             base64.b64decode(e).decode() for e in response_content["directories"]
         ) == ["child_1", "child_2"]
@@ -495,7 +495,7 @@ class TestLocationAPI(TempDirMixin, TestCase):
         assert response.status_code == 200
 
         # Assert we get the inner text file
-        response_content = json.loads(response.content)
+        response_content = json.loads(response.text)
         assert response_content["directories"] == []
         assert sorted(
             base64.b64decode(e).decode() for e in response_content["entries"]
@@ -609,14 +609,14 @@ class TestPackageAPI(TempDirMixin, TestCase):
         self.as_reader()
         response = self.client.get("/api/v2/file/")
         assert response.status_code == 200
-        response_content = json.loads(response.content)
+        response_content = json.loads(response.text)
         assert len(response_content["objects"]) != 0
 
     def test_non_admins_can_read_detail(self):
         self.as_reader()
         response = self.client.get("/api/v2/file/0d4e739b-bf60-4b87-bc20-67a379b28cea/")
         assert response.status_code == 200
-        assert response.content
+        assert response.text
 
     def test_non_admins_cant_reindex(self):
         self.as_reader()
@@ -687,7 +687,7 @@ class TestPackageAPI(TempDirMixin, TestCase):
         response = self.client.get("/api/v2/file/metadata/", {"relative_path": path})
         assert response.status_code == 200
         assert response["content-type"] == "application/json"
-        body = json.loads(response.content.decode("utf8"))
+        body = json.loads(response.text)
         assert body[0]["relative_path"] == path
         assert body[0]["fileuuid"] == "86bfde11-e2a1-4ee7-b98d-9556b5f05198"
 
@@ -705,7 +705,7 @@ class TestPackageAPI(TempDirMixin, TestCase):
         )
         assert response.status_code == 200
         assert response["content-type"] == "application/json"
-        body = json.loads(response.content.decode("utf8"))
+        body = json.loads(response.text)
         assert body["success"] is True
         assert len(body["files"]) == 1
         assert body["files"][0]["name"] == "test_sip/objects/file.txt"
@@ -874,7 +874,7 @@ class TestPackageAPI(TempDirMixin, TestCase):
             "/api/v2/file/c0f8498f-b92e-4a8b-8941-1b34ba062ed8/download/"
         )
         assert response.status_code == 202
-        j = json.loads(response.content.decode("utf8"))
+        j = json.loads(response.text)
         assert j["error"] is False
         assert (
             j["message"]
@@ -891,7 +891,7 @@ class TestPackageAPI(TempDirMixin, TestCase):
             "/api/v2/file/c0f8498f-b92e-4a8b-8941-1b34ba062ed8/download/"
         )
         assert response.status_code == 502
-        j = json.loads(response.content.decode("utf8"))
+        j = json.loads(response.text)
         assert j["error"] is True
         assert "Error" in j["message"] and "Arkivum" in j["message"]
 
@@ -901,7 +901,7 @@ class TestPackageAPI(TempDirMixin, TestCase):
             "/api/v2/file/0d4e739b-bf60-4b87-bc20-67a379b28cea/extract_file/"
         )
         assert response.status_code == 400
-        assert "relative_path_to_file" in response.content.decode("utf8")
+        assert "relative_path_to_file" in response.text
 
     def test_download_file_from_compressed(self):
         """It should extract and return the file."""
@@ -947,7 +947,7 @@ class TestPackageAPI(TempDirMixin, TestCase):
             data={"relative_path_to_file": "working_bag/data/test.txt"},
         )
         assert response.status_code == 202
-        j = json.loads(response.content.decode("utf8"))
+        j = json.loads(response.text)
         assert j["error"] is False
         assert (
             j["message"]
@@ -965,7 +965,7 @@ class TestPackageAPI(TempDirMixin, TestCase):
             data={"relative_path_to_file": "working_bag/data/test.txt"},
         )
         assert response.status_code == 502
-        j = json.loads(response.content.decode("utf8"))
+        j = json.loads(response.text)
         assert j["error"] is True
         assert "Error" in j["message"] and "Arkivum" in j["message"]
 
@@ -1048,7 +1048,7 @@ class TestPipelineAPI(TestCase):
         self.as_reader()
         response = self.client.get("/api/v2/pipeline/")
         assert response.status_code == 200
-        response_content = json.loads(response.content)
+        response_content = json.loads(response.text)
         assert len(response_content["objects"]) != 0
 
     def test_non_admins_can_read_detail(self):
@@ -1062,7 +1062,7 @@ class TestPipelineAPI(TestCase):
             "/api/v2/pipeline/0cbf947a-1b19-4a01-a575-454078768fcd/"
         )
         assert response.status_code == 200
-        assert response.content
+        assert response.text
 
     def test_pipeline_create(self):
         data = {
@@ -1097,6 +1097,23 @@ class TestPipelineAPI(TestCase):
         assert pipeline.parse_and_fix_url(pipeline.remote_name) == urlparse(
             "http://192.168.0.10"
         )
+
+    def test_pipeline_create_without_api_key_stores_empty_string(self):
+        pipeline_uuid = str(uuid.uuid4())
+        data = {
+            "uuid": pipeline_uuid,
+            "description": "My pipeline without api key",
+            "remote_name": "https://archivematica-dashboard:8080",
+            "api_username": "test",
+        }
+
+        response = self.client.post(
+            "/api/v2/pipeline/", data=json.dumps(data), content_type="application/json"
+        )
+        assert response.status_code == 201
+
+        pipeline = models.Pipeline.objects.get(uuid=pipeline_uuid)
+        assert pipeline.api_key == ""
 
 
 @pytest.fixture
@@ -1141,7 +1158,7 @@ def compressed_bag_fixture_path():
 def s3_resource(compressed_bag_fixture_path, aip_storage_location):
     """Mock the S3 bucket interactions in S3.move_to_storage_service."""
 
-    def download_file(_key, dest_file):
+    def download_file(_key, dest_file, Config=None):
         shutil.copy(compressed_bag_fixture_path, dest_file)
 
     return mock.Mock(
@@ -1258,7 +1275,7 @@ def test_move_request_fails_if_package_is_in_unexpected_state(
     )
 
     assert response.status_code == 400
-    assert json.loads(response.content.decode()) == {
+    assert json.loads(response.text) == {
         "error": True,
         "message": f"The file must be in an {models.Package.UPLOADED} state to be moved. Current state: {package.status}",
     }
@@ -1276,10 +1293,7 @@ def test_move_request_fails_if_location_uuid_is_missing(
     )
 
     assert response.status_code == 400
-    assert (
-        response.content.decode()
-        == "All of these fields must be provided: location_uuid"
-    )
+    assert response.text == "All of these fields must be provided: location_uuid"
 
 
 @pytest.mark.django_db
@@ -1297,7 +1311,7 @@ def test_move_request_fails_if_target_location_does_not_exist(
     )
 
     assert response.status_code == 400
-    assert json.loads(response.content.decode()) == {
+    assert json.loads(response.text) == {
         "error": True,
         "message": f"Location UUID {location_uuid} failed to return a location",
     }
@@ -1316,7 +1330,7 @@ def test_move_request_fails_if_target_location_is_origin_location(
     )
 
     assert response.status_code == 400
-    assert json.loads(response.content.decode()) == {
+    assert json.loads(response.text) == {
         "error": True,
         "message": "New location must be different to the current location",
     }
@@ -1340,7 +1354,7 @@ def test_move_request_fails_if_target_location_purpose_does_not_match(
     )
 
     assert response.status_code == 400
-    assert json.loads(response.content.decode()) == {
+    assert json.loads(response.text) == {
         "error": True,
         "message": f"New location must have the same purpose as the current location - {package.current_location.purpose}",
     }
@@ -1363,7 +1377,7 @@ def test_move_request_fails_if_updating_package_status_fails(
     )
 
     assert response.status_code == 400
-    assert json.loads(response.content.decode()) == {
+    assert json.loads(response.text) == {
         "error": True,
         "message": f"The package must be in an {models.Package.UPLOADED} state to be moved. Current state: {package.status}",
     }
@@ -1371,7 +1385,9 @@ def test_move_request_fails_if_updating_package_status_fails(
 
 
 @pytest.mark.django_db
-@mock.patch("locations.models.async_manager.AsyncManager.run_task")
+@mock.patch(
+    "archivematica.storage_service.locations.models.async_manager.AsyncManager.run_task"
+)
 def test_move_request_returns_asyncronous_task_url_in_response_headers(
     run_task: mock.Mock,
     admin_client: Client,
@@ -1390,8 +1406,415 @@ def test_move_request_returns_asyncronous_task_url_in_response_headers(
     )
     assert response.status_code == 202
 
-    assert response.content == b""
+    assert not response.text
     assert response.headers["Location"] == reverse(
         "api_dispatch_detail",
         kwargs={"api_name": "v2", "resource_name": "async", "id": task_id},
     )
+
+
+@pytest.mark.django_db
+def test_review_aip_deletion_requires_permission(
+    client: Client, django_user_model: type[User], package: models.Package
+) -> None:
+    user = django_user_model.objects.create_user(
+        username="limited",
+        password="test-password",
+        email="limited@example.com",
+    )
+    client.force_login(user)
+    pipeline = models.Pipeline.objects.create(description="Pipeline")
+    event = models.Event.objects.create(
+        package=package,
+        event_type=models.Event.DELETE,
+        event_reason="Deletion requested",
+        pipeline=pipeline,
+        user_id=1,
+        user_email="requester@example.com",
+        status=models.Event.SUBMITTED,
+        store_data=package.status,
+    )
+    url = reverse(
+        "review_aip_deletion_request",
+        kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+    )
+    data = {
+        "decision": package_request.PackageRequestDecision.APPROVE.value,
+        "reason": "ok",
+        "event_id": event.id,
+    }
+
+    resp = client.post(url, data=json.dumps(data), content_type="application/json")
+    assert resp.status_code == 403
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("decision", "reason", "expected_status", "expected_message", "expect_delete_call"),
+    [
+        (
+            package_request.PackageRequestDecision.APPROVE.value,
+            "Approved for deletion",
+            models.Event.APPROVED,
+            "Request approved: Package deleted successfully.",
+            True,
+        ),
+        (
+            package_request.PackageRequestDecision.REJECT.value,
+            "Not this time",
+            models.Event.REJECTED,
+            "Request rejected, package still stored.",
+            False,
+        ),
+    ],
+    ids=["approve decision removes package", "reject decision leaves package stored"],
+)
+def test_review_aip_deletion_request(
+    admin_client: Client,
+    package: models.Package,
+    decision: str,
+    reason: str,
+    expected_status: str,
+    expected_message: str,
+    expect_delete_call: bool,
+) -> None:
+    pipeline = models.Pipeline.objects.create(description="Pipeline")
+    original_package_status = package.status
+    event = models.Event.objects.create(
+        package=package,
+        event_type=models.Event.DELETE,
+        event_reason="Deletion requested",
+        pipeline=pipeline,
+        user_id=1,
+        user_email="requester@example.com",
+        status=models.Event.SUBMITTED,
+        store_data=original_package_status,
+    )
+    package.status = models.Package.DEL_REQ
+    package.save()
+    url = reverse(
+        "review_aip_deletion_request",
+        kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+    )
+
+    with mock.patch.object(
+        models.Package, "delete_from_storage", return_value=(True, None)
+    ) as delete_from_storage:
+        resp = admin_client.post(
+            url,
+            data=json.dumps(
+                {"decision": decision, "reason": reason, "event_id": event.id}
+            ),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        assert json.loads(resp.text) == {"message": expected_message}
+
+        if expect_delete_call:
+            delete_from_storage.assert_called_once()
+        else:
+            delete_from_storage.assert_not_called()
+
+        event.refresh_from_db()
+        package.refresh_from_db()
+        assert event.status == expected_status
+        assert event.status_reason == reason
+
+        if expect_delete_call:
+            assert package.status == models.Package.DELETED
+        else:
+            assert package.status == original_package_status
+
+
+@pytest.mark.django_db
+def test_review_aip_deletion_request_reports_success_with_warning(
+    admin_client: Client, package: models.Package
+) -> None:
+    pipeline = models.Pipeline.objects.create(description="Pipeline")
+    original_package_status = package.status
+    event = models.Event.objects.create(
+        package=package,
+        event_type=models.Event.DELETE,
+        event_reason="Deletion requested",
+        pipeline=pipeline,
+        user_id=1,
+        user_email="requester@example.com",
+        status=models.Event.SUBMITTED,
+        store_data=original_package_status,
+    )
+    package.status = models.Package.DEL_REQ
+    package.save()
+    url = reverse(
+        "review_aip_deletion_request",
+        kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+    )
+    data = {
+        "decision": package_request.PackageRequestDecision.APPROVE.value,
+        "reason": "Proceed with deletion",
+        "event_id": event.id,
+    }
+
+    with mock.patch.object(
+        models.Package, "delete_from_storage", return_value=(True, "LOCKSS warning")
+    ) as delete_from_storage:
+        resp = admin_client.post(
+            url, data=json.dumps(data), content_type="application/json"
+        )
+
+    assert resp.status_code == 200
+    assert json.loads(resp.text) == {
+        "message": "Request approved: Package deleted successfully.",
+        "detail": "LOCKSS warning",
+    }
+
+    delete_from_storage.assert_called_once()
+
+    event.refresh_from_db()
+    package.refresh_from_db()
+    assert event.status == models.Event.APPROVED
+    assert event.status_reason == data["reason"]
+    assert package.status == models.Package.DELETED
+
+
+@pytest.mark.django_db
+def test_review_aip_deletion_request_reports_failure(
+    admin_client: Client, package: models.Package
+) -> None:
+    pipeline = models.Pipeline.objects.create(description="Pipeline")
+    original_package_status = package.status
+    event = models.Event.objects.create(
+        package=package,
+        event_type=models.Event.DELETE,
+        event_reason="Deletion requested",
+        pipeline=pipeline,
+        user_id=1,
+        user_email="requester@example.com",
+        status=models.Event.SUBMITTED,
+        store_data=original_package_status,
+    )
+    package.status = models.Package.DEL_REQ
+    package.save()
+    url = reverse(
+        "review_aip_deletion_request",
+        kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+    )
+    data = {
+        "decision": package_request.PackageRequestDecision.APPROVE.value,
+        "reason": "Understood. Deleting!",
+        "event_id": event.id,
+    }
+
+    with mock.patch.object(
+        models.Package, "delete_from_storage", return_value=(False, "Disk error")
+    ) as delete_from_storage:
+        resp = admin_client.post(
+            url, data=json.dumps(data), content_type="application/json"
+        )
+        assert resp.status_code == 200
+        assert json.loads(resp.text) == {
+            "error_message": "Package was not deleted from disk correctly: Disk error. Please contact an administrator or see logs for details."
+        }
+
+        delete_from_storage.assert_called_once()
+
+        # Event and package statuses remain unchanged because of the error.
+        # The reason and administrator have been recorded.
+        event.refresh_from_db()
+        package.refresh_from_db()
+        assert event.status == models.Event.SUBMITTED
+        assert package.status == models.Package.DEL_REQ
+        assert event.status_reason == data["reason"]
+        assert event.admin_id is not None
+
+
+@pytest.mark.django_db
+def test_review_aip_deletion_request_allows_retry_after_failure(
+    admin_client: Client, package: models.Package
+) -> None:
+    pipeline = models.Pipeline.objects.create(description="Pipeline")
+    original_package_status = package.status
+    event = models.Event.objects.create(
+        package=package,
+        event_type=models.Event.DELETE,
+        event_reason="Deletion requested",
+        pipeline=pipeline,
+        user_id=1,
+        user_email="requester@example.com",
+        status=models.Event.SUBMITTED,
+        store_data=original_package_status,
+    )
+    package.status = models.Package.DEL_REQ
+    package.save()
+    url = reverse(
+        "review_aip_deletion_request",
+        kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+    )
+    data = {
+        "decision": package_request.PackageRequestDecision.APPROVE.value,
+        "reason": "Sure! Deleting...",
+        "event_id": event.id,
+    }
+
+    with mock.patch.object(
+        models.Package,
+        "delete_from_storage",
+        side_effect=[(False, "Disk error"), (True, None)],
+    ) as delete_from_storage:
+        # This is the first attempt at approving the deletion request.
+        resp = admin_client.post(
+            url, data=json.dumps(data), content_type="application/json"
+        )
+        assert resp.status_code == 200
+        assert json.loads(resp.text) == {
+            "error_message": "Package was not deleted from disk correctly: Disk error. Please contact an administrator or see logs for details."
+        }
+
+        # Event and package statuses remain unchanged because of the error.
+        # The reason and administrator have been recorded.
+        event.refresh_from_db()
+        package.refresh_from_db()
+        assert event.status == models.Event.SUBMITTED
+        assert package.status == models.Package.DEL_REQ
+        assert event.status_reason == data["reason"]
+        assert event.admin_id is not None
+
+        # Try the approval again.
+        second_response = admin_client.post(
+            url,
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        assert second_response.status_code == 200
+        assert json.loads(second_response.text) == {
+            "message": "Request approved: Package deleted successfully.",
+        }
+
+        # The event and package statuses have been updated.
+        event.refresh_from_db()
+        package.refresh_from_db()
+        assert event.status == models.Event.APPROVED
+        assert event.status_reason == data["reason"]
+        assert package.status == models.Package.DELETED
+
+        # Ensure that the execution logic was called twice.
+        delete_from_storage.assert_called()
+        assert delete_from_storage.call_count == 2
+
+
+@pytest.mark.django_db
+def test_review_aip_deletion_request_retry_success_includes_warning(
+    admin_client: Client, package: models.Package
+) -> None:
+    pipeline = models.Pipeline.objects.create(description="Pipeline")
+    original_package_status = package.status
+    event = models.Event.objects.create(
+        package=package,
+        event_type=models.Event.DELETE,
+        event_reason="Deletion requested",
+        pipeline=pipeline,
+        user_id=1,
+        user_email="requester@example.com",
+        status=models.Event.SUBMITTED,
+        store_data=original_package_status,
+    )
+    package.status = models.Package.DEL_REQ
+    package.save()
+    url = reverse(
+        "review_aip_deletion_request",
+        kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+    )
+    data = {
+        "decision": package_request.PackageRequestDecision.APPROVE.value,
+        "reason": "Retry deletion",
+        "event_id": event.id,
+    }
+
+    with mock.patch.object(
+        models.Package,
+        "delete_from_storage",
+        side_effect=[(False, "Disk error"), (True, "LOCKSS warning")],
+    ) as delete_from_storage:
+        # The first attempt fails.
+        resp = admin_client.post(
+            url, data=json.dumps(data), content_type="application/json"
+        )
+        assert resp.status_code == 200
+        assert json.loads(resp.text) == {
+            "error_message": "Package was not deleted from disk correctly: Disk error. Please contact an administrator or see logs for details."
+        }
+
+        event.refresh_from_db()
+        package.refresh_from_db()
+        assert event.status == models.Event.SUBMITTED
+        assert package.status == models.Package.DEL_REQ
+        assert event.status_reason == data["reason"]
+
+        # The retry succeeds and returns the warning detail.
+        second_resp = admin_client.post(
+            url, data=json.dumps(data), content_type="application/json"
+        )
+        assert second_resp.status_code == 200
+        assert json.loads(second_resp.text) == {
+            "message": "Request approved: Package deleted successfully.",
+            "detail": "LOCKSS warning",
+        }
+
+        delete_from_storage.assert_called()
+        assert delete_from_storage.call_count == 2
+
+        event.refresh_from_db()
+        package.refresh_from_db()
+        assert event.status == models.Event.APPROVED
+        assert event.status_reason == data["reason"]
+        assert package.status == models.Package.DELETED
+
+
+@pytest.mark.django_db
+def test_review_aip_deletion_request_cannot_be_reviewed_twice(
+    admin_client: Client, package: models.Package
+) -> None:
+    pipeline = models.Pipeline.objects.create(description="Pipeline")
+    original_package_status = package.status
+    event = models.Event.objects.create(
+        package=package,
+        event_type=models.Event.DELETE,
+        event_reason="Deletion requested",
+        pipeline=pipeline,
+        user_id=1,
+        user_email="requester@example.com",
+        status=models.Event.SUBMITTED,
+        store_data=original_package_status,
+    )
+    url = reverse(
+        "review_aip_deletion_request",
+        kwargs={"api_name": "v2", "resource_name": "file", "uuid": package.uuid},
+    )
+    data = {
+        "decision": package_request.PackageRequestDecision.REJECT.value,
+        "reason": "We cannot delete it. Sorry",
+        "event_id": event.id,
+    }
+
+    # The deletion request is rejected.
+    resp = admin_client.post(
+        url, data=json.dumps(data), content_type="application/json"
+    )
+    assert resp.status_code == 200
+    assert json.loads(resp.text) == {
+        "message": "Request rejected, package still stored."
+    }
+
+    # The event status has been updated, but the package status is unchanged.
+    event.refresh_from_db()
+    package.refresh_from_db()
+    assert event.status == models.Event.REJECTED
+    assert package.status == original_package_status
+
+    # Attempt to reject the request again.
+    resp = admin_client.post(
+        url, data=json.dumps(data), content_type="application/json"
+    )
+    assert resp.status_code == 400
+    assert json.loads(resp.text) == {
+        "error_message": "This request is not pending review."
+    }

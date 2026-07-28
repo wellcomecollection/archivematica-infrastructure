@@ -10,14 +10,15 @@ import pytest
 from django.test import TestCase
 from moto import mock_aws
 
-from locations import models
-from locations.models.wellcome import (
+from archivematica.storage_service.locations import models
+from archivematica.storage_service.locations.models.wellcome import NoCommonPrefix
+from archivematica.storage_service.locations.models.wellcome import (
     extract_accession_identifiers,
-    extract_dc_identifiers,
-    get_common_prefix,
-    NoCommonPrefix,
 )
-
+from archivematica.storage_service.locations.models.wellcome import (
+    extract_dc_identifiers,
+)
+from archivematica.storage_service.locations.models.wellcome import get_common_prefix
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 FIXTURES_DIR = os.path.abspath(os.path.join(THIS_DIR, "fixtures"))
@@ -86,7 +87,9 @@ class TestWellcomeMoveFromStorageService(WellcomeTestBase):
         )
 
     @mock.patch("time.sleep")
-    @mock.patch("locations.models.wellcome.StorageServiceClient")
+    @mock.patch(
+        "archivematica.storage_service.locations.models.wellcome.StorageServiceClient"
+    )
     def test_uploads_bag_to_s3_bucket(self, mock_wellcome_client_class, mock_sleep):
         package = self.get_package()
         self.wellcome_object.move_from_storage_service(
@@ -100,7 +103,9 @@ class TestWellcomeMoveFromStorageService(WellcomeTestBase):
         )
 
     @mock.patch("time.sleep")
-    @mock.patch("locations.models.wellcome.StorageServiceClient")
+    @mock.patch(
+        "archivematica.storage_service.locations.models.wellcome.StorageServiceClient"
+    )
     def test_calls_wellcome_ss_client(self, mock_wellcome_client_class, mock_sleep):
         package = self.get_package()
         self.wellcome_object.move_from_storage_service(
@@ -126,7 +131,9 @@ class TestWellcomeMoveFromStorageService(WellcomeTestBase):
         )
 
     @mock.patch("time.sleep")
-    @mock.patch("locations.models.wellcome.StorageServiceClient")
+    @mock.patch(
+        "archivematica.storage_service.locations.models.wellcome.StorageServiceClient"
+    )
     def test_updates_bag_if_reingest(self, mock_wellcome_client_class, mock_sleep):
         package = self.get_package()
         package.misc_attributes["bag_id"] = package.uuid
@@ -154,7 +161,9 @@ class TestWellcomeMoveFromStorageService(WellcomeTestBase):
         )
 
     @mock.patch("time.sleep")
-    @mock.patch("locations.models.wellcome.StorageServiceClient")
+    @mock.patch(
+        "archivematica.storage_service.locations.models.wellcome.StorageServiceClient"
+    )
     def test_waits_for_callback(self, mock_wellcome_client_class, mock_sleep):
         package = self.get_package()
         self.wellcome_object.move_from_storage_service(
@@ -166,7 +175,9 @@ class TestWellcomeMoveFromStorageService(WellcomeTestBase):
         assert package.refresh_from_db.call_count == 1
 
     @mock.patch("time.sleep")
-    @mock.patch("locations.models.wellcome.StorageServiceClient")
+    @mock.patch(
+        "archivematica.storage_service.locations.models.wellcome.StorageServiceClient"
+    )
     def test_tries_fetching_ingest_if_no_callback(
         self, mock_wellcome_client_class, mock_sleep
     ):
@@ -202,7 +213,9 @@ class TestWellcomeMoveFromStorageService(WellcomeTestBase):
         assert package.misc_attributes["wellcome.version"] == "v3"
 
     @mock.patch("time.sleep")
-    @mock.patch("locations.models.wellcome.StorageServiceClient")
+    @mock.patch(
+        "archivematica.storage_service.locations.models.wellcome.StorageServiceClient"
+    )
     def test_tries_fetching_failed_ingest_if_no_callback(
         self, mock_wellcome_client_class, mock_sleep
     ):
@@ -229,7 +242,9 @@ class TestWellcomeMoveFromStorageService(WellcomeTestBase):
         assert package.status == models.Package.FAIL
 
     @mock.patch("time.sleep")
-    @mock.patch("locations.models.wellcome.StorageServiceClient")
+    @mock.patch(
+        "archivematica.storage_service.locations.models.wellcome.StorageServiceClient"
+    )
     def test_tries_fetching_unknown_ingest_if_no_callback(
         self, mock_wellcome_client_class, mock_sleep
     ):
@@ -261,7 +276,9 @@ class TestWellcomeMoveFromStorageService(WellcomeTestBase):
         assert package.status == models.Package.UPLOADED
 
     @mock.patch("time.sleep")
-    @mock.patch("locations.models.wellcome.StorageServiceClient")
+    @mock.patch(
+        "archivematica.storage_service.locations.models.wellcome.StorageServiceClient"
+    )
     def test_raises_exception_on_ingest_failure(
         self, mock_wellcome_client_class, mock_sleep
     ):

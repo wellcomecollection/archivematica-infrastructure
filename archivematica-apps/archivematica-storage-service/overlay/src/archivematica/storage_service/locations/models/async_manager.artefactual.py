@@ -14,12 +14,11 @@ import logging
 import threading
 import time
 import traceback
-from typing import List
 
 from django.utils import timezone
 
-from .. import metrics
-from .asynchronous import Async
+from archivematica.storage_service.locations import metrics
+from archivematica.storage_service.locations.models.asynchronous import Async
 
 LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +47,7 @@ class RunningTask:
 
 
 class AsyncManager:
-    running_tasks: List[Async] = []
+    running_tasks: list[Async] = []
     lock = threading.Lock()
 
     @staticmethod

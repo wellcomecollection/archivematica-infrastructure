@@ -47,16 +47,19 @@ if __name__ == "__main__":
     # Otherwise we copy the Wellcome file over the checked-out upstream file.
     for name, pair in file_pairs.items():
         if None in pair.values() and str(name) not in {
-            "storage_service/locations/migrations/0026_wellcome.py",
-            "storage_service/locations/migrations/0027_add_wellcome_callback_fields.py",
-            "storage_service/locations/migrations/0028_wellcome_blank_aws_auth.py",
-            "storage_service/locations/migrations/0029_auto_20200122_0726.py",
-            "storage_service/locations/migrations/0031_merge_20221017_0727.py",
-            "storage_service/locations/migrations/0034_merge_20230720_0400.py",
-            "storage_service/locations/migrations/0038_merge_20250527_1404.py",
-            "storage_service/locations/models/wellcome.py",
+            "src/archivematica/storage_service/locations/migrations/0026_wellcome.py",
+            "src/archivematica/storage_service/locations/migrations/0027_add_wellcome_callback_fields.py",
+            "src/archivematica/storage_service/locations/migrations/0028_wellcome_blank_aws_auth.py",
+            "src/archivematica/storage_service/locations/migrations/0029_auto_20200122_0726.py",
+            "src/archivematica/storage_service/locations/migrations/0031_merge_20221017_0727.py",
+            "src/archivematica/storage_service/locations/migrations/0034_merge_20230720_0400.py",
+            "src/archivematica/storage_service/locations/migrations/0038_merge_20250527_1404.py",
+            "src/archivematica/storage_service/locations/migrations/0039_alter_space_access_protocol.py",
+            "src/archivematica/storage_service/locations/migrations/0040_add_wellcome_manager_permissions.py",
+            "src/archivematica/storage_service/locations/models/wellcome.py",
             "tests/locations/fixtures/wellcome.json",
             "tests/locations/fixtures/small_compressed_bag.tar.gz",
+            "tests/locations/test_wellcome_migrations.py",
             "tests/locations/test_wellcome.py",
         }:
             raise ValueError(f"Did not get a pair of overlayed files for {name}")

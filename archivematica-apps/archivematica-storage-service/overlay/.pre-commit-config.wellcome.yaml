@@ -1,0 +1,78 @@
+exclude: |
+  (?x)^src/archivematica/storage_service/locations/migrations/(
+    0026_wellcome|
+    0027_add_wellcome_callback_fields|
+    0028_wellcome_blank_aws_auth|
+    0029_auto_20200122_0726|
+    0031_merge_20221017_0727|
+    0034_merge_20230720_0400|
+    0038_merge_20250527_1404
+  )\.py$
+repos:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.15.20
+  hooks:
+  - id: ruff
+    args: [--fix, --exit-non-zero-on-fix]
+  - id: ruff-format
+- repo: https://github.com/adamchainz/django-upgrade
+  rev: "1.31.1"
+  hooks:
+  - id: django-upgrade
+    args: [--target-version, "5.2"]
+- repo: https://github.com/igorshubovych/markdownlint-cli
+  rev: v0.49.0
+  hooks:
+  - id: markdownlint
+    exclude: |
+      (?x)^(
+        ISSUE_TEMPLATE\.md
+      )
+- repo: https://github.com/thlorenz/doctoc
+  rev: v2.5.0
+  hooks:
+  - id: doctoc
+    files: |
+      (?x)^(
+        (CONTRIBUTING|SECURITY).*\.md|
+        install/README\.md
+      )
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v2.1.0
+  hooks:
+  - id: mypy
+    # Override upstream args to omit --ignore-missing-imports on purpose.
+    args: ["--scripts-are-modules"]
+    # Let mypy own target selection so hook and standalone runs use the same files.
+    pass_filenames: false
+    additional_dependencies:
+    # Most of these dependencies are necessary because django-stubs initializes
+    # Django's runtime to extract information about the models.
+    - agentarchives
+    - bagit
+    - boto3
+    - boto3-stubs[s3]
+    - django-auth-ldap
+    - django-cas-ng
+    - django-stubs-ext
+    - "django-stubs>=6,<7"
+    - django-tastypie
+    - jsonfield
+    - metsrw
+    - playwright
+    - prometheus-client
+    - pytest
+    - pytest-django
+    - python-gnupg
+    - python-swiftclient
+    - sword2 @ git+https://github.com/artefactual-labs/python-client-sword2.git@619ee44467dcdb2ab75fab16864ea2e4ded7ffe4
+    - types-gunicorn
+    - types-lxml
+    - types-requests
+    - wellcome-storage-service==2.1.0
+- repo: https://github.com/tcort/markdown-link-check
+  rev: v3.14.2
+  hooks:
+  - id: markdown-link-check
+    stages: [manual]
+    args: [--quiet, --config, .markdown-link-check.json]
