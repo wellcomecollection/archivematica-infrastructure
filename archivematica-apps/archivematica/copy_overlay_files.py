@@ -44,12 +44,14 @@ if __name__ == "__main__":
     # If the artefactual file doesn't match what's in Artefactual upstream, we need
     # to recheck our changes -- do they still apply?
     #
-    # Otherwise we copy the artefactual file over the wellcome file.
+    # Otherwise we copy the Wellcome file over the checked-out upstream file.
     for name, pair in file_pairs.items():
         if None in pair.values():
             raise ValueError(f"Did not get a pair of overlayed files for {name}")
 
-        if pair["artefactual"] and not filecmp.cmp(pair["artefactual"], name):
+        if pair["artefactual"] and not filecmp.cmp(
+            pair["artefactual"], name, shallow=False
+        ):
             raise ValueError(f"artefactual file for {name} doesn’t match upstream!")
 
         if pair["wellcome"]:
