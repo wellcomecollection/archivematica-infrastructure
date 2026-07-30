@@ -16,7 +16,7 @@
 * [How does Archivematica work?](service-architecture/how-does-archivematica-work/README.md)
   * [The Archivematica apps](service-architecture/how-does-archivematica-work/archivematica-apps.md)
   * [Microservices, tasks and jobs](service-architecture/how-does-archivematica-work/microservices-tasks-and-jobs.md)
-  * [Gearman, ElastiCache, and the MCP server/client](service-architecture/how-does-archivematica-work/gearman-elasticache-and-the-mcp-server-client.md)
+  * [Gearman and the MCP server/client](service-architecture/how-does-archivematica-work/gearman-and-the-mcp-server-client.md)
 * [How is our deployment unusual?](service-architecture/how-is-our-deployment-unusual/README.md)
   * [What are our extra services?](service-architecture/how-is-our-deployment-unusual/what-are-our-extra-services.md)
   * [ECS containers on EC2, not Fargate](service-architecture/how-is-our-deployment-unusual/unusual-aspects-of-our-deployment.md)
@@ -27,7 +27,7 @@
 
 * [Using Wellcome catalogue identifiers](about-our-deployment/external-identifiers.md)
 * [Different environments](about-our-deployment/different-environments.md)
-* [Working storage: MySQL, Redis, and EBS](service-architecture/how-does-archivematica-work/working-storage-mysql-redis-and-ebs.md)
+* [Working storage: MySQL and EBS](service-architecture/how-does-archivematica-work/working-storage-mysql-and-ebs.md)
 
 ## Administering Archivematica
 

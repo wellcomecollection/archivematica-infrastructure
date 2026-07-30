@@ -1,4 +1,4 @@
-# Gearman, ElastiCache, and the MCP server/client
+# Gearman and the MCP server/client
 
 Archivematica also has microservices in the sense we use them in the rest of the platform: independent containers running in ECS.
 
@@ -6,9 +6,9 @@ Archivematica also has microservices in the sense we use them in the rest of the
 
 The _MCP server_ is a scheduler written as part of Archivematica. It decides what tasks (in the sense described above) need to be run. It tells the _Gearman server_ about these tasks.
 
-_Gearman_ is [an open-source framework](http://gearman.org/) for distributing tasks between machines. It uses Redis as a database to track the in-flight tasks, which in our case is an instance of Amazon hosted ElastiCache.
+_Gearman_ is [an open-source framework](http://gearman.org/) for distributing tasks between machines. Our Gearman server uses its built-in, in-memory queue. Archivematica submits MCP work as foreground Gearman jobs, so these jobs are not recovered from a persistent queue after a Gearman restart. An interrupted transfer or ingest may fail and need to be retried.
 
-The _MCP client_ picks up tasks from Gearman, and actually does the work -- for example, moving a file from A to B. It then reports the results back to Gearman. You can have multiple instances of the MCP client, and the computational resources available to each client are a dominant factor in the speed of processing in Archivematica. At time of writing (March 2020), we run two instances of the MCP client.
+The _MCP client_ picks up tasks from Gearman, and actually does the work -- for example, moving a file from A to B. It then reports the results back to Gearman. You can have multiple instances of the MCP client, and the computational resources available to each client are a dominant factor in the speed of processing in Archivematica.
 
 So the lifecycle of a task is as follows:
 

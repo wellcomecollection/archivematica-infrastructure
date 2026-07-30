@@ -1,8 +1,5 @@
 variable "namespace" {}
 
-variable "redis_server" {}
-variable "redis_port" {}
-
 variable "rds_username" {}
 variable "rds_password" {}
 variable "rds_host" {}

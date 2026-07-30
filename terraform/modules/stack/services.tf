@@ -34,11 +34,7 @@ module "gearman_service" {
 
   container_image = "artefactual/gearmand:1.1.18-alpine"
 
-  command = [
-    "--queue-type=redis",
-    "--redis-server=${var.redis_server}",
-    "--redis-port=${var.redis_port}",
-  ]
+  command = ["--queue-type=builtin"]
 
   cpu    = 256
   memory = 512

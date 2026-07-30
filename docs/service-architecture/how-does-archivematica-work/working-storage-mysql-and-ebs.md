@@ -1,4 +1,4 @@
-# Working storage: MySQL, Redis, and EBS
+# Working storage: MySQL and EBS
 
 Archivematica has two forms of working storage.
 
@@ -11,12 +11,6 @@ The MySQL database includes:
 * the Archivematica users and other settings
 
 We use Amazon RDS as our MySQL database.
-
-## Task manager: Redis/ElastiCache
-
-Archivematica uses a Redis instance to manage in-flight tasks (see [Gearman, ElastiCache, and the MCP server/client](gearman-elasticache-and-the-mcp-server-client.md) for more details).
-
-We use Amazon ElastiCache as our Redis instance.
 
 ## Shared file system: EBS
 
