@@ -12,9 +12,6 @@ module "stack" {
 
   namespace = "staging"
 
-  redis_server = data.terraform_remote_state.critical.outputs.redis_server
-  redis_port   = data.terraform_remote_state.critical.outputs.redis_port
-
   rds_username = data.terraform_remote_state.critical.outputs.rds_username
   rds_password = data.terraform_remote_state.critical.outputs.rds_password
   rds_host     = data.terraform_remote_state.critical.outputs.rds_host

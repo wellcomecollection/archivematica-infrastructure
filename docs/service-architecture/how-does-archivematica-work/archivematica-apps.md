@@ -9,9 +9,9 @@ Archivematica is made up of seven different apps. This is a brief summary of tho
 
 <figure><img src="../../.gitbook/assets/storage-service.png" alt=""><figcaption></figcaption></figure>
 
-*   **MCP services** – these are the tasks that do the actual processing in Archivematica. See [Gearman, ElastiCache and the MCP server/client](gearman-elasticache-and-the-mcp-server-client.md) for more details.
+*   **MCP services** – these are the tasks that do the actual processing in Archivematica. See [Gearman and the MCP server/client](gearman-and-the-mcp-server-client.md) for more details.
 
-    * MCP Server decides what tasks need to be performed. It uses Gearman and Redis to store persistent information about tasks, to survive e.g. a restart.
+    * MCP Server decides what tasks need to be performed, records them in MySQL, and sends them to Gearman for execution. Gearman's built-in queue is held in memory and does not survive a Gearman restart.
     * MCP Client gets tasks from MCP Server (possibly via Gearman), and actually does the work. It may use other containers to help do its work, in particular FITS (for file format identification) and ClamAV (for virus scanning).
 
 
