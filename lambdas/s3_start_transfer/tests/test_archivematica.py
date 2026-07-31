@@ -36,6 +36,7 @@ def test_start_transfer(mock_am_post):
 @patch.object(archivematica, "am_api_post_json")
 def test_start_transfer_with_accession(mock_am_post):
     transfer_uuid = str(uuid.uuid4())
+    mock_am_post.return_value = {"id": transfer_uuid}
 
     actual_transfer_uuid = archivematica.start_transfer(
         name="test1.zip",

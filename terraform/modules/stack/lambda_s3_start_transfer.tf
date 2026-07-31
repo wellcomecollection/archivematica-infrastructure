@@ -1,3 +1,19 @@
+resource "aws_dynamodb_table" "s3_start_transfer_events" {
+  name         = "archivematica-s3-start-transfer-events-${var.namespace}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "event_id"
+
+  attribute {
+    name = "event_id"
+    type = "S"
+  }
+
+  ttl {
+    attribute_name = "expires_at"
+    enabled        = true
+  }
+}
+
 module "s3_start_transfer_lambda" {
   source     = "./lambda"
   handler    = "s3_start_transfer.main"
@@ -14,6 +30,7 @@ module "s3_start_transfer_lambda" {
     "ARCHIVEMATICA_API_KEY"     = var.archivematica_api_key
     "ARCHIVEMATICA_SS_USERNAME" = var.archivematica_ss_username
     "ARCHIVEMATICA_SS_API_KEY"  = var.archivematica_ss_api_key
+    "IDEMPOTENCY_TABLE_NAME"    = aws_dynamodb_table.s3_start_transfer_events.name
   }
 
   timeout = 120
@@ -56,4 +73,22 @@ data "aws_iam_policy_document" "allow_writing_log_files" {
 resource "aws_iam_role_policy" "allow_writing_log_files" {
   role   = module.s3_start_transfer_lambda.role_name
   policy = data.aws_iam_policy_document.allow_writing_log_files.json
+}
+
+data "aws_iam_policy_document" "allow_s3_start_transfer_idempotency" {
+  statement {
+    actions = [
+      "dynamodb:PutItem",
+      "dynamodb:UpdateItem",
+    ]
+
+    resources = [
+      aws_dynamodb_table.s3_start_transfer_events.arn,
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "allow_s3_start_transfer_idempotency" {
+  role   = module.s3_start_transfer_lambda.role_name
+  policy = data.aws_iam_policy_document.allow_s3_start_transfer_idempotency.json
 }

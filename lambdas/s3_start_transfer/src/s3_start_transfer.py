@@ -4,7 +4,6 @@ import io
 import os
 import os.path
 import traceback
-import urllib.parse
 import zipfile
 
 import boto3
@@ -12,6 +11,7 @@ import boto3
 import archivematica
 from archivematica import choose_processing_config
 from big_s3 import S3File
+from idempotency import EventLedger, S3EventIdentity
 from log_handler import Logger
 from verify_transfer_packages import (
     VerificationFailure,
@@ -105,7 +105,17 @@ def get_identifiers(*, s3, logger, bucket, key):
         }
 
 
-def run_transfer(sess, *, bucket, key):
+def _record_start_failure(sess, logger, *, bucket, key, err):
+    logger.write(f"Error starting transfer: {err}")
+    logger.write("Ask somebody to check the CloudWatch logs for more info")
+    _write_log(sess, logger, bucket=bucket, key=key, result="failed")
+
+    print(f"Error starting transfer for s3://{bucket}/{key}")
+
+
+def run_transfer(sess, *, event):
+    bucket = event.bucket
+    key = event.object_key
     logger = Logger()
 
     # Run some verifications on the object before we sent it to Archivematica.
@@ -141,7 +151,7 @@ def run_transfer(sess, *, bucket, key):
             print(f"Unable to decompress s3://{bucket}/{key}: {err}")
             return
 
-    # Now try to start a transfer in Archivematica.
+    # Finish the work which can safely be repeated before claiming the event.
     try:
         processing_config = choose_processing_config(key)
 
@@ -151,23 +161,46 @@ def run_transfer(sess, *, bucket, key):
         target_path = archivematica.get_target_path(
             bucket=bucket, directory=directory, key=key_path
         )
+    except Exception as err:
+        _record_start_failure(sess, logger, bucket=bucket, key=key, err=err)
+        return
 
-        target_name = os.path.basename(key)
+    # Claim immediately before the request which creates an Archivematica Transfer.
+    ledger = EventLedger.from_session(sess)
+    if not ledger.claim(event):
+        print(
+            f"Skipping previously claimed S3 event {event.event_id} "
+            f"for s3://{bucket}/{key}"
+        )
+        return
+
+    target_name = os.path.basename(key)
+    try:
         transfer_id = archivematica.start_transfer(
             name=target_name,
             path=target_path,
             processing_config=processing_config,
             accession_number=identifiers["accession_number"],
         )
+    except Exception as err:
+        ledger.mark_unknown(event)
+        print(f"Marked event {event.event_id} UNKNOWN for s3://{bucket}/{key}")
+        _record_start_failure(sess, logger, bucket=bucket, key=key, err=err)
+        return
 
-        tags = {
-            "Archivematica-TransferId": transfer_id,
-            "Archivematica-ProcessingConfig": processing_config,
-            "Archivematica-AccessionNumber": identifiers["accession_number"],
-            "Archivematica-CatalogueIdentifier": identifiers["dc.identifier"],
-            "Archivematica-TransferStartedAt": dt.datetime.now().isoformat(),
-        }
+    # The Transfer UUID is the confirmation boundary. Persist it before any
+    # best-effort S3 feedback so the event cannot create another Transfer.
+    ledger.mark_submitted(event, transfer_id)
 
+    tags = {
+        "Archivematica-TransferId": transfer_id,
+        "Archivematica-ProcessingConfig": processing_config,
+        "Archivematica-AccessionNumber": identifiers["accession_number"],
+        "Archivematica-CatalogueIdentifier": identifiers["dc.identifier"],
+        "Archivematica-TransferStartedAt": dt.datetime.now().isoformat(),
+    }
+
+    try:
         sess.client("s3").put_object_tagging(
             Bucket=bucket,
             Key=key,
@@ -180,40 +213,42 @@ def run_transfer(sess, *, bucket, key):
             },
         )
     except Exception as err:
-        logger.write(f"Error starting transfer: {err}")
-        logger.write("Ask somebody to check the CloudWatch logs for more info")
-        _write_log(sess, logger, bucket=bucket, key=key, result="failed")
+        _record_start_failure(sess, logger, bucket=bucket, key=key, err=err)
+        return
 
-        print(f"Error starting transfer for s3://{bucket}/{key}")
-    else:
-        logger.write("Started successful transfer!")
-        logger.write(f"Archivematica transfer ID is {transfer_id}")
-        _write_log(sess, logger, bucket=bucket, key=key, result="success", tags=tags)
+    logger.write("Started successful transfer!")
+    logger.write(f"Archivematica transfer ID is {transfer_id}")
+    _write_log(sess, logger, bucket=bucket, key=key, result="success", tags=tags)
 
-        print("Started transfer {}".format(transfer_id))
+    print("Started transfer {}".format(transfer_id))
 
 
 def main(event, context=None):
     sess = boto3.Session()
+    first_failure = None
 
     for record in event["Records"]:
-        # Get the object from the event and show its content type
-        bucket = record["s3"]["bucket"]["name"]
-        key = urllib.parse.unquote_plus(record["s3"]["object"]["key"], encoding="utf-8")
-
         try:
-            run_transfer(sess, bucket=bucket, key=key)
-        except Exception:
+            run_transfer(sess, event=S3EventIdentity.from_record(record))
+        except Exception as err:
             print(traceback.format_exc())
             print("Error thrown, skipping to next record...")
-            continue
+            if first_failure is None:
+                first_failure = err
+
+    if first_failure is not None:
+        raise first_failure
 
 
 if __name__ == "__main__":  # pragma: no cover
-    s3 = boto3.resource("s3")
+    sess = boto3.Session()
 
     run_transfer(
-        s3,
-        bucket="wellcomecollection-archivematica-transfer-source",
-        key="born-digital-accessions/WT_B_9_2_2.zip",
+        sess,
+        event=S3EventIdentity(
+            bucket="wellcomecollection-archivematica-transfer-source",
+            object_key="born-digital-accessions/WT_B_9_2_2.zip",
+            event_name="ObjectCreated:Put",
+            sequencer="manual",
+        ),
     )
