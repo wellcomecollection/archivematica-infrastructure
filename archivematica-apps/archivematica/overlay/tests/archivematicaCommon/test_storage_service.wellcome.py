@@ -44,6 +44,24 @@ def async_status_response(payload=None, status_code=200):
     return response
 
 
+@pytest.fixture(params=["missing_status", "interrupted"], ids=["404", "interrupted"])
+def unknown_async_status_response(request):
+    if request.param == "missing_status":
+        return async_status_response(status_code=404)
+    return async_status_response(
+        {
+            "completed": True,
+            "was_error": True,
+            "error_code": "async_operation_interrupted",
+            "error": (
+                "<class 'RuntimeError'>: The asynchronous operation was "
+                "interrupted after its heartbeat expired. Its final outcome is "
+                "unknown; do not retry it automatically."
+            ),
+        }
+    )
+
+
 class FakeClock:
     def __init__(self):
         self.now = 0.0
@@ -243,6 +261,42 @@ def test_wait_for_async_reports_missing_status_as_unknown(monkeypatch, fake_cloc
     assert "unknown outcome" in str(exc_info.value)
 
 
+def test_wait_for_async_reports_terminal_interruption_as_unknown(
+    monkeypatch, fake_clock
+):
+    interrupted_error = "The wording of this message can change."
+    session = mock.Mock()
+    terminal_payload = {
+        "completed": True,
+        "was_error": True,
+        "error_code": "async_operation_interrupted",
+        "error": interrupted_error,
+    }
+    session.get.side_effect = [
+        async_status_response({"completed": False}),
+        async_status_response(terminal_payload),
+    ]
+    monkeypatch.setattr(
+        storageService, "_storage_api_session", mock.Mock(return_value=session)
+    )
+    monkeypatch.setattr(
+        storageService, "_storage_service_url", lambda: "http://ss/api/v2/"
+    )
+
+    with pytest.raises(storageService.AsyncOutcomeUnknown) as exc_info:
+        storageService.wait_for_async(async_response(), operation="create_file")
+
+    assert not isinstance(
+        exc_info.value, storageService.AsyncObservationDeadlineExceeded
+    )
+    assert exc_info.value.operation == "create_file"
+    assert exc_info.value.async_id == "158"
+    assert exc_info.value.poll_url == "http://ss/api/v2/async/158/"
+    assert exc_info.value.elapsed_seconds == 2
+    assert interrupted_error in exc_info.value.reason
+    assert "Storage Service reported an interrupted operation" in exc_info.value.reason
+
+
 def test_wait_for_async_reports_poll_failure_as_unknown(monkeypatch, fake_clock):
     session = mock.Mock()
     session.get.side_effect = storageService.requests.ConnectionError("unavailable")
@@ -264,7 +318,12 @@ def test_wait_for_async_reports_poll_failure_as_unknown(monkeypatch, fake_clock)
 def test_wait_for_async_preserves_reported_terminal_failure(monkeypatch, fake_clock):
     session = mock.Mock()
     session.get.return_value = async_status_response(
-        {"completed": True, "was_error": True, "error": "copy failed"}
+        {
+            "completed": True,
+            "was_error": True,
+            "error_code": None,
+            "error": "copy failed for an unknown reason",
+        }
     )
     monkeypatch.setattr(
         storageService, "_storage_api_session", mock.Mock(return_value=session)
@@ -277,10 +336,12 @@ def test_wait_for_async_preserves_reported_terminal_failure(monkeypatch, fake_cl
         storageService.wait_for_async(async_response(), operation="copy_files")
 
     assert not isinstance(exc_info.value, storageService.AsyncOutcomeUnknown)
-    assert "reported failure: copy failed" in str(exc_info.value)
+    assert "reported failure: copy failed for an unknown reason" in str(exc_info.value)
 
 
-def test_copy_files_does_not_resubmit_unknown_operation(monkeypatch):
+def test_copy_files_does_not_resubmit_unknown_operation(
+    monkeypatch, unknown_async_status_response
+):
     monkeypatch.setattr(storageService.am, "get_setting", lambda _name: "dashboard")
     monkeypatch.setattr(
         storageService, "get_pipeline", lambda _uuid: {"resource_uri": "/pipeline/1/"}
@@ -291,18 +352,10 @@ def test_copy_files_does_not_resubmit_unknown_operation(monkeypatch):
     response = async_response()
     session = mock.Mock()
     session.post.return_value = response
+    session.get.return_value = unknown_async_status_response
     monkeypatch.setattr(
         storageService, "_storage_api_session", mock.Mock(return_value=session)
     )
-    outcome_unknown = storageService.AsyncOutcomeUnknown(
-        operation="copy_files",
-        async_id="158",
-        poll_url="http://ss/api/v2/async/158/",
-        elapsed_seconds=1,
-        reason="test",
-    )
-    wait_for_async = mock.Mock(side_effect=outcome_unknown)
-    monkeypatch.setattr(storageService, "wait_for_async", wait_for_async)
 
     result, error = storageService.copy_files(
         {"resource_uri": "/location/source/"},
@@ -311,12 +364,13 @@ def test_copy_files_does_not_resubmit_unknown_operation(monkeypatch):
     )
 
     assert result is None
-    assert error is outcome_unknown
+    assert isinstance(error, storageService.AsyncOutcomeUnknown)
     session.post.assert_called_once()
-    wait_for_async.assert_called_once_with(response, operation="copy_files")
 
 
-def test_create_file_does_not_resubmit_unknown_operation(monkeypatch):
+def test_create_file_does_not_resubmit_unknown_operation(
+    monkeypatch, unknown_async_status_response
+):
     monkeypatch.setattr(storageService.am, "get_setting", lambda _name: "dashboard")
     monkeypatch.setattr(
         storageService, "get_pipeline", lambda _uuid: {"resource_uri": "/pipeline/1/"}
@@ -327,18 +381,10 @@ def test_create_file_does_not_resubmit_unknown_operation(monkeypatch):
     response = async_response()
     session = mock.Mock()
     session.post.return_value = response
+    session.get.return_value = unknown_async_status_response
     monkeypatch.setattr(
         storageService, "_storage_api_session", mock.Mock(return_value=session)
     )
-    outcome_unknown = storageService.AsyncOutcomeUnknown(
-        operation="create_file",
-        async_id="158",
-        poll_url="http://ss/api/v2/async/158/",
-        elapsed_seconds=1,
-        reason="test",
-    )
-    wait_for_async = mock.Mock(side_effect=outcome_unknown)
-    monkeypatch.setattr(storageService, "wait_for_async", wait_for_async)
 
     with pytest.raises(storageService.AsyncOutcomeUnknown) as exc_info:
         storageService.create_file(
@@ -351,6 +397,7 @@ def test_create_file_does_not_resubmit_unknown_operation(monkeypatch):
             123,
         )
 
-    assert exc_info.value is outcome_unknown
+    assert not isinstance(
+        exc_info.value, storageService.AsyncObservationDeadlineExceeded
+    )
     session.post.assert_called_once()
-    wait_for_async.assert_called_once_with(response, operation="create_file")

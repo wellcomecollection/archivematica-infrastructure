@@ -37,6 +37,7 @@ LOGGER = logging.getLogger("archivematica.common")
 ASYNC_OBSERVATION_DEADLINE_SECONDS = 24 * 60 * 60
 ASYNC_POLL_TIMEOUT_SECONDS = 600
 ASYNC_MAX_POLL_INTERVAL_SECONDS = ASYNC_POLL_TIMEOUT_SECONDS / 2
+INTERRUPTED_ASYNC_ERROR_CODE = "async_operation_interrupted"
 
 
 class Error(requests.exceptions.RequestException):
@@ -417,6 +418,7 @@ def wait_for_async(response, *, operation):
                 was_error = payload["was_error"]
                 if was_error:
                     remote_error = payload["error"]
+                    remote_error_code = payload.get("error_code")
                 else:
                     result = payload["result"]
         except (
@@ -449,6 +451,19 @@ def wait_for_async(response, *, operation):
             continue
 
         if was_error:
+            if remote_error_code == INTERRUPTED_ASYNC_ERROR_CODE:
+                err = AsyncOutcomeUnknown(
+                    operation=operation,
+                    async_id=async_id,
+                    poll_url=poll_url,
+                    elapsed_seconds=elapsed_seconds(),
+                    reason=(
+                        "Storage Service reported an interrupted operation: "
+                        f"{remote_error}"
+                    ),
+                )
+                LOGGER.error("%s", err)
+                raise err
             errmsg = (
                 f"Storage Service async operation {async_id} for {operation} "
                 f"reported failure: {remote_error}"
