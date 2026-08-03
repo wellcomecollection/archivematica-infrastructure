@@ -1,18 +1,22 @@
-"""
-Restore using await_for_async in storageService.py
+"""Wellcome's compatibility client for legacy asynchronous storage operations.
 
-This reverts d565dbf.  It can take a long time for the Archivematica storage
-service to successfully store an AIP in the Wellcome storage, because:
+This overlay reverts Archivematica commit d565dbf and restores the asynchronous
+Storage Service client removed in Artefactual issue #780. Storing a package can
+take a long time while its bag is repacked and Wellcome storage scales up.
 
-1. We unpack and repack the bag with the new External-Identifier
-2. The Wellcome storage service has to scale up to store a new bag,
-   which means it can take a long time to store a bag.
+Polling is bounded to prevent an accepted operation from occupying an
+Archivematica worker indefinitely, as seen in Wellcome issue #176:
+https://github.com/wellcomecollection/archivematica-infrastructure/issues/176
 
-Long term it would be nice to not diverge from the Archivematica codebase here,
-but unless we can speed up the storage service this is unlikely.
+The deadline only bounds how long Archivematica observes the operation. It does
+not cancel Storage Service work or prove that its side effects failed. A lost
+polling resource or expired deadline therefore has an unknown outcome. The
+exception and logs retain the Storage Service Async ID so an operator can
+reconcile the result before retrying or cleaning up.
 
-That commit refers to Artefactual issue #780, we should watch that also.
-
+This remains a containment measure. A durable design would persist accepted
+work outside the Storage Service web process, make submission idempotent, save
+the job ID as workflow state, and resume observation without holding a worker.
 """
 
 import logging
@@ -30,6 +34,10 @@ from archivematica.archivematicaCommon.common_metrics import ss_api_timer
 
 LOGGER = logging.getLogger("archivematica.common")
 
+ASYNC_OBSERVATION_DEADLINE_SECONDS = 24 * 60 * 60
+ASYNC_POLL_TIMEOUT_SECONDS = 600
+ASYNC_MAX_POLL_INTERVAL_SECONDS = ASYNC_POLL_TIMEOUT_SECONDS / 2
+
 
 class Error(requests.exceptions.RequestException):
     pass
@@ -41,6 +49,54 @@ class ResourceNotFound(Error):
 
 class WaitForAsyncError(Error):
     pass
+
+
+class AsyncOutcomeUnknown(WaitForAsyncError):
+    """The result of an accepted Storage Service operation is not known."""
+
+    def __init__(
+        self,
+        *,
+        operation,
+        async_id,
+        poll_url,
+        elapsed_seconds,
+        reason,
+    ):
+        self.operation = operation
+        self.async_id = async_id
+        self.poll_url = poll_url
+        self.elapsed_seconds = elapsed_seconds
+        self.reason = reason
+        super().__init__(
+            "Storage Service async operation "
+            f"{async_id} for {operation} has an unknown outcome after "
+            f"{elapsed_seconds:.1f} seconds: {reason}. Status URL: {poll_url}. "
+            "Do not submit it again until the Storage Service result and "
+            "storage side effects have been reconciled."
+        )
+
+
+class AsyncObservationDeadlineExceeded(AsyncOutcomeUnknown):
+    """Archivematica stopped observing an accepted operation at its deadline."""
+
+    def __init__(
+        self,
+        *,
+        operation,
+        async_id,
+        poll_url,
+        elapsed_seconds,
+        deadline_seconds,
+    ):
+        self.deadline_seconds = deadline_seconds
+        super().__init__(
+            operation=operation,
+            async_id=async_id,
+            poll_url=poll_url,
+            elapsed_seconds=elapsed_seconds,
+            reason=(f"the {deadline_seconds:g}-second observation deadline expired"),
+        )
 
 
 # ####################### INTERFACE WITH STORAGE API #########################
@@ -291,56 +347,115 @@ def browse_location(uuid, path):
     return browse
 
 
-def wait_for_async(response):
-    """
-    Poll for results on an async endpoint.
-    `response` should have a HTTP 202 (Accepted) status code, and is expected to
-    contain a Location header telling us where to get our results from.
-    `poll_seconds` controls how long we wait between poll requests.
-    `poll_timeout_seconds` controls how long we wait for a poll request to
-    complete before giving up and throwing an exception.
-    This function may raise exceptions. The caller can expect them to be
-    instances of ``requests.exceptions.RequestException``.
-    """
-    poll_timeout_seconds = 600
+def wait_for_async(response, *, operation):
+    """Poll an accepted Storage Service operation within an overall deadline.
 
+    ``response`` must be the HTTP response that accepted the operation and
+    supplied its status URL in the ``Location`` header. The deadline bounds
+    observation only: it does not cancel the remote work or establish whether
+    storage side effects happened.
+
+    Once Storage Service has accepted the operation, a missing status resource,
+    failed poll, or expired deadline has an unknown outcome. The raised
+    ``AsyncOutcomeUnknown`` retains the Async ID and warns callers not to submit
+    duplicate work before reconciling Storage Service and storage state.
+
+    All raised client errors remain instances of
+    ``requests.exceptions.RequestException`` for caller compatibility.
+    """
     response.raise_for_status()
 
-    # This is a hacky bit of code to get a proper URL here, because
-    # the Location header returns a relative URL, e.g. /api/v2/async/158
-    #
-    # There's a better way of constructing this but it works and there are
-    # other issues I want to fix.
-    poll_url = (
-        _storage_service_url().replace("/api/v2", "/") + response.headers["Location"]
-    ).replace("///", "/")
+    location = response.headers["Location"]
+    async_id = location.rstrip("/").rsplit("/", 1)[-1]
 
-    # We'll enter this loop while waiting for the Wellcome storage to store
-    # a package.  This isn't a fast process, so treat it as an exponential backoff.
-    # The first time, we'll wait 2 seconds, then 4, and so on up to 300 seconds.
+    # Storage Service returns a relative URL, e.g. /api/v2/async/158/. Keep the
+    # established base-URL behavior while retaining the original Location value
+    # for correlation.
+    poll_url = (_storage_service_url().replace("/api/v2", "/") + location).replace(
+        "///", "/"
+    )
+
+    started_at = time.monotonic()
+    deadline_at = started_at + ASYNC_OBSERVATION_DEADLINE_SECONDS
     poll_seconds = 2
 
-    while True:
-        LOGGER.info(
-            "Polling for response at %s; if not completed will wait %d seconds",
-            poll_url,
-            poll_seconds,
+    def elapsed_seconds():
+        return max(0, time.monotonic() - started_at)
+
+    def raise_deadline_exceeded():
+        err = AsyncObservationDeadlineExceeded(
+            operation=operation,
+            async_id=async_id,
+            poll_url=poll_url,
+            elapsed_seconds=elapsed_seconds(),
+            deadline_seconds=ASYNC_OBSERVATION_DEADLINE_SECONDS,
         )
-        poll_response = _storage_api_session(timeout=poll_timeout_seconds).get(poll_url)
-        poll_response.raise_for_status()
-        payload = poll_response.json()
-        if not payload["completed"]:
-            time.sleep(poll_seconds)
+        LOGGER.error("%s", err)
+        raise err
 
-            # Double the poll timeout.  Clamp it at a max wait of 300 seconds.
-            poll_seconds = min(poll_seconds * 2, poll_timeout_seconds / 2)
+    while True:
+        remaining_seconds = deadline_at - time.monotonic()
+        if remaining_seconds <= 0:
+            raise_deadline_exceeded()
 
+        LOGGER.info(
+            "Polling Storage Service async operation %s for %s at %s; "
+            "%.1f seconds remain",
+            async_id,
+            operation,
+            poll_url,
+            remaining_seconds,
+        )
+        try:
+            poll_response = _storage_api_session(
+                timeout=min(ASYNC_POLL_TIMEOUT_SECONDS, remaining_seconds)
+            ).get(poll_url)
+            poll_response.raise_for_status()
+            payload = poll_response.json()
+            completed = payload["completed"]
+            if completed:
+                was_error = payload["was_error"]
+                if was_error:
+                    remote_error = payload["error"]
+                else:
+                    result = payload["result"]
+        except (
+            requests.exceptions.RequestException,
+            KeyError,
+            TypeError,
+            ValueError,
+        ) as exc:
+            status_code = getattr(getattr(exc, "response", None), "status_code", None)
+            if status_code == 404:
+                reason = "the Storage Service status resource returned HTTP 404"
+            else:
+                reason = f"the Storage Service status request failed: {exc}"
+            err = AsyncOutcomeUnknown(
+                operation=operation,
+                async_id=async_id,
+                poll_url=poll_url,
+                elapsed_seconds=elapsed_seconds(),
+                reason=reason,
+            )
+            LOGGER.error("%s", err)
+            raise err from exc
+
+        if not completed:
+            remaining_seconds = deadline_at - time.monotonic()
+            if remaining_seconds <= 0:
+                raise_deadline_exceeded()
+            time.sleep(min(poll_seconds, remaining_seconds))
+            poll_seconds = min(poll_seconds * 2, ASYNC_MAX_POLL_INTERVAL_SECONDS)
             continue
-        if payload["was_error"]:
-            errmsg = "Failure storing file: {}".format(payload["error"])
+
+        if was_error:
+            errmsg = (
+                f"Storage Service async operation {async_id} for {operation} "
+                f"reported failure: {remote_error}"
+            )
             LOGGER.warning(errmsg)
             raise WaitForAsyncError(errmsg)
-        return payload["result"]
+        return result
 
 
 def copy_files(source_location, destination_location, files):
@@ -380,7 +495,13 @@ def copy_files(source_location, destination_location, files):
     try:
         with ss_api_timer(function="copy_files"):
             response = _storage_api_session().post(url, json=move_files)
-        return (wait_for_async(response), None)
+        return (
+            wait_for_async(
+                response,
+                operation="copy_files",
+            ),
+            None,
+        )
     except requests.exceptions.RequestException as e:
         LOGGER.warning("Unable to move files with %s because %s", move_files, e)
         return (None, e)
@@ -460,7 +581,10 @@ def create_file(
             url = _storage_service_url() + "file/async/"
             with ss_api_timer(function="create_file"):
                 response = session.post(url, json=new_file, allow_redirects=False)
-            ret = wait_for_async(response)
+            ret = wait_for_async(
+                response,
+                operation="create_file",
+            )
         except requests.exceptions.RequestException as err:
             LOGGER.warning(errmsg, new_file, err)
             raise
