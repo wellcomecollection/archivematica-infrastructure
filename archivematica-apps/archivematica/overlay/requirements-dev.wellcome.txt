@@ -6,22 +6,21 @@
 #
 agentarchives==0.9.0
     # via -r requirements.txt
+amclient==1.3.0
+    # via -r requirements.txt
+ammcpc==0.2.0
+    # via -r requirements.txt
 asgiref==3.8.1
     # via
     #   -r requirements.txt
     #   django
-bagit==1.8.1
+attrs==24.2.0
+    # via
+    #   -r requirements.txt
+    #   jsonschema
+    #   referencing
+bagit @ git+https://github.com/artefactual-labs/bagit-python.git@902051d8410219f6c5f4ce6d43e5b272cf29e89b
     # via -r requirements.txt
-boto3==1.35.49
-    # via
-    #   -r requirements.txt
-    #   moto
-botocore==1.35.49
-    # via
-    #   -r requirements.txt
-    #   boto3
-    #   moto
-    #   s3transfer
 brotli==1.1.0
     # via -r requirements.txt
 build==1.2.2.post1
@@ -42,6 +41,8 @@ charset-normalizer==3.4.0
     # via
     #   -r requirements.txt
     #   requests
+clamd==1.0.2
+    # via -r requirements.txt
 click==8.1.7
     # via pip-tools
 colorama==0.4.6
@@ -54,33 +55,26 @@ cryptography==43.0.3
     # via
     #   -r requirements.txt
     #   josepy
-    #   moto
     #   mozilla-django-oidc
     #   pyopenssl
-debtcollector==3.0.0
-    # via
-    #   -r requirements.txt
-    #   oslo-config
-    #   oslo-utils
-    #   python-keystoneclient
 distlib==0.3.9
     # via virtualenv
-dj-database-url==2.2.0
-    # via -r requirements.txt
 django==4.2.16
     # via
     #   -r requirements.txt
-    #   dj-database-url
     #   django-auth-ldap
     #   django-cas-ng
     #   django-csp
-    #   jsonfield
     #   mozilla-django-oidc
 django-auth-ldap==5.0.0
+    # via -r requirements.txt
+django-autoslug==1.9.9
     # via -r requirements.txt
 django-cas-ng==5.0.1
     # via -r requirements.txt
 django-csp==3.8
+    # via -r requirements.txt
+django-forms-bootstrap==3.1.0
     # via -r requirements.txt
 django-prometheus==2.3.1
     # via -r requirements.txt
@@ -88,12 +82,18 @@ django-shibboleth-remoteuser @ git+https://github.com/artefactual-labs/django-sh
     # via -r requirements.txt
 django-tastypie==0.14.7
     # via -r requirements.txt
+elasticsearch==6.8.2
+    # via -r requirements.txt
 exceptiongroup==1.2.2
     # via pytest
 filelock==3.16.1
     # via
     #   tox
     #   virtualenv
+funcparserlib==2.0.0a0
+    # via mockldap
+gearman3 @ git+https://github.com/artefactual-labs/python-gearman.git@b68efc868c7a494dd6a2d2e820fb098a6da9f797
+    # via -r requirements.txt
 gevent==24.2.1
     # via -r requirements.txt
 greenlet==3.1.1
@@ -103,123 +103,67 @@ greenlet==3.1.1
     #   playwright
 gunicorn==23.0.0
     # via -r requirements.txt
-httplib2==0.22.0
-    # via
-    #   -r requirements.txt
-    #   sword2
 idna==3.10
     # via
     #   -r requirements.txt
     #   requests
 importlib-metadata==8.5.0
     # via
+    #   -r requirements.txt
     #   build
     #   pytest-randomly
 importlib-resources==6.4.5
-    # via -r requirements.txt
+    # via
+    #   -r requirements.txt
+    #   opf-fido
 iniconfig==2.0.0
     # via pytest
-iso8601==2.1.0
-    # via
-    #   -r requirements.txt
-    #   keystoneauth1
-    #   oslo-utils
-jinja2==3.1.6
-    # via moto
-jmespath==1.0.1
-    # via
-    #   -r requirements.txt
-    #   boto3
-    #   botocore
+inotify-simple==1.3.5
+    # via -r requirements.txt
 josepy==1.14.0
     # via
     #   -r requirements.txt
     #   mozilla-django-oidc
-jsonfield==3.1.0
+jsonschema==4.23.0
     # via -r requirements.txt
-keystoneauth1==5.8.0
+jsonschema-specifications==2023.12.1
     # via
     #   -r requirements.txt
-    #   python-keystoneclient
+    #   jsonschema
+lazy-paged-sequence==0.3
+    # via -r requirements.txt
 lxml==5.3.0
     # via
     #   -r requirements.txt
+    #   ammcpc
     #   metsrw
     #   python-cas
-    #   sword2
-markupsafe==3.0.2
-    # via
-    #   jinja2
-    #   werkzeug
 metsrw==0.5.1
     # via -r requirements.txt
-moto==5.1.8
+mockldap @ git+https://github.com/artefactual-labs/mockldap@v0.3.1
     # via -r requirements-dev.in
 mozilla-django-oidc==4.0.1
     # via -r requirements.txt
-msgpack==1.1.0
-    # via
-    #   -r requirements.txt
-    #   oslo-serialization
 mysqlclient==2.2.5
     # via
     #   -r requirements.txt
     #   agentarchives
-netaddr==1.3.0
+olefile==0.47
     # via
     #   -r requirements.txt
-    #   oslo-config
-    #   oslo-utils
-netifaces==0.11.0
-    # via
-    #   -r requirements.txt
-    #   oslo-utils
-oauthlib==3.2.2
-    # via
-    #   -r requirements.txt
-    #   requests-oauthlib
-os-service-types==1.7.0
-    # via
-    #   -r requirements.txt
-    #   keystoneauth1
-oslo-config==9.6.0
-    # via
-    #   -r requirements.txt
-    #   python-keystoneclient
-oslo-i18n==6.4.0
-    # via
-    #   -r requirements.txt
-    #   oslo-config
-    #   oslo-utils
-    #   python-keystoneclient
-oslo-serialization==5.5.0
-    # via
-    #   -r requirements.txt
-    #   python-keystoneclient
-oslo-utils==7.3.0
-    # via
-    #   -r requirements.txt
-    #   oslo-serialization
-    #   python-keystoneclient
+    #   opf-fido
+opf-fido @ git+https://github.com/artefactual-labs/fido.git@564ceb8018a8650fe931cf20e6780ee008e60fca
+    # via -r requirements.txt
+orjson==3.10.10
+    # via -r requirements.txt
 packaging==24.1
     # via
     #   -r requirements.txt
     #   build
     #   gunicorn
-    #   oslo-utils
     #   pyproject-api
     #   pytest
-    #   python-keystoneclient
     #   tox
-pbr==6.1.0
-    # via
-    #   -r requirements.txt
-    #   keystoneauth1
-    #   os-service-types
-    #   oslo-i18n
-    #   oslo-serialization
-    #   python-keystoneclient
-    #   stevedore
 pip-tools==7.4.1
     # via -r requirements-dev.in
 platformdirs==4.3.6
@@ -257,11 +201,6 @@ pyopenssl==24.2.1
     # via
     #   -r requirements.txt
     #   josepy
-pyparsing==3.1.4
-    # via
-    #   -r requirements.txt
-    #   httplib2
-    #   oslo-utils
 pyproject-api==1.8.0
     # via tox
 pyproject-hooks==1.2.0
@@ -293,76 +232,47 @@ python-cas==1.6.0
 python-dateutil==2.9.0.post0
     # via
     #   -r requirements.txt
-    #   botocore
     #   django-tastypie
-    #   moto
-python-gnupg==0.5.3
-    # via -r requirements.txt
-python-keystoneclient==5.5.0
-    # via -r requirements.txt
 python-ldap==3.4.4
     # via
     #   -r requirements.txt
     #   django-auth-ldap
+    #   mockldap
 python-mimeparse==2.0.0
     # via
     #   -r requirements.txt
     #   django-tastypie
 python-slugify==8.0.4
     # via pytest-playwright
-python-swiftclient==4.6.0
-    # via -r requirements.txt
-pyyaml==6.0.2
+referencing==0.35.1
     # via
     #   -r requirements.txt
-    #   oslo-config
-    #   oslo-utils
-    #   responses
+    #   jsonschema
+    #   jsonschema-specifications
 requests==2.32.3
     # via
     #   -r requirements.txt
     #   agentarchives
-    #   keystoneauth1
-    #   moto
+    #   amclient
     #   mozilla-django-oidc
-    #   oslo-config
+    #   opf-fido
     #   pytest-base-url
     #   python-cas
-    #   python-keystoneclient
-    #   python-swiftclient
-    #   requests-oauthlib
-    #   responses
-requests-oauthlib==1.3.1
+rpds-py==0.20.0
     # via
     #   -r requirements.txt
-    #   wellcome-storage-service
-responses==0.25.7
-    # via moto
-rfc3986==2.0.0
-    # via
-    #   -r requirements.txt
-    #   oslo-config
-s3transfer==0.10.3
-    # via
-    #   -r requirements.txt
-    #   boto3
+    #   jsonschema
+    #   referencing
 six==1.16.0
     # via
     #   -r requirements.txt
+    #   opf-fido
     #   python-cas
     #   python-dateutil
 sqlparse==0.5.1
     # via
     #   -r requirements.txt
     #   django
-stevedore==5.3.0
-    # via
-    #   -r requirements.txt
-    #   keystoneauth1
-    #   oslo-config
-    #   python-keystoneclient
-sword2 @ git+https://github.com/artefactual-labs/python-client-sword2.git@619ee44467dcdb2ab75fab16864ea2e4ded7ffe4
-    # via -r requirements.txt
 text-unidecode==1.3
     # via python-slugify
 tomli==2.0.2
@@ -379,36 +289,22 @@ typing-extensions==4.12.2
     # via
     #   -r requirements.txt
     #   asgiref
-    #   dj-database-url
     #   pyee
     #   tox
-tzdata==2024.2
-    # via
-    #   -r requirements.txt
-    #   oslo-serialization
-    #   oslo-utils
-urllib3==1.26.20
-    # via
-    #   -r requirements.txt
-    #   botocore
-    #   requests
-    #   responses
-virtualenv==20.27.0
-    # via tox
-wellcome-storage-service==2.1.0
+unidecode==1.3.8
     # via -r requirements.txt
-werkzeug==3.1.3
-    # via moto
+urllib3==2.2.3
+    # via
+    #   -r requirements.txt
+    #   amclient
+    #   elasticsearch
+    #   requests
+virtualenv==20.27.1
+    # via tox
 wheel==0.44.0
     # via pip-tools
 whitenoise==6.7.0
     # via -r requirements.txt
-wrapt==1.16.0
-    # via
-    #   -r requirements.txt
-    #   debtcollector
-xmltodict==0.14.2
-    # via moto
 zipp==3.20.2
     # via
     #   -r requirements.txt
@@ -424,7 +320,7 @@ zope-interface==7.1.1
     #   gevent
 
 # The following packages are considered to be unsafe in a requirements file:
-pip==24.2
+pip==24.3.1
     # via pip-tools
 setuptools==75.2.0
     # via
