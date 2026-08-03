@@ -7,7 +7,7 @@ module "transfer_monitor_lambda" {
   name            = "archivematica-transfer_monitor-${var.namespace}"
   alarm_topic_arn = var.lambda_error_alarm_arn
 
-  memory_size = 512
+  memory_size = 1024
 
   environment = {
     TRANSFER_BUCKET       = var.transfer_source_bucket_name
