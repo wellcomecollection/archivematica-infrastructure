@@ -8,8 +8,13 @@ import urllib.request
 import boto3
 
 
+# Shared across calls: a boto3 Session is expensive to create, and caching
+# one per call (e.g. as an lru_cache key) leaks several MB each time.
+sess = boto3.Session()
+
+
 @functools.lru_cache
-def get_secret_string(sess, *, secret_id):
+def get_secret_string(secret_id):
     """
     Look up the value of a SecretString in Secrets Manager.
     """
@@ -18,25 +23,15 @@ def get_secret_string(sess, *, secret_id):
 
 
 @functools.lru_cache
-def has_matching_bag(*, archivematica_transfer_id, external_identifier, files_index):
+def get_stored_xml_file_names(*, external_identifier, files_index):
     """
-    Is there a bag with this external identifier and transfer ID in
-    the storage service?
+    Names of recently stored .xml files for this external identifier.
 
-    We rely on a bit of knowledge about how Archivematica structures the
-    AIP: we know it's going to put a METS file at this location in the
-    package:
-
-        data/objects/submissionDocumentation/transfer-{package_name}-{transfer_id}/METS.xml
-
-    so by looking for a matching file in the storage service, we know
-    whether something was stored successfully.
+    Cached because every transfer of the same package needs the same
+    list; only the transfer ID checked against it differs.
     """
-    sess = boto3.Session()
     es_credentials = json.loads(
-        get_secret_string(
-            sess, secret_id="archivematica/transfer_monitor/reporting_credentials"
-        )
+        get_secret_string("archivematica/transfer_monitor/reporting_credentials")
     )
 
     endpoint = es_credentials["endpoint"]
@@ -76,12 +71,31 @@ def has_matching_bag(*, archivematica_transfer_id, external_identifier, files_in
         },
     )
 
-    resp = urllib.request.urlopen(req)
-    es_resp = json.loads(resp.read())
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        es_resp = json.loads(resp.read())
 
+    return tuple(h["_source"]["name"] for h in es_resp["hits"]["hits"])
+
+
+def has_matching_bag(*, archivematica_transfer_id, external_identifier, files_index):
+    """
+    Is there a bag with this external identifier and transfer ID in
+    the storage service?
+
+    We rely on a bit of knowledge about how Archivematica structures the
+    AIP: we know it's going to put a METS file at this location in the
+    package:
+
+        data/objects/submissionDocumentation/transfer-{package_name}-{transfer_id}/METS.xml
+
+    so by looking for a matching file in the storage service, we know
+    whether something was stored successfully.
+    """
     return any(
-        h["_source"]["name"].endswith(f"-{archivematica_transfer_id}/METS.xml")
-        for h in es_resp["hits"]["hits"]
+        name.endswith(f"-{archivematica_transfer_id}/METS.xml")
+        for name in get_stored_xml_file_names(
+            external_identifier=external_identifier, files_index=files_index
+        )
     )
 
 
@@ -188,14 +202,12 @@ def post_to_slack(*, webhook_url, results, days_to_check, environment):
     )
 
     try:
-        urllib.request.urlopen(req)
+        urllib.request.urlopen(req, timeout=30)
     except HTTPError as err:
         raise Exception(f"{err} - {err.read()}")
 
 
 def run_transfer_lambda():
-    sess = boto3.Session()
-
     transfer_bucket = os.environ["TRANSFER_BUCKET"]
     files_index = os.environ["REPORTING_FILES_INDEX"]
     days_to_check = int(os.environ["DAYS_TO_CHECK"])
@@ -224,9 +236,7 @@ def run_transfer_lambda():
 
     # Send a message to Slack with a summary of the report.
     post_to_slack(
-        webhook_url=get_secret_string(
-            sess, secret_id="archivematica/transfer_monitor/slack_webhook"
-        ),
+        webhook_url=get_secret_string("archivematica/transfer_monitor/slack_webhook"),
         results=results,
         days_to_check=days_to_check,
         environment=environment,
