@@ -14,12 +14,13 @@ import logging
 import threading
 import time
 import traceback
-from typing import List
 
+from django.db import transaction
 from django.utils import timezone
 
-from .. import metrics
-from .asynchronous import Async
+from archivematica.storage_service.locations import metrics
+from archivematica.storage_service.locations.models.asynchronous import Async
+from archivematica.storage_service.locations.models.asynchronous import serialize_error
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,6 +38,23 @@ MAX_TASK_AGE_SECONDS = datetime.timedelta(seconds=86400)
 # check the status of our tasks.
 WATCHDOG_POLL_SECONDS = 5
 
+INTERRUPTED_TASK_ERROR_CODE = "async_operation_interrupted"
+INTERRUPTED_TASK_ERROR = serialize_error(
+    RuntimeError(
+        "The asynchronous operation was interrupted after its heartbeat expired. "
+        "Its final outcome is unknown; do not retry it automatically."
+    )
+)
+
+
+def get_async_error_code(error: bytes | memoryview | None) -> str | None:
+    """Return the stable API code for a recognized asynchronous error."""
+    if isinstance(error, memoryview):
+        error = error.tobytes()
+    if error == INTERRUPTED_TASK_ERROR:
+        return INTERRUPTED_TASK_ERROR_CODE
+    return None
+
 
 class RunningTask:
     def __init__(self):
@@ -48,7 +66,7 @@ class RunningTask:
 
 
 class AsyncManager:
-    running_tasks: List[Async] = []
+    running_tasks: list[Async] = []
     lock = threading.Lock()
 
     @staticmethod
@@ -67,28 +85,7 @@ class AsyncManager:
         """Wake up, expire old tasks, report completed tasks and give a sign of
         life for everything that's still running"""
         with AsyncManager.lock:
-            # Delete any tasks that have expired before finishing
-            # (i.e. interrupted due to a server restart)
-            Async.objects.filter(
-                completed=False,
-                updated_time__lte=(timezone.now() - TASK_TIMEOUT_SECONDS),
-            ).delete()
-
-            # Delete any tasks whose results have expired
-            Async.objects.filter(
-                completed=True,
-                completed_time__lte=(timezone.now() - MAX_TASK_AGE_SECONDS),
-            ).delete()
-
-            # Touch the update time of any running task.  If we crash/restart then these will expire.
-            running_task_ids = [
-                task.async_id
-                for task in AsyncManager.running_tasks
-                if task.thread.is_alive()
-            ]
-            Async.objects.filter(id__in=running_task_ids).update(
-                updated_time=timezone.now()
-            )
+            now = timezone.now()
 
             # Find any tasks that have completed since we last looked
             completed_tasks = [
@@ -102,17 +99,23 @@ class AsyncManager:
                 metrics.async_manager_running_tasks.dec()
 
                 try:
-                    async_task = Async.objects.get(id=task.async_id)
-                    async_task.completed = True
-                    async_task.completed_time = timezone.now()
-                    async_task.was_error = task.was_error
+                    with transaction.atomic():
+                        async_task = Async.objects.select_for_update().get(
+                            id=task.async_id
+                        )
+                        if async_task.completed:
+                            continue
 
-                    if task.was_error:
-                        async_task.error = task.error
-                    else:
-                        async_task.result = task.result
+                        async_task.completed = True
+                        async_task.completed_time = now
+                        async_task.was_error = task.was_error
 
-                    async_task.save()
+                        if task.was_error:
+                            async_task.error = task.error
+                        else:
+                            async_task.result = task.result
+
+                        async_task.save()
                 except Async.DoesNotExist:
                     # This generally shouldn't happen, but if it does that
                     # would suggest that the watchdog had failed to update
@@ -121,6 +124,52 @@ class AsyncManager:
                         "Watchdog attempted to update Async object %d but couldn't find it!"
                         % (task.async_id)
                     )
+
+            # Touch the update time of any running task. If we crash or restart,
+            # these tasks will expire.
+            running_task_ids = [task.async_id for task in AsyncManager.running_tasks]
+            Async.objects.filter(
+                id__in=running_task_ids,
+                completed=False,
+            ).update(updated_time=now)
+
+            # Mark any tasks that have expired before finishing as interrupted
+            # (i.e. interrupted due to a server restart).
+            expired_tasks = Async.objects.filter(
+                completed=False,
+                updated_time__lte=(now - TASK_TIMEOUT_SECONDS),
+            )
+            expired_task_ids = list(expired_tasks.values_list("id", flat=True))
+            if expired_task_ids:
+                interrupted_count = expired_tasks.update(
+                    completed=True,
+                    was_error=True,
+                    completed_time=now,
+                    updated_time=now,
+                    _error=INTERRUPTED_TASK_ERROR,
+                )
+                if interrupted_count:
+                    interrupted_task_ids = Async.objects.filter(
+                        id__in=expired_task_ids,
+                        completed=True,
+                        was_error=True,
+                        completed_time=now,
+                    ).values_list("id", flat=True)
+                    metrics.async_manager_interrupted_tasks_counter.inc(
+                        interrupted_count
+                    )
+                    LOGGER.warning(
+                        "Marked %d asynchronous task(s) as interrupted after their "
+                        "heartbeat expired: %s",
+                        interrupted_count,
+                        ", ".join(str(task_id) for task_id in interrupted_task_ids),
+                    )
+
+            # Delete any tasks whose results have expired.
+            Async.objects.filter(
+                completed=True,
+                completed_time__lte=(now - MAX_TASK_AGE_SECONDS),
+            ).delete()
 
     @staticmethod
     def _wrap_task(task, task_fn):

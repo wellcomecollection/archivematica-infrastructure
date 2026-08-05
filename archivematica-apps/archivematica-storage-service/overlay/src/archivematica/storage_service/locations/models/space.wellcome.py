@@ -8,15 +8,17 @@ import stat
 import subprocess
 import tempfile
 import uuid
-from typing import Set
 
-from common import fields
-from common import utils
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from . import StorageException
+from archivematica.storage_service.common import fields
+from archivematica.storage_service.common import utils
+from archivematica.storage_service.common.rsync import RsyncError
+from archivematica.storage_service.common.rsync import run_rsync
+from archivematica.storage_service.locations.models import StorageException
 
 LOGGER = logging.getLogger(__name__)
 
@@ -112,8 +114,9 @@ class Space(models.Model):
     SWIFT = "SWIFT"
     GPG = "GPG"
     S3 = "S3"
+    WELLCOME = "WELLCOME"
     # These will not be displayed in the Space Create GUI (see locations/forms.py)
-    BETA_PROTOCOLS: Set[str] = set()
+    BETA_PROTOCOLS: set[str] = set()
     OBJECT_STORAGE = {
         ARCHIPELAGO,
         DATAVERSE,
@@ -141,6 +144,7 @@ class Space(models.Model):
         (RCLONE, _("RClone")),
         (SWIFT, _("Swift")),
         (S3, _("S3")),
+        (WELLCOME, _("Wellcome Storage Service")),
     )
     access_protocol = models.CharField(
         max_length=8,
@@ -547,8 +551,8 @@ class Space(models.Model):
                     dest_norm,
                 )
 
-        # Rsync file over
-        # TODO Do this asyncronously, with restarting failed attempts
+        # Rsync file over. Keep this call bounded so API users get a terminal
+        # success or failure instead of waiting indefinitely.
         command = [
             "rsync",
             "-t",
@@ -557,19 +561,17 @@ class Space(models.Model):
             "-vv",
             "--chmod=Fug+rw,o-rwx,Dug+rwx,o-rwx",
             "-r",
+            f"--timeout={settings.RSYNC_IO_TIMEOUT_SECONDS}",
             source,
             destination,
         ]
-        LOGGER.info("rsync command: %s", command)
-        kwargs = {"stdout": subprocess.PIPE, "stderr": subprocess.STDOUT}
+        env = None
         if assume_rsync_daemon:
-            kwargs["env"] = {"RSYNC_PASSWORD": rsync_password}
-        p = subprocess.Popen(command, **kwargs)
-        stdout, _ = p.communicate()
-        if p.returncode != 0:
-            s = f"Rsync failed with status {p.returncode}: {stdout}"
-            LOGGER.warning(s)
-            raise StorageException(s)
+            env = {"RSYNC_PASSWORD": rsync_password}
+        try:
+            run_rsync(command, env=env, source=source, destination=destination)
+        except RsyncError as err:
+            raise StorageException(str(err)) from err
 
     def create_local_directory(self, path, mode=None):
         """

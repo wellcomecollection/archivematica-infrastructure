@@ -1,5 +1,5 @@
-from . import forms
-from . import models
+from archivematica.storage_service.locations import forms
+from archivematica.storage_service.locations import models
 
 # ######################## SPACES ##########################
 
@@ -114,16 +114,11 @@ PROTOCOL = {
         "model": models.S3,
         "form": forms.S3Form,
         "fields": [
-            "s3_endpoint_url",
-            "aws_access_key_id",
-            "aws_secret_access_key",
-            "s3_region",
-            "s3_bucket",
+            "endpoint_url",
+            "access_key_id",
+            "secret_access_key",
+            "region",
+            "bucket",
         ],
-    },
-    models.Space.WELLCOME: {
-        "model": models.WellcomeStorageService,
-        "form": forms.WellcomeStorageServiceForm,
-        "fields": ["token_url", "api_root_url", "app_client_id", "app_client_secret"],
     },
 }

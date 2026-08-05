@@ -274,10 +274,12 @@ module "storage_service" {
     # See https://github.com/wellcometrust/platform/issues/3954
     SS_GUNICORN_WORKERS = 4
 
-    SS_OIDC_AUTHENTICATION = "true"
-    AZURE_TENANT_ID        = var.azure_tenant_id
-    OIDC_RP_CLIENT_ID      = var.oidc_client_id
-    OIDC_RP_SIGN_ALGO      = "RS256"
+    # Send the session cookie when Azure redirects back to the OIDC callback.
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SS_OIDC_AUTHENTICATION  = "true"
+    AZURE_TENANT_ID         = var.azure_tenant_id
+    OIDC_RP_CLIENT_ID       = var.oidc_client_id
+    OIDC_RP_SIGN_ALGO       = "RS256"
   }
 
   secrets = {

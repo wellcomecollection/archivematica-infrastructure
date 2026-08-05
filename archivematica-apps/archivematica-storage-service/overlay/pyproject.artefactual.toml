@@ -1,0 +1,169 @@
+[build-system]
+requires = ["setuptools>=74", "wheel>=0.44"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="archivematica-storage-service"
+description="Django based webapp for managing storage in an Archivematica installation"
+requires-python = ">=3.10"
+authors = [
+  {name = "Artefactual Systems Inc.", email = "info@artefactual.com"},
+]
+maintainers = [
+  {name = "Artefactual Systems Inc.", email = "info@artefactual.com"},
+]
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {file = "LICENSE"}
+dynamic = [
+  "version",
+]
+dependencies = [
+  "bagit @ git+https://github.com/LibraryOfCongress/bagit-python.git@4bd2713cedbe1f8e634567c20ef0dded9622011d",
+  "boto3",
+  "brotli",
+  "Django>=5.2,<6",
+  "dj-database-url",
+  "django-csp",
+  "django-stubs-ext",
+  "django-tastypie",
+  "gevent",
+  "gunicorn",
+  "jsonfield",
+  "lxml",
+  "metsrw",
+  "python-gnupg",
+  "python-keystoneclient",
+  "python-swiftclient",
+  "requests",
+  "sword2 @ git+https://github.com/artefactual-labs/python-client-sword2.git@619ee44467dcdb2ab75fab16864ea2e4ded7ffe4",
+  "whitenoise",
+  "agentarchives",
+  "django-shibboleth-remoteuser @ git+https://github.com/artefactual-labs/django-shibboleth-remoteuser.git@f08a7864d6130416c352981ccf318fff0fd5be58",
+  "prometheus_client",
+  "django-prometheus",
+  # LDAP support
+  "python-ldap",
+  "django-auth-ldap",
+  # CAS authentication
+  "django-cas-ng",
+  # Required for OpenID Connect authentication
+  "mozilla-django-oidc",
+  "pyjwt",
+]
+
+[dependency-groups]
+dev = [
+  "boto3-stubs[s3]",
+  "coverage[toml]",
+  "django-stubs[compatible-mypy]",
+  "mypy",
+  "playwright",
+  "pre-commit",
+  "pytest-cov",
+  "pytest-django",
+  "pytest-playwright",
+  "pytest-randomly",
+  "pytest",
+]
+
+[tool.uv]
+# Keep compatibility with newer global uv installations used by deployments.
+# GitHub Actions reads this value automatically via astral-sh/setup-uv.
+required-version = ">=0.11.30"
+
+[project.urls]
+homepage = "https://github.com/artefacutal/archivematica-storage-service"
+documentation = "https://www.archivematica.org/en/docs/storage-service-latest/"
+repository = "https://github.com/artefacutal/archivematica-storage-service"
+issues = "https://github.com/archivematica/Issues/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include=["archivematica.storage_service*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "archivematica.storage_service.storage_service.__version__"}
+
+[tool.pytest.ini_options]
+addopts = "--reuse-db -p no:cacheprovider"
+DJANGO_SETTINGS_MODULE = "archivematica.storage_service.storage_service.settings.test"
+norecursedirs = ".tox"
+
+[tool.coverage.run]
+omit = [
+    "**/migrations/*",
+    "**/settings/*",
+    "**/wsgi.py",
+    "**/tests/*",
+    "**/wsgi.py",
+    "**/manage.py",
+]
+source = [
+  "archivematica.storage_service",
+]
+branch = true
+
+[tool.ruff.lint]
+# Rule reference: https://docs.astral.sh/ruff/rules/
+select = [
+  "B",
+  "C4",
+  "E",
+  "F",
+  "I",
+  "PTH",
+  "UP",
+  "W",
+]
+ignore = [
+  "B904",
+  "E501",
+  "UP031",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"{src/archivematica/storage_service,tests}/locations/*" = ["PTH"]
+"src/archivematica/storage_service/storage_service/settings/*" = [
+  "F403",
+  "F405",
+]
+"src/archivematica/storage_service/storage_service/settings/base.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.mypy]
+strict = true
+explicit_package_bases = true
+files = ["src", "tests"]
+mypy_path = [
+  "$MYPY_CONFIG_FILE_DIR/src",
+  "$MYPY_CONFIG_FILE_DIR/typings",
+]
+plugins = ["mypy_django_plugin.main"]
+
+[[tool.mypy.overrides]]
+module = [
+    "archivematica.storage_service.administration.*",
+    "archivematica.storage_service.common.*",
+    "archivematica.storage_service.locations.*",
+    "archivematica.storage_service.storage_service.*",
+    "tests.*",
+]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "archivematica.storage_service.administration.roles",
+    "archivematica.storage_service.common.helpers",
+    "archivematica.storage_service.common.gpgutils",
+    "archivematica.storage_service.locations.package_request",
+    "tests.administration.test_users",
+    "tests.integration.*",
+    "tests.storage_service.test_helpers",
+    "tests.storage_service.test_oidc",
+]
+ignore_errors = false
+
+[tool.django-stubs]
+django_settings_module = "archivematica.storage_service.storage_service.settings.test"

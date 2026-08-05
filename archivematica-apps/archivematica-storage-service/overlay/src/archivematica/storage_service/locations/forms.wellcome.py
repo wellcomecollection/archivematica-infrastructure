@@ -4,12 +4,12 @@ from collections import OrderedDict
 
 import django.core.exceptions
 import django.utils
-from common import gpgutils
 from django import forms
 from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
-from locations import models
+from archivematica.storage_service.common import gpgutils
+from archivematica.storage_service.locations import models
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,6 +56,13 @@ class PipelineForm(forms.ModelForm):
         help_text=_("Enabled if default locations should be created for this pipeline"),
     )
 
+    api_key = forms.CharField(
+        label=_("API key"),
+        help_text=_("API key to use when making API calls to the pipeline."),
+        required=False,
+        widget=forms.PasswordInput,
+    )
+
     class Meta:
         model = models.Pipeline
         fields = (
@@ -66,6 +73,22 @@ class PipelineForm(forms.ModelForm):
             "api_key",
             "enabled",
         )
+
+    def clean_api_key(self):
+        api_key = self.cleaned_data["api_key"]
+        if self.instance.pk and api_key == "":
+            # PasswordInput does not render the stored key on edit, so a blank
+            # submission means "leave the existing value alone" rather than
+            # "clear it".
+            return self.instance.api_key
+        return api_key
+
+    def save(self, *args, **kwargs):
+        if not self.instance.pk and self.instance.api_key is None:
+            # Normalize create-time empty API keys to the canonical empty string
+            # so form and API-created pipelines behave the same way.
+            self.instance.api_key = ""
+        return super().save(*args, **kwargs)
 
 
 class SpaceForm(forms.ModelForm):
@@ -171,10 +194,7 @@ class DSpaceRESTForm(forms.ModelForm):
 
 
 def get_gpg_key_choices():
-    return [
-        (key["fingerprint"], ", ".join(key["uids"]))
-        for key in gpgutils.get_gpg_key_list()
-    ]
+    return [(key["fingerprint"], key["keyid"]) for key in gpgutils.get_gpg_key_list()]
 
 
 class GPGForm(forms.ModelForm):
@@ -182,7 +202,9 @@ class GPGForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         system_key = gpgutils.get_default_gpg_key(gpgutils.get_gpg_key_list())
         self.fields["key"] = forms.ChoiceField(
-            choices=get_gpg_key_choices(), initial=system_key["fingerprint"]
+            choices=get_gpg_key_choices(),
+            initial=system_key["fingerprint"],
+            label=_("Keyid"),
         )
 
     class Meta:
