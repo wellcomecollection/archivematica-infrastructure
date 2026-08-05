@@ -5,7 +5,8 @@ We fork Archivematica to add support for our storage service. We've considered a
 * It means adding a new dependency to Archivematica (our storage service client library), which Artefactual are understandably reluctant to do.
 *   Archivematica is designed to work with a variety of storage backends (e.g. S3, DuraCloud, Fedora), and our storage service is a bit of an "odd one out".
 
-    Most of the storage backends can store packages very quickly, whereas our storage service is asynchronous and can sometimes take multiple hours to successfully store a package. We've had to change some of the code around timeouts and waiting for the storage backend.
+    Most of the storage backends can store packages very quickly, whereas our storage service is asynchronous and can sometimes take multiple hours to successfully store a package.
+    We've had to change some of the code around timeouts and waiting for the storage backend.
 
 ## How our forks work / how overlays work
 
@@ -23,19 +24,25 @@ The overlay is designed to balance a few competing concerns:
 * We don't want the overhead of a separate Archivematica fork
 * We want to be able to update to new versions of Archivematica
 
-The overlay is best explained with an example:
+For example:
 
-![Screenshot of a file tree. There's a folder called "vendor", which contains "src", which contains "archivematicaCommon", which contains "lib", which contains "storageService.artefactual.py" and "storageService.wellcome.py"](../../../archivematica-apps/archivematica/overlay\_example.png)
+```text
+overlay/src/archivematica/archivematicaCommon/
+├── storageService.artefactual.py
+└── storageService.wellcome.py
+```
 
-This represents a Wellcome-specific version of the file `src/archivematicaCommon/lib/storageService.py` in the core Archivematica repo. When we build the Docker image, these files replace the upstream versions.
+This represents a Wellcome-specific version of the file `src/archivematica/archivematicaCommon/storageService.py` in the core Archivematica repo.
+When we build the Docker image, these files replace the upstream versions.
 
-We keep both the upstream and Wellcome-specific copy in the tree so that we can easily see how we've diverged. This also allows us to maintain the divergence if the upstream code changes, because we can see what our changes from the original were.
+We keep both the upstream and Wellcome-specific copy in the tree so that we can easily see how we've diverged.
+This also allows us to maintain the divergence if the upstream code changes, because we can see what our changes from the original were.
 
 ## Updating to newer versions of Archivematica
 
 Because we only fork in a handful of places, we should be able to update to newer Archivematica versions relatively easily.
 
-It should be sufficient to bump the version of the Artefactual repo that we clone.
+Bumping the version of the Artefactual repo is only the first step; every artefactual/wellcome pair must also be refreshed and reviewed.
 
 When you bump the version, you may get errors from the `copy_overlay_files.py` script warning that there's a mismatch between upstream.
 This means that there have been changes in Archivematica that need to be mirrored to our repo.

@@ -9,7 +9,9 @@ then
   exit 1
 fi
 
-ARCHIVEMATICA_TAG=v1.17.1
+# This untagged commit was the tip of qa/1.x when the overlay was updated.
+# Pin the SHA so later changes to the branch do not alter this build.
+ARCHIVEMATICA_TAG=306db6773216e607cf5687f84fb0be353949ddb7
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
