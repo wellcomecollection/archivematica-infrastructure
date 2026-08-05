@@ -128,7 +128,7 @@ To fix this:
 3.  Look for a Docker container running the storage service. Similar to above:
 
     ```
-    docker exec -it $(docker ps | grep storage-service | grep app | awk '{print $1}') python /src/storage_service/manage.py migrate
+    docker exec -it $(docker ps | grep storage-service | grep app | awk '{print $1}') python -m archivematica.storage_service.manage migrate
     ```
 
 ## 6. Create initial users <a href="#step_5" id="step_5"></a>
@@ -139,7 +139,7 @@ Create a storage service user:
 
 ```
 docker exec -it $(docker ps | grep storage-service | grep app | awk '{print $1}') \
-    python /src/storage_service/manage.py \
+    python -m archivematica.storage_service.manage \
     create_user \
     --username="admin" \
     --password="PASSWORD" \

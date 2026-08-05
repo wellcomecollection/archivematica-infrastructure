@@ -1,27 +1,27 @@
 import errno
-from functools import wraps
 import logging
 import os
 import re
 import subprocess
 import tempfile
 import time
-from urllib.parse import urljoin, urlencode
+from functools import wraps
+from urllib.parse import urlencode
+from urllib.parse import urljoin
 
 import boto3
 import botocore
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from wellcome_storage_service import BagNotFound
 from wellcome_storage_service import (
-    BagNotFound,
     RequestsOAuthStorageServiceClient as StorageServiceClient,
 )
 
-from . import StorageException
 from . import Package
+from . import StorageException
 from .location import Location
-
 
 TOKEN_HELP_TEXT = _(
     "URL of the OAuth token endpoint, e.g. https://auth.wellcomecollection.org/oauth2/token"
@@ -109,7 +109,7 @@ def mkdir_p(dirpath):
 FNULL = open(os.devnull, "w")
 
 
-class WellcomeIdentifier(object):
+class WellcomeIdentifier:
     def __init__(self, space, external_identifier, internal_identifier):
         self.space = space
         self.external_identifier = external_identifier
@@ -131,7 +131,7 @@ class WellcomeIdentifier(object):
 
 class NoWellcomeIdentifierFound(ValueError):
     def __init__(self):
-        return super(NoWellcomeIdentifierFound, self).__init__(
+        return super().__init__(
             "Unable to find a suitable identifier to use in the Wellcome identifier. "
             "Please re-send this transfer, supplying either (1) an accession number, "
             "or (2) a Dublin-Core identifier `dc.identifier` in the metadata."
@@ -558,7 +558,7 @@ class WellcomeStorageService(S3SpaceModelMixin):
         LOGGER.debug("Current package status is %s", package.status)
         while package.status == Package.STAGING:
             # Wait for callback to have been called
-            for i in range(6):
+            for _i in range(6):
                 package.refresh_from_db()
                 LOGGER.debug("Polled package; status is %s", package.status)
                 time.sleep(10)

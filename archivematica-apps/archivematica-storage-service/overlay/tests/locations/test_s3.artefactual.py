@@ -1,12 +1,14 @@
+from pathlib import Path
 from unittest import mock
 
 import botocore
 import pytest
-from locations import models
+from pytest_django.fixtures import SettingsWrapper
+
+from archivematica.storage_service.locations import models
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def space(tmp_path):
     space_dir = tmp_path / "space"
     space_dir.mkdir()
@@ -19,7 +21,6 @@ def space(tmp_path):
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def s3_space(space):
     return models.S3.objects.create(
         space=space,
@@ -32,7 +33,6 @@ def s3_space(space):
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def aip_storage_location(s3_space):
     return models.Location.objects.create(
         description="S3",
@@ -43,7 +43,6 @@ def aip_storage_location(s3_space):
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def package(aip_storage_location):
     return models.Package.objects.create(
         current_location=aip_storage_location,
@@ -214,20 +213,48 @@ def test_ensure_bucket_exists_works_with_any_region(resource, s3_space):
     "boto3.resource",
     return_value=mock.Mock(
         **{
-            "Bucket.return_value.objects.filter.return_value": [
-                mock.Mock(
-                    key="/aips/myaips/myaip.7z",
-                    size=1024,
-                    last_modified="2024-01-01 00:00:00",
-                    e_tag="2b5fbc705df14fd1c4fb022acfb4b3ca",
-                ),
-                mock.Mock(
-                    key="/aips/other/other.7z",
-                    size=512,
-                    last_modified="2023-01-01 00:00:00",
-                    e_tag="9f11c93c2583100d80612e46db1c3bd5",
-                ),
-            ]
+            "meta.client.get_paginator.return_value": mock.Mock(
+                **{
+                    "paginate.side_effect": [
+                        [{"Contents": [], "CommonPrefixes": [{"Prefix": "aips/"}]}],
+                        [
+                            {
+                                "Contents": [],
+                                "CommonPrefixes": [
+                                    {"Prefix": "aips/myaips/"},
+                                    {"Prefix": "aips/other/"},
+                                ],
+                            }
+                        ],
+                        [
+                            {
+                                "Contents": [
+                                    {
+                                        "Key": "aips/myaips/myaip.7z",
+                                        "Size": 1024,
+                                        "LastModified": "2024-01-01 00:00:00",
+                                        "ETag": "2b5fbc705df14fd1c4fb022acfb4b3ca",
+                                    }
+                                ],
+                                "CommonPrefixes": [{"Prefix": "aips/myaips/aips/"}],
+                            }
+                        ],
+                        [
+                            {
+                                "Contents": [
+                                    {
+                                        "Key": "aips/other/other.7z",
+                                        "Size": 512,
+                                        "LastModified": "2023-01-01 00:00:00",
+                                        "ETag": "9f11c93c2583100d80612e46db1c3bd5",
+                                    }
+                                ],
+                                "CommonPrefixes": [{"Prefix": "aips/other/aips/"}],
+                            }
+                        ],
+                    ]
+                }
+            )
         }
     ),
 )
@@ -319,3 +346,73 @@ def test_delete_path_deletes_package(resource, s3_space, caplog):
         "S3 response when attempting to delete:",
         "{'success': True}",
     ]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("use_threads", [True, False])
+def test_transfer_config_uses_settings_value(
+    s3_space: models.S3,
+    settings: SettingsWrapper,
+    use_threads: bool,
+) -> None:
+    settings.S3_USE_THREADS = use_threads
+
+    assert s3_space.transfer_config.use_threads is use_threads
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("use_threads", [True, False])
+def test_upload_object_passes_transfer_config_to_boto3(
+    s3_space: models.S3,
+    settings: SettingsWrapper,
+    tmp_path: Path,
+    use_threads: bool,
+) -> None:
+    settings.S3_USE_THREADS = use_threads
+    payload = tmp_path / "payload.txt"
+    payload.write_text("hello")
+    bucket = mock.Mock()
+
+    s3_space.upload_object(bucket, "aips/payload.txt", str(payload))
+
+    upload_fileobj = bucket.upload_fileobj
+    upload_fileobj.assert_called_once()
+    config = upload_fileobj.call_args.kwargs["Config"]
+
+    assert config is s3_space.transfer_config
+    assert config.use_threads is use_threads
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("use_threads", [True, False])
+@mock.patch("boto3.resource")
+def test_move_to_storage_service_passes_transfer_config_to_boto3(
+    resource: mock.Mock,
+    s3_space: models.S3,
+    settings: SettingsWrapper,
+    tmp_path: Path,
+    use_threads: bool,
+) -> None:
+    resource.return_value = mock.Mock(
+        **{
+            "meta.client.get_bucket_location.return_value": {
+                "LocationConstraint": "us-east-1",
+                "ResponseMetadata": {},
+            },
+            "Bucket.return_value.objects.filter.return_value": [
+                mock.Mock(key="aips/payload.txt")
+            ],
+        }
+    )
+
+    settings.S3_USE_THREADS = use_threads
+    destination = tmp_path / "downloads"
+
+    s3_space.move_to_storage_service("/aips", str(destination), None)
+
+    download_file = resource.return_value.Bucket.return_value.download_file
+    download_file.assert_called_once()
+    config = download_file.call_args.kwargs["Config"]
+
+    assert config is s3_space.transfer_config
+    assert config.use_threads is use_threads
