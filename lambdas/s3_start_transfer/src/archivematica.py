@@ -18,11 +18,12 @@ class StoragePathException(Exception):
     pass
 
 
-def am_api_post_json(api_path, data):
+def am_api_post_json(api_path, data, headers=None):
     """
     POST json to the Archivematica API
     :param api_path: URL path to request (without hostname, e.g. /api/v2/location/)
     :param data: Dict of data to post
+    :param headers: Additional HTTP headers to include in the request
     :returns: dict of json data returned by request
     """
     am_url = os.environ["ARCHIVEMATICA_URL"]
@@ -37,7 +38,11 @@ def am_api_post_json(api_path, data):
     request = urllib.request.Request(
         url,
         data=data,
-        headers={**am_headers, "Content-Type": "application/json"},
+        headers={
+            **am_headers,
+            "Content-Type": "application/json",
+            **(headers or {}),
+        },
         method="POST",
     )
     response = urllib.request.urlopen(request)
@@ -158,12 +163,20 @@ def find_matching_path(locations, bucket, directory, key):
     raise StoragePathException("Unable to find location for %s:%s" % (bucket, key))
 
 
-def start_transfer(name, path, processing_config, accession_number=None):
+def start_transfer(
+    name,
+    path,
+    processing_config,
+    *,
+    idempotency_key,
+    accession_number=None,
+):
     """
     Start an Archivematica transfer using the automated workflow
 
     :param name: Name of transfer
-    :param key: Path of transfer, of the form b'<location_uuid>:<target_path>'
+    :param path: Path of transfer, of the form b'<location_uuid>:<target_path>'
+    :param idempotency_key: Stable identity reused for every submission attempt
 
     :returns: transfer uuid
     """
@@ -180,7 +193,11 @@ def start_transfer(name, path, processing_config, accession_number=None):
     if accession_number is not None:
         data["accession"] = accession_number
 
-    response_json = am_api_post_json("/api/v2beta/package", data)
+    response_json = am_api_post_json(
+        "/api/v2beta/package",
+        data,
+        headers={"Idempotency-Key": idempotency_key},
+    )
     if "error" in response_json:
         raise StartTransferException(
             "Error starting transfer: %s" % response_json["message"]
