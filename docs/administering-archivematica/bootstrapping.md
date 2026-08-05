@@ -120,7 +120,8 @@ To fix this:
 2.  Run the Django migrations in the dashboard:
 
     ```
-    docker exec -it $(docker ps | grep dashboard | grep app | awk '{print $1}') python /src/src/dashboard/src/manage.py migrate
+    docker exec -it $(docker ps | grep dashboard | grep app | awk '{print $1}') \
+        python -m archivematica.dashboard.manage migrate
     ```
 
     It might take a couple of attempts before this finishes successfully. The dashboard can't start until the database is set up correctly, which means it fails load balancer healthchecks -- ECS will be continually restarting the container until you successfully run the database migrations.
@@ -151,7 +152,7 @@ Create a dashboard user:
 
 ```
 docker exec -it $(docker ps | grep dashboard | grep app | awk '{print $1}') \
-    python /src/src/dashboard/src/manage.py install \
+    python -m archivematica.dashboard.manage install \
     --username="admin" \
     --password="PASSWORD" \
     --email="wellcomedigitalworkflow@wellcome.ac.uk" \

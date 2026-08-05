@@ -21,11 +21,12 @@ import platform
 import time
 import urllib
 
-import archivematicaFunctions as am
 import requests
-from common_metrics import ss_api_timer
 from django.conf import settings as django_settings
 from requests.auth import AuthBase
+
+from archivematica.archivematicaCommon import archivematicaFunctions as am
+from archivematica.archivematicaCommon.common_metrics import ss_api_timer
 
 LOGGER = logging.getLogger("archivematica.common")
 
@@ -385,20 +386,6 @@ def copy_files(source_location, destination_location, files):
         return (None, e)
 
 
-def get_files_from_backlog(files):
-    """
-    Copies files from the backlog location to the currently processing location.
-    See copy_files for more details.
-    """
-    # Get Backlog location UUID
-    # Assuming only one backlog location
-    backlog = get_first_location(purpose="BL")
-    # Get currently processing location
-    processing = get_first_location(purpose="CP")
-
-    return copy_files(backlog, processing, files)
-
-
 # ########### FILES #############
 
 
@@ -609,7 +596,11 @@ def request_file_deletion(uuid, user_id, user_email, reason_for_deletion):
     url = _storage_service_url() + "file/" + uuid + "/delete_aip/"
     with ss_api_timer(function="request_file_deletion"):
         response = _storage_api_session().post(url, json=api_request)
-    return response.json()
+    try:
+        return response.json()
+    except ValueError:
+        message = response.text or "Storage service returned a non-JSON response."
+        return {"error": True, "message": message, "status": response.status_code}
 
 
 def post_store_aip_callback(uuid):
@@ -628,36 +619,6 @@ def get_file_metadata(**kwargs):
         response = _storage_api_slow_session().get(url, params=kwargs)
     if 400 <= response.status_code < 500:
         raise ResourceNotFound(f"No file found for arguments: {kwargs}")
-    return response.json()
-
-
-def remove_files_from_transfer(transfer_uuid):
-    """Used in ``devtools:tools/reindex-backlogged-transfers``.
-
-    TODO: move tool to Dashboard management commands.
-    """
-    with ss_api_timer(function="remove_files_from_transfer"):
-        url = _storage_service_url() + "file/" + transfer_uuid + "/contents/"
-    _storage_api_slow_session().delete(url)
-
-
-def index_backlogged_transfer_contents(transfer_uuid, file_set):
-    """Used by ``devtools:tools/reindex-backlogged-transfers``.
-
-    TODO: move tool to Dashboard management commands.
-    """
-    url = _storage_service_url() + "file/" + transfer_uuid + "/contents/"
-    with ss_api_timer(function="index_backlogged_transfer_contents"):
-        response = _storage_api_slow_session().put(url, json=file_set)
-    if 400 <= response.status_code < 500:
-        raise Error(f"Unable to add files to transfer: {response.text}")
-
-
-def reindex_file(transfer_uuid):
-    url = _storage_service_url() + "file/" + transfer_uuid + "/reindex/"
-    with ss_api_timer(function="reindex_file"):
-        response = _storage_api_slow_session().post(url)
-    response.raise_for_status()
     return response.json()
 
 

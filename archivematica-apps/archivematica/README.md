@@ -10,7 +10,7 @@ We only diverge slightly from Archivematica upstream, so rather than maintaining
 
 ## How to build images
 
-Run the `build_images.sh` script.
+Run `build_and_publish_image.sh` with `dashboard`, `mcp-client`, or `mcp-server` as its argument.
 
 You can get a newer version of the code from Artefactual upstream by changing the `ARCHIVEMATICA_TAG` variable.
 
@@ -22,12 +22,18 @@ The overlay is designed to balance a few competing concerns:
 *   We don't want to maintain a completely separate Archivematica fork
 *   We want to be able to upgrade to new versions of Archivematica
 
-The overlay is best explained with an example:
+For example:
 
-![Screenshot of a file tree. There's a folder called "vendor", which contains "src", which contains "archivematicaCommon", which contains "lib", which contains "storageService.artefactual.py" and "storageService.wellcome.py"](overlay_example.png)
+```text
+overlay/src/archivematica/archivematicaCommon/
+├── storageService.artefactual.py
+└── storageService.wellcome.py
+```
 
-This represents a Wellcome-specific version of the file `src/archivematicaCommon/lib/storageService.py` in the core Archivematica repo.
+This represents a Wellcome-specific version of the file `src/archivematica/archivematicaCommon/storageService.py` in the core Archivematica repo.
 When we build the Docker image, these files replace the upstream versions.
 
 We keep both the upstream and Wellcome-specific copy in the tree so that we can easily see how we've diverged.
 This also allows us to maintain the divergence if the upstream code changes, because we can see what our changes from the original were.
+
+The `.artefactual.py` file is the upstream version and the `.wellcome.py` file is its complete Wellcome replacement.

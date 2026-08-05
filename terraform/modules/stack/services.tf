@@ -142,7 +142,7 @@ module "mcp_client_service" {
   container_image = var.mcp_client_container_image
 
   environment = {
-    DJANGO_SETTINGS_MODULE                                         = "settings.common"
+    DJANGO_SETTINGS_MODULE                                         = "archivematica.MCPClient.settings.common"
     ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = var.rds_username
     ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = var.rds_password
     ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = var.rds_host
@@ -362,10 +362,12 @@ module "dashboard_service" {
     # storage service is indexed separately in the reporting cluster.
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_SEARCH_ENABLED = false
 
-    ARCHIVEMATICA_DASHBOARD_OIDC_AUTHENTICATION = "true"
-    AZURE_TENANT_ID                             = var.azure_tenant_id
-    OIDC_RP_CLIENT_ID                           = var.oidc_client_id
-    OIDC_RP_SIGN_ALGO                           = "RS256"
+    # Send the session cookie when Azure redirects back to the OIDC callback.
+    ARCHIVEMATICA_DASHBOARD_DASHBOARD_SESSION_COOKIE_SAMESITE = "Lax"
+    ARCHIVEMATICA_DASHBOARD_OIDC_AUTHENTICATION               = "true"
+    AZURE_TENANT_ID                                           = var.azure_tenant_id
+    OIDC_RP_CLIENT_ID                                         = var.oidc_client_id
+    OIDC_RP_SIGN_ALGO                                         = "RS256"
   }
 
   secrets = {
