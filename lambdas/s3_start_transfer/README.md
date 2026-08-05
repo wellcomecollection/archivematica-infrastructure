@@ -14,7 +14,12 @@ A transfer package is a zip file containing the files, plus some metadata (inclu
 ```mermaid
 graph TD
     A[User uploads package<br/>to S3] -->|S3 PutObject notification| L{Lambda checks package<br/>has correct structure<br/>and metadata}
-    L -->|passes checks| S[trigger Archivematica transfer,<br/>upload 'success' log and<br/>tag S3 object]
+    L -->|passes checks| K[derive idempotency key<br/>from the S3 event]
+    K --> S[trigger Archivematica transfer<br/>with Idempotency-Key]
+    S --> C[tag S3 object and upload<br/>a stable 'success' log]
+    S -->|temporary failure| R[fail the invocation so<br/>Lambda retries the event]
+    C -->|temporary failure| R
+    R --> L
     L -->|fails checks| F[upload 'failed' log]
 
     classDef failedNode fill:#e01b2f,stroke:#e01b2f,fill-opacity:0.15
@@ -38,6 +43,27 @@ It records a success/fail result by uploading a small log file alongside the ori
 
 If it starts a transfer successfully, it tags the S3 object with the transfer ID.
 The [transfer monitor Lambda](../transfer_monitor) uses these tags to report Archivematica successes and failures and remove successfully stored packages from the transfer bucket.
+
+## Idempotency
+
+S3 and Lambda can deliver the same notification more than once.
+The Lambda derives a SHA-256 identity from the notification's bucket, decoded object key, event type, sequencer, and version ID when present.
+It sends that identity to Archivematica in the `Idempotency-Key` header on every attempt.
+
+Archivematica returns the original Transfer UUID when the same request and key are replayed, including when an earlier response was lost after the Transfer was accepted.
+A genuine replacement upload has a new S3 sequencer or version ID, so it receives a new key and starts a new Transfer.
+
+Archivematica transport errors, server errors, and retryable HTTP responses fail the invocation, as do failures writing S3 success feedback.
+Lambda can then redeliver the event without creating another Transfer.
+Permanent submission errors write a failed user log and do not retry.
+Package tags include the stable S3 event time, and user log names include a readable event timestamp and an event identity suffix so a retry overwrites the same log instead of creating a duplicate.
+Invalid packages and permanent transfer-source configuration errors also write a failed user log and do not retry.
+
+The header is optional and ignored by older Archivematica versions, but deploying this retry behaviour with those versions is unsafe because an uncertain submission can create duplicate Transfers.
+Deploy idempotency-aware Dashboard and MCPServer images before deploying this Lambda version in an environment.
+Safe replay guarantees apply only when the request is handled by Dashboard and MCPServer versions which support idempotent package submission.
+During a mixed-version rollout, attempts handled by an older instance can still create duplicate Transfers.
+Newer Archivematica versions retain keys for 90 days, which covers Lambda retries and events retained in the Lambda dead-letter queue.
 
 
 

@@ -45,6 +45,29 @@ def test_ss_api_get(mock_urlopen, monkeypatch):
     )
 
 
+@patch.object(archivematica.urllib.request, "urlopen")
+def test_am_api_post_json_includes_additional_headers(mock_urlopen, monkeypatch):
+    monkeypatch.setenv("ARCHIVEMATICA_URL", "https://archivematica.example")
+    monkeypatch.setenv("ARCHIVEMATICA_USERNAME", "test-user")
+    monkeypatch.setenv("ARCHIVEMATICA_API_KEY", "test-key")
+    mock_urlopen.return_value.read.return_value = b'{"id": "transfer-uuid"}'
+
+    result = archivematica.am_api_post_json(
+        "/api/v2beta/package",
+        {"name": "test1.zip"},
+        headers={"Idempotency-Key": "event-id"},
+    )
+
+    assert result == {"id": "transfer-uuid"}
+    request = mock_urlopen.call_args.args[0]
+    headers = {key.lower(): value for key, value in request.header_items()}
+    assert headers == {
+        "authorization": "ApiKey test-user:test-key",
+        "content-type": "application/json",
+        "idempotency-key": "event-id",
+    }
+
+
 @patch.object(archivematica, "am_api_post_json")
 def test_start_transfer(mock_am_post):
     transfer_uuid = str(uuid.uuid4())
@@ -54,6 +77,7 @@ def test_start_transfer(mock_am_post):
         name="test1.zip",
         path=b"space1-uuid:/test1.zip",
         processing_config="born-digital",
+        idempotency_key="event-id",
     )
 
     assert actual_transfer_uuid == transfer_uuid
@@ -67,6 +91,7 @@ def test_start_transfer(mock_am_post):
             "processing_config": "born_digital",
             "auto_approve": True,
         },
+        headers={"Idempotency-Key": "event-id"},
     )
 
 
@@ -79,6 +104,7 @@ def test_start_transfer_with_accession(mock_am_post):
         name="test1.zip",
         path=b"space1-uuid:/test1.zip",
         processing_config="b_dig_accessions",
+        idempotency_key="event-id",
         accession_number="1234",
     )
 
@@ -94,6 +120,7 @@ def test_start_transfer_with_accession(mock_am_post):
             "auto_approve": True,
             "accession": "1234",
         },
+        headers={"Idempotency-Key": "event-id"},
     )
 
 
@@ -169,7 +196,10 @@ def test_start_transfer_raises_upon_error(mock_am_post):
 
     with pytest.raises(archivematica.StartTransferException):
         archivematica.start_transfer(
-            "test1.zip", b"space1-uuid:/test1.zip", "born-digital"
+            "test1.zip",
+            b"space1-uuid:/test1.zip",
+            "born-digital",
+            idempotency_key="event-id",
         )
 
 
