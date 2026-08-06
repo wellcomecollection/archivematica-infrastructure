@@ -14,7 +14,7 @@ locals {
     nginx              = local.infra_state["ecr_nginx_repo_url"]
   }
 
-ecr_image_tags = {
+  ecr_image_tags = {
     dashboard          = "306db6773216e607cf5687f84fb0be353949ddb7-9e548c1d89ffe0707eddc75047c3bcd7d9901710"
     mcp_client         = "306db6773216e607cf5687f84fb0be353949ddb7-9e548c1d89ffe0707eddc75047c3bcd7d9901710"
     mcp_server         = "306db6773216e607cf5687f84fb0be353949ddb7-9e548c1d89ffe0707eddc75047c3bcd7d9901710"
