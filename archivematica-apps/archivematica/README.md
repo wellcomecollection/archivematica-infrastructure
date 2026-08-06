@@ -12,7 +12,7 @@ We only diverge slightly from Archivematica upstream, so rather than maintaining
 
 Run `build_and_publish_image.sh` with `dashboard`, `mcp-client`, or `mcp-server` as its argument.
 
-You can get a newer version of the code from Artefactual upstream by changing the `ARCHIVEMATICA_TAG` variable.
+You can get a newer version of the code from Artefactual upstream by changing the `UPSTREAM_COMMIT` variable in `build_and_publish_image.sh`.
 
 ## How the overlay works
 
