@@ -18,6 +18,7 @@ from verify_transfer_packages import (
     VerificationFailure,
     verify_has_a_metadata_csv,
     verify_only_metadata_and_rights_csv_in_metadata_dir,
+    verify_rights_csv_is_valid,
     verify_metadata_csv_has_accession_fields,
     verify_metadata_csv_has_dc_identifier,
     verify_package,
@@ -74,6 +75,7 @@ def verify_s3_package(sess, *, logger, bucket, key, log_id, event_time):
         # verify_all_files_not_under_objects_dir,
         verify_has_a_metadata_csv,
         verify_only_metadata_and_rights_csv_in_metadata_dir,
+        verify_rights_csv_is_valid,
     ]
 
     if key.startswith("born-digital-accessions/"):

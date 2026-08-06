@@ -4,9 +4,10 @@ it wrong that are non-obvious.
 
 This runs some checks over the package before sending it to Archivematica.
 
-It needs two things from the package:
+It needs three things from the package:
 *   The list of all files in the package (from zipfile.namelist())
 *   The contents of ``metadata/metadata.csv`` (if present in the package)
+*   The contents of ``metadata/rights.csv`` (if present in the package)
 
 """
 
@@ -22,28 +23,37 @@ class VerificationFailure(Exception):
         super().__init__(textwrap.dedent(message).strip())
 
 
-def extract_metadata(zip_file):
+def extract_csv(zip_file, path):
     try:
-        metadata_csv = zip_file.open("metadata/metadata.csv")
+        csv_file = zip_file.open(path)
     except KeyError:
         return None
     else:
-        metadata = metadata_csv.read().decode("utf8")
+        csv_contents = csv_file.read().decode("utf8")
 
         # Replace any byte-order marks in the CSV, we don't need them.
         # These are sometimes written by Excel and the like, I think?
-        if "\ufeff" in metadata:
-            metadata = metadata.replace("\ufeff", "")
+        if "\ufeff" in csv_contents:
+            csv_contents = csv_contents.replace("\ufeff", "")
 
-        return metadata
+        return csv_contents
+
+
+def extract_metadata(zip_file):
+    return extract_csv(zip_file, "metadata/metadata.csv")
+
+
+def extract_rights_metadata(zip_file):
+    return extract_csv(zip_file, "metadata/rights.csv")
 
 
 def verify_package(*, logger, zip_file, verifications):
-    # Extract the zip file listing and the metadata.csv contents for this
-    # transfer package.
+    # Extract the zip file listing and metadata CSV contents for this transfer
+    # package.
     file_listing = zip_file.namelist()
 
     metadata = extract_metadata(zip_file)
+    rights_metadata = extract_rights_metadata(zip_file)
 
     logger.write(f"Running {len(verifications)} checks for {zip_file}")
 
@@ -61,6 +71,9 @@ def verify_package(*, logger, zip_file, verifications):
 
         if "metadata" in inspect.getfullargspec(verify_function).args:
             kwargs["metadata"] = metadata
+
+        if "rights_metadata" in inspect.getfullargspec(verify_function).args:
+            kwargs["rights_metadata"] = rights_metadata
 
         try:
             verify_function(**kwargs)
@@ -206,6 +219,162 @@ def verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing):
 
             """
         )
+
+
+RIGHTS_CSV_REQUIRED_COLUMNS = {"file", "basis"}
+RIGHTS_CSV_OPTIONAL_COLUMNS = {
+    "status",
+    "determination_date",
+    "start_date",
+    "end_date",
+    "jurisdiction",
+    "terms",
+    "citation",
+    "note",
+    "grant_act",
+    "grant_restriction",
+    "grant_start_date",
+    "grant_end_date",
+    "grant_note",
+    "doc_id_type",
+    "doc_id_value",
+    "doc_id_role",
+}
+RIGHTS_CSV_ALLOWED_COLUMNS = RIGHTS_CSV_REQUIRED_COLUMNS | RIGHTS_CSV_OPTIONAL_COLUMNS
+RIGHTS_CSV_ALLOWED_BASES = {
+    "copyright",
+    "donor",
+    "license",
+    "other",
+    "policy",
+    "statute",
+}
+RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS = {"allow", "conditional", "disallow"}
+RIGHTS_CSV_REQUIRED_FIELDS_BY_BASIS = {
+    "copyright": {"status", "jurisdiction"},
+    "statute": {"citation", "jurisdiction"},
+}
+
+
+def verify_rights_csv_is_valid(rights_metadata):
+    if rights_metadata is None:
+        return
+
+    csv_reader = csv.DictReader(io.StringIO(rights_metadata))
+
+    if csv_reader.fieldnames is None:
+        raise VerificationFailure(
+            """
+            Your rights.csv is empty. It must have a header row and at least one
+            row of rights information.
+            """
+        )
+
+    duplicate_columns = {
+        column
+        for column in csv_reader.fieldnames
+        if csv_reader.fieldnames.count(column) > 1
+    }
+    if duplicate_columns:
+        raise VerificationFailure(
+            f"""
+            Your rights.csv has duplicate column headings: {', '.join(sorted(duplicate_columns))}.
+
+            Each column heading may only appear once.
+            """
+        )
+
+    supplied_columns = set(csv_reader.fieldnames)
+    unexpected_columns = supplied_columns - RIGHTS_CSV_ALLOWED_COLUMNS
+    if unexpected_columns:
+        raise VerificationFailure(
+            f"""
+            Your rights.csv has unsupported column headings: {', '.join(sorted(unexpected_columns))}.
+
+            See the transfer-package documentation for the supported columns.
+            """
+        )
+
+    missing_columns = RIGHTS_CSV_REQUIRED_COLUMNS - supplied_columns
+    if missing_columns:
+        raise VerificationFailure(
+            f"""
+            Your rights.csv is missing mandatory column headings: {', '.join(sorted(missing_columns))}.
+
+            Add the missing columns, then upload a new transfer package.
+            """
+        )
+
+    rows = list(csv_reader)
+    if not rows:
+        raise VerificationFailure(
+            """
+            Your rights.csv has no rights information. Add at least one row, or
+            remove the file from the transfer package.
+            """
+        )
+
+    for row_number, row in enumerate(rows, start=2):
+        if row.get(None):
+            raise VerificationFailure(
+                f"""
+                Row {row_number} of your rights.csv has more values than column
+                headings.
+
+                Check that every value containing a comma is quoted.
+                """
+            )
+
+        for column in RIGHTS_CSV_REQUIRED_COLUMNS:
+            if not (row.get(column) or "").strip():
+                raise VerificationFailure(
+                    f"""
+                    Row {row_number} of your rights.csv has an empty '{column}' value.
+
+                    The 'file' and 'basis' values are required for every row.
+                    """
+                )
+
+        if not row["file"].strip().startswith("objects/"):
+            raise VerificationFailure(
+                f"""
+                Row {row_number} of your rights.csv has an invalid file value:
+                {row['file']}.
+
+                The file path must begin with 'objects/'.
+                """
+            )
+
+        basis = row["basis"].strip().lower()
+        if basis not in RIGHTS_CSV_ALLOWED_BASES:
+            raise VerificationFailure(
+                f"""
+                Row {row_number} of your rights.csv has an unsupported basis: {row['basis']}.
+
+                The basis must be one of: {', '.join(sorted(RIGHTS_CSV_ALLOWED_BASES))}.
+                """
+            )
+
+        for column in RIGHTS_CSV_REQUIRED_FIELDS_BY_BASIS.get(basis, set()):
+            if not (row.get(column) or "").strip():
+                raise VerificationFailure(
+                    f"""
+                    Row {row_number} of your rights.csv is missing a '{column}' value.
+
+                    It is required when the basis is '{basis}'.
+                    """
+                )
+
+        restriction = (row.get("grant_restriction") or "").strip().lower()
+        if restriction and restriction not in RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS:
+            raise VerificationFailure(
+                f"""
+                Row {row_number} of your rights.csv has an unsupported
+                grant_restriction value: {row['grant_restriction']}.
+
+                The value must be one of: {', '.join(sorted(RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS))}.
+                """
+            )
 
 
 def verify_metadata_csv_has_dc_identifier(metadata):

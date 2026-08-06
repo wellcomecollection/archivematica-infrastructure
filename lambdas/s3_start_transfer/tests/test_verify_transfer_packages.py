@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import io
 import pathlib
 import textwrap
 import zipfile
@@ -13,6 +14,7 @@ from verify_transfer_packages import (
     verify_all_files_not_under_objects_dir,
     verify_has_a_metadata_csv,
     verify_only_metadata_and_rights_csv_in_metadata_dir,
+    verify_rights_csv_is_valid,
     verify_metadata_csv_has_dc_identifier,
     verify_metadata_csv_has_accession_fields,
     VerificationFailure,
@@ -153,6 +155,75 @@ class TestVerifyOnlyMetadataAndRightsCsvInMetadataDir:
             "metadata/rights.csv",
         ]
         verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing=file_listing)
+
+
+class TestVerifyRightsCsv:
+    valid_rights_metadata = """\
+file,basis,status,jurisdiction,grant_act,grant_restriction
+objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
+"""
+
+    def test_rights_csv_is_optional(self):
+        verify_rights_csv_is_valid(rights_metadata=None)
+
+    def test_valid_rights_csv_is_okay(self):
+        verify_rights_csv_is_valid(rights_metadata=self.valid_rights_metadata)
+
+    def test_rights_csv_is_passed_to_package_verification(self):
+        contents = io.BytesIO()
+        with zipfile.ZipFile(contents, "w") as zf:
+            zf.writestr("metadata/rights.csv", self.valid_rights_metadata)
+
+        contents.seek(0)
+        with zipfile.ZipFile(contents) as zf:
+            assert verify_package(
+                logger=Logger(),
+                zip_file=zf,
+                verifications=[verify_rights_csv_is_valid],
+            )
+
+    @pytest.mark.parametrize(
+        "rights_metadata, message",
+        [
+            ("", "Your rights.csv is empty."),
+            ("file,basis\n", "Your rights.csv has no rights information."),
+            (
+                "file,status\nobjects/reports/summary.pdf,copyrighted\n",
+                "Your rights.csv is missing mandatory column headings: basis.",
+            ),
+            (
+                "file,basis,unsupported\nobjects/reports/summary.pdf,policy,x\n",
+                "Your rights.csv has unsupported column headings: unsupported.",
+            ),
+            (
+                "file,basis\nobjects/reports/summary.pdf,\n",
+                "Row 2 of your rights.csv has an empty 'basis' value.",
+            ),
+            (
+                "file,basis\nreports/summary.pdf,policy\n",
+                "Row 2 of your rights.csv has an invalid file value:",
+            ),
+            (
+                "file,basis\nobjects/reports/summary.pdf,unknown\n",
+                "Row 2 of your rights.csv has an unsupported basis: unknown.",
+            ),
+            (
+                "file,basis,jurisdiction\nobjects/reports/summary.pdf,copyright,GB\n",
+                "Row 2 of your rights.csv is missing a 'status' value.",
+            ),
+            (
+                "file,basis,jurisdiction\nobjects/reports/summary.pdf,statute,GB\n",
+                "Row 2 of your rights.csv is missing a 'citation' value.",
+            ),
+            (
+                "file,basis,grant_restriction\nobjects/reports/summary.pdf,policy,maybe\n",
+                "Row 2 of your rights.csv has an unsupported",
+            ),
+        ],
+    )
+    def test_rejects_invalid_rights_csv(self, rights_metadata, message):
+        with pytest.raises(VerificationFailure, match=message):
+            verify_rights_csv_is_valid(rights_metadata=rights_metadata)
 
 
 class TestVerifyMetadataCsvHasDcIdentifier:
