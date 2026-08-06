@@ -8,6 +8,43 @@ import pytest
 import archivematica
 
 
+@patch.object(archivematica.urllib.request, "urlopen")
+def test_am_api_post_json(mock_urlopen, monkeypatch):
+    monkeypatch.setenv("ARCHIVEMATICA_URL", "https://archivematica.example.com")
+    monkeypatch.setenv("ARCHIVEMATICA_USERNAME", "am_username")
+    monkeypatch.setenv("ARCHIVEMATICA_API_KEY", "am_api_key")
+    mock_urlopen.return_value.read.return_value = b'{"c": "d"}'
+
+    response = archivematica.am_api_post_json("/api/v2/path", {"a": "b"})
+
+    assert response == {"c": "d"}
+    request = mock_urlopen.call_args.args[0]
+    assert request.full_url == "https://archivematica.example.com/api/v2/path"
+    assert request.data == b'{"a": "b"}'
+    assert request.method == "POST"
+    assert request.get_header("Authorization") == "ApiKey am_username:am_api_key"
+    assert request.get_header("Content-type") == "application/json"
+
+
+@patch.object(archivematica.urllib.request, "urlopen")
+def test_ss_api_get(mock_urlopen, monkeypatch):
+    monkeypatch.setenv("ARCHIVEMATICA_SS_URL", "https://storage.example.com")
+    monkeypatch.setenv("ARCHIVEMATICA_SS_USERNAME", "ss_username")
+    monkeypatch.setenv("ARCHIVEMATICA_SS_API_KEY", "ss_api_key")
+    mock_urlopen.return_value.read.return_value = b'{"c": "d"}'
+
+    assert archivematica.ss_api_get("/api/v2/path", {"a": "b"}) == {"c": "d"}
+    assert archivematica.ss_api_get("/api/v2/path") == {"c": "d"}
+
+    requests = [urlopen_call.args[0] for urlopen_call in mock_urlopen.call_args_list]
+    assert requests[0].full_url == "https://storage.example.com/api/v2/path?a=b"
+    assert requests[1].full_url == "https://storage.example.com/api/v2/path?"
+    assert all(
+        request.get_header("Authorization") == "ApiKey ss_username:ss_api_key"
+        for request in requests
+    )
+
+
 @patch.object(archivematica, "am_api_post_json")
 def test_start_transfer(mock_am_post):
     transfer_uuid = str(uuid.uuid4())
@@ -36,6 +73,7 @@ def test_start_transfer(mock_am_post):
 @patch.object(archivematica, "am_api_post_json")
 def test_start_transfer_with_accession(mock_am_post):
     transfer_uuid = str(uuid.uuid4())
+    mock_am_post.return_value = {"id": transfer_uuid}
 
     actual_transfer_uuid = archivematica.start_transfer(
         name="test1.zip",
