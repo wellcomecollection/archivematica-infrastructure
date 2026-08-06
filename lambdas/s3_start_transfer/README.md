@@ -37,7 +37,7 @@ It then runs a series of checks on the transfer package, e.g.:
 It records a success/fail result by uploading a small log file alongside the original file, which includes instructions if the transfer package is rejected -- so users can diagnose issues without leaving S3.
 
 If it starts a transfer successfully, it tags the S3 object with the transfer ID.
-These tags will be used by the (yet-to-be-written) transfer monitor Lambda to check for Archivematica failures and/or clean up the bucket.
+The [transfer monitor Lambda](../transfer_monitor) uses these tags to report Archivematica successes and failures and remove successfully stored packages from the transfer bucket.
 
 
 
@@ -49,9 +49,40 @@ This Lambda is automatically deployed with the latest version whenever you apply
 
 ## Running tests
 
+The Lambda runs on Python 3.14. Install `uv`, then create a virtual environment
+and install the locked test dependencies from this directory:
+
 ```console
-$ coverage run -m py.test src/test_*.py
+$ uv venv --python 3.14
+$ source .venv/bin/activate
+$ uv pip sync test_requirements.txt
+$ coverage run -m pytest
 $ coverage report
+```
+
+
+
+## Maintaining test dependencies
+
+`test_requirements.in` lists the direct test dependencies and
+`test_requirements.txt` is the compiled lock file. Do not edit the lock file
+directly. These dependencies are only used for local testing; Terraform does
+not include them in the Lambda deployment package.
+
+After changing `test_requirements.in`, or when upgrading all test dependencies,
+regenerate the lock file for the Lambda's Python version:
+
+```console
+$ uv pip compile --python-version 3.14 --upgrade test_requirements.in --output-file test_requirements.txt
+$ uv pip sync test_requirements.txt
+$ coverage run -m pytest
+```
+
+To upgrade a single dependency while retaining the other locked versions, use
+`--upgrade-package` instead:
+
+```console
+$ uv pip compile --python-version 3.14 --upgrade-package moto test_requirements.in --output-file test_requirements.txt
 ```
 
 
