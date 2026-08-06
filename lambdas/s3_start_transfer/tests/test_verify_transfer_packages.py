@@ -12,7 +12,7 @@ from verify_transfer_packages import (
     verify_all_files_not_under_single_dir,
     verify_all_files_not_under_objects_dir,
     verify_has_a_metadata_csv,
-    verify_only_metadata_csv_in_metadata_dir,
+    verify_only_metadata_and_rights_csv_in_metadata_dir,
     verify_metadata_csv_has_dc_identifier,
     verify_metadata_csv_has_accession_fields,
     VerificationFailure,
@@ -35,7 +35,7 @@ class TestVerifyPackage:
         verify_all_files_not_under_single_dir,
         verify_all_files_not_under_objects_dir,
         verify_has_a_metadata_csv,
-        verify_only_metadata_csv_in_metadata_dir,
+        verify_only_metadata_and_rights_csv_in_metadata_dir,
         verify_metadata_csv_has_dc_identifier,
     ]
 
@@ -113,7 +113,7 @@ class TestVerifyHasMetadataCsv:
 
         assert str(err.value).startswith(
             "Your transfer package must have a file ``metadata/metadata.csv``\n"
-            "that describes the objects in the bag."
+            "that describes the objects in the package."
         )
 
     @pytest.mark.parametrize(
@@ -124,13 +124,15 @@ class TestVerifyHasMetadataCsv:
         verify_has_a_metadata_csv(file_listing=file_listing)
 
 
-class TestVerifyOnlyMetadataCsvInMetadataDir:
+class TestVerifyOnlyMetadataAndRightsCsvInMetadataDir:
     @pytest.mark.parametrize("name", ["extra_files_in_metadata_dir.zip"])
     def test_extra_files_in_metadata_dir_is_exception(self, name):
         file_listing = _get_file_listing(name)
 
         with pytest.raises(VerificationFailure) as err:
-            verify_only_metadata_csv_in_metadata_dir(file_listing=file_listing)
+            verify_only_metadata_and_rights_csv_in_metadata_dir(
+                file_listing=file_listing
+            )
 
         assert str(err.value).startswith(
             "Your transfer package has unexpected files in the ``metadata/`` folder.\n"
@@ -142,7 +144,15 @@ class TestVerifyOnlyMetadataCsvInMetadataDir:
     )
     def test_valid_transfer_package_is_okay(self, name):
         file_listing = _get_file_listing(name)
-        verify_only_metadata_csv_in_metadata_dir(file_listing=file_listing)
+        verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing=file_listing)
+
+    def test_rights_csv_is_okay(self):
+        file_listing = [
+            "metadata/",
+            "metadata/metadata.csv",
+            "metadata/rights.csv",
+        ]
+        verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing=file_listing)
 
 
 class TestVerifyMetadataCsvHasDcIdentifier:
@@ -315,7 +325,7 @@ class TestVerifyMetadataCsvHasAccessionFields:
     @pytest.mark.parametrize("filename", ["objects", "objects/cat.jpg", "cat.jpg"])
     def test_checks_filename_is_correct(self, filename):
         metadata = (
-            "filename,collection_reference,accession_number\n" f"{filename},LEMON,1234"
+            f"filename,collection_reference,accession_number\n{filename},LEMON,1234"
         )
 
         with pytest.raises(VerificationFailure) as err:

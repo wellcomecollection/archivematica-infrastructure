@@ -1,10 +1,13 @@
 # -*- encoding: utf-8 -*-
 
+import io
 import re
+import uuid
+import zipfile
 from unittest.mock import patch
 
 import boto3
-from moto import mock_s3
+from moto import mock_aws
 import pytest
 
 import archivematica
@@ -12,17 +15,32 @@ import s3_start_transfer
 
 
 def _write_transfer_package(
-    s3, *, bucket_name, filename, key="born-digital/transfer_package.zip"
+    sess, *, bucket_name, filename, key="born-digital/transfer_package.zip"
 ):
+    s3 = sess.resource("s3")
     bucket = s3.Bucket(bucket_name)
     bucket.create()
 
-    bucket.upload_file(Key=key, Filename=f"tests/files/{filename}")
+    if filename == "valid_accession_package.zip":
+        package = io.BytesIO()
+        with zipfile.ZipFile(package, mode="w") as zf:
+            zf.writestr(
+                "metadata/metadata.csv",
+                "filename,collection_reference,accession_number,dc.title\n"
+                "objects/,LEMON,1234,The Citrus Archives\n",
+            )
+            for object_name in ["apple.txt", "banana.txt", "cherry.txt"]:
+                zf.writestr(object_name, b"")
+        package.seek(0)
+        bucket.upload_fileobj(Fileobj=package, Key=key)
+    else:
+        bucket.upload_file(Key=key, Filename=f"tests/files/{filename}")
 
     return key
 
 
-def _find_log_object(s3, *, bucket_name):
+def _find_log_object(sess, *, bucket_name):
+    s3 = sess.resource("s3")
     bucket = s3.Bucket(bucket_name)
 
     bucket_objects = list(bucket.objects.all())
@@ -36,19 +54,20 @@ def _find_log_object(s3, *, bucket_name):
 
 
 class TestStartTransfer:
-    @mock_s3
+    @mock_aws
     @patch.object(archivematica, "start_transfer")
     @patch.object(archivematica, "get_target_path")
     def test_valid_transfer_is_started(
         self, mock_get_target_path, mock_start_transfer, bucket_name
     ):
-        s3 = boto3.resource("s3")
+        mock_start_transfer.return_value = str(uuid.uuid4())
+        sess = boto3.Session()
 
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename="valid_transfer_package.zip"
+            sess, bucket_name=bucket_name, filename="valid_transfer_package.zip"
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
         mock_get_target_path.assert_called_with(
             bucket=bucket_name, directory="born-digital", key="transfer_package.zip"
@@ -60,22 +79,23 @@ class TestStartTransfer:
             accession_number=None,
         )
 
-    @mock_s3
+    @mock_aws
     @patch.object(archivematica, "start_transfer")
     @patch.object(archivematica, "get_target_path")
     def test_valid_accession_transfer_is_started(
         self, mock_get_target_path, mock_start_transfer, bucket_name
     ):
-        s3 = boto3.resource("s3")
+        mock_start_transfer.return_value = str(uuid.uuid4())
+        sess = boto3.Session()
 
         key = _write_transfer_package(
-            s3,
+            sess,
             bucket_name=bucket_name,
             filename="valid_accession_package.zip",
             key="born-digital-accessions/LEMON_1234.zip",
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
         mock_get_target_path.assert_called_with(
             bucket=bucket_name,
@@ -89,21 +109,22 @@ class TestStartTransfer:
             accession_number="1234",
         )
 
-    @mock_s3
+    @mock_aws
     @patch.object(archivematica, "start_transfer")
     @patch.object(archivematica, "get_target_path")
     def test_valid_transfer_creates_success_log(
         self, mock_get_target_path, mock_start_transfer, bucket_name
     ):
-        s3 = boto3.resource("s3")
+        mock_start_transfer.return_value = str(uuid.uuid4())
+        sess = boto3.Session()
 
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename="valid_transfer_package.zip"
+            sess, bucket_name=bucket_name, filename="valid_transfer_package.zip"
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
-        log_object = _find_log_object(s3, bucket_name=bucket_name)
+        log_object = _find_log_object(sess, bucket_name=bucket_name)
 
         # Example: born-digital/transfer_package.zip.success.2019-12-13_14-46-09.log
         assert re.match(
@@ -114,16 +135,16 @@ class TestStartTransfer:
         log_text = log_object.get()["Body"].read()
         assert b"All checks complete!\nStarted successful transfer!" in log_text
 
-    @mock_s3
+    @mock_aws
     def test_verification_failure_writes_failed_log(self, bucket_name):
-        s3 = boto3.resource("s3")
+        sess = boto3.Session()
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename="no_metadata_csv.zip"
+            sess, bucket_name=bucket_name, filename="no_metadata_csv.zip"
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
-        log_object = _find_log_object(s3, bucket_name=bucket_name)
+        log_object = _find_log_object(sess, bucket_name=bucket_name)
 
         # Example: born-digital/transfer_package.zip.failed.2019-12-13_14-46-09.log
         assert re.match(
@@ -132,9 +153,9 @@ class TestStartTransfer:
         )
 
         log_text = log_object.get()["Body"].read()
-        assert b"== Check 3: verify_has_a_metadata_csv ==\nCheck failed:" in log_text
+        assert b"== Check 1: verify_has_a_metadata_csv ==\nCheck failed:" in log_text
 
-    @mock_s3
+    @mock_aws
     @patch.object(archivematica, "start_transfer")
     @patch.object(archivematica, "get_target_path")
     @pytest.mark.parametrize(
@@ -149,30 +170,30 @@ class TestStartTransfer:
     def test_verification_failure_does_not_start_transfer(
         self, mock_get_target_path, mock_start_transfer, bucket_name, filename, key
     ):
-        s3 = boto3.resource("s3")
+        sess = boto3.Session()
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename=filename, key=key
+            sess, bucket_name=bucket_name, filename=filename, key=key
         )
 
-        s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+        s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
         mock_get_target_path.assert_not_called()
         mock_start_transfer.assert_not_called()
 
-    @mock_s3
+    @mock_aws
     def test_error_while_calling_archivematica_writes_failure_log(self, bucket_name):
-        s3 = boto3.resource("s3")
+        sess = boto3.Session()
         key = _write_transfer_package(
-            s3, bucket_name=bucket_name, filename="valid_transfer_package.zip"
+            sess, bucket_name=bucket_name, filename="valid_transfer_package.zip"
         )
 
         def boom(*args, **kwargs):
             raise ValueError("BOOM!")
 
         with patch.object(archivematica, "get_target_path", boom):
-            s3_start_transfer.run_transfer(s3, bucket=bucket_name, key=key)
+            s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
 
-        log_object = _find_log_object(s3, bucket_name=bucket_name)
+        log_object = _find_log_object(sess, bucket_name=bucket_name)
 
         # Example: born-digital/transfer_package.zip.failed.2019-12-13_14-46-09.log
         assert re.match(
@@ -183,20 +204,77 @@ class TestStartTransfer:
         log_text = log_object.get()["Body"].read()
         assert b"Error starting transfer: BOOM!" in log_text
 
+    @mock_aws
+    @patch.object(archivematica, "start_transfer")
+    @patch.object(archivematica, "get_target_path")
+    def test_deflate64_accession_uses_filename_as_accession_number(
+        self, mock_get_target_path, mock_start_transfer, bucket_name
+    ):
+        mock_start_transfer.return_value = str(uuid.uuid4())
+        sess = boto3.Session()
+        key = _write_transfer_package(
+            sess,
+            bucket_name=bucket_name,
+            filename="valid_transfer_package.zip",
+            key="born-digital-accessions/WT_B_9_2_2.zip",
+        )
 
-@mock_s3
+        with patch.object(
+            s3_start_transfer,
+            "verify_s3_package",
+            side_effect=NotImplementedError("That compression method is not supported"),
+        ):
+            s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
+
+        mock_start_transfer.assert_called_once_with(
+            name="WT_B_9_2_2.zip",
+            path=mock_get_target_path.return_value,
+            processing_config="b_dig_accessions",
+            accession_number="WT_B_9_2_2",
+        )
+
+    @mock_aws
+    @pytest.mark.parametrize(
+        "error, key",
+        [
+            (
+                "That compression method is not supported",
+                "born-digital/transfer_package.zip",
+            ),
+            (
+                "unsupported compression type",
+                "born-digital-accessions/transfer_package.zip",
+            ),
+        ],
+    )
+    def test_unsupported_compression_does_not_start_transfer(
+        self, bucket_name, error, key
+    ):
+        sess = boto3.Session()
+        with patch.object(
+            s3_start_transfer,
+            "verify_s3_package",
+            side_effect=NotImplementedError(error),
+        ):
+            with patch.object(archivematica, "start_transfer") as mock_start_transfer:
+                s3_start_transfer.run_transfer(sess, bucket=bucket_name, key=key)
+
+        mock_start_transfer.assert_not_called()
+
+
+@mock_aws
 def test_main_runs_all_events(bucket_name):
-    s3 = boto3.resource("s3")
+    sess = boto3.Session()
 
     _write_transfer_package(
-        s3,
+        sess,
         bucket_name=bucket_name,
         filename="valid_transfer_package.zip",
         key="born-digital/transfer_package1.zip",
     )
 
     _write_transfer_package(
-        s3,
+        sess,
         bucket_name=bucket_name,
         filename="valid_transfer_package.zip",
         key="born-digital/transfer_package2.zip",
@@ -221,9 +299,27 @@ def test_main_runs_all_events(bucket_name):
 
     with patch.object(archivematica, "get_target_path"):
         with patch.object(archivematica, "start_transfer") as mock_start_transfer:
+            mock_start_transfer.return_value = str(uuid.uuid4())
             s3_start_transfer.main(event=event)
 
             assert mock_start_transfer.call_count == 2
+
+
+@mock_aws
+def test_main_continues_after_an_event_raises(bucket_name):
+    event = {
+        "Records": [
+            {"s3": {"bucket": {"name": bucket_name}, "object": {"key": "one"}}},
+            {"s3": {"bucket": {"name": bucket_name}, "object": {"key": "two"}}},
+        ]
+    }
+
+    with patch.object(
+        s3_start_transfer, "run_transfer", side_effect=[ValueError("BOOM!"), None]
+    ) as mock_run_transfer:
+        s3_start_transfer.main(event=event)
+
+    assert mock_run_transfer.call_count == 2
 
 
 @pytest.mark.parametrize("s3_key", ["digitised/b12345678.zip"])
