@@ -13,7 +13,7 @@ It's different from the Wellcome storage service.
 
 Run the `build_and_publish_image.sh` script.
 
-You can get a newer version of the code from Artefactual upstream by changing the `ARCHIVEMATICA_TAG` variable.
+You can get a newer version of the code from Artefactual upstream by changing the `UPSTREAM_COMMIT` variable in `build_and_publish_image.sh`.
 
 ## How the overlay works
 

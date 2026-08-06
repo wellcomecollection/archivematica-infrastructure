@@ -11,11 +11,11 @@ fi
 
 # This untagged commit was the tip of qa/1.x when the overlay was updated.
 # Pin the SHA so later changes to the branch do not alter this build.
-ARCHIVEMATICA_TAG=306db6773216e607cf5687f84fb0be353949ddb7
+UPSTREAM_COMMIT=306db6773216e607cf5687f84fb0be353949ddb7
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
-CURRENT_COMMIT=$(git log -1 --pretty=format:"%H" $ROOT/archivematica-apps/archivematica)
+OVERLAY_COMMIT=$(git log -1 --pretty=format:"%H" "$ROOT"/archivematica-apps/archivematica)
 
 aws ecr get-login-password \
 | docker login \
@@ -28,8 +28,8 @@ pushd $(mktemp -d)
   git clone https://github.com/artefactual/archivematica.git
   cd archivematica
 
-  echo "*** Checking out tag $ARCHIVEMATICA_TAG"
-  git checkout "$ARCHIVEMATICA_TAG"
+  echo "*** Checking out upstream commit $UPSTREAM_COMMIT"
+  git checkout "$UPSTREAM_COMMIT"
 
   echo "*** Applying overlay files to repository"
   python3 "$ROOT/archivematica-apps/archivematica/copy_overlay_files.py"
@@ -42,10 +42,16 @@ pushd $(mktemp -d)
 
   echo "*** Pushing to ECR"
 
-  ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$CURRENT_COMMIT"
+  IMAGE_TAG="$UPSTREAM_COMMIT-$OVERLAY_COMMIT"
+  ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$IMAGE_TAG"
   docker tag "am-archivematica-$SERVICE" "$ECR_IMAGE_TAG"
+
+  echo "*** Image provenance"
+  echo "Upstream Archivematica commit: $UPSTREAM_COMMIT"
+  echo "Wellcome overlay commit: $OVERLAY_COMMIT"
+  echo "Image tag: $IMAGE_TAG"
 
   docker push "$ECR_IMAGE_TAG"
 
-  buildkite-agent annotate --append --style info "Published image archivematica-$SERVICE:$ARCHIVEMATICA_TAG-$CURRENT_COMMIT<br/>"
+  buildkite-agent annotate --append --style info "Published image archivematica-$SERVICE:$IMAGE_TAG<br/>Upstream Archivematica commit: $UPSTREAM_COMMIT<br/>Wellcome overlay commit: $OVERLAY_COMMIT<br/>"
 popd
