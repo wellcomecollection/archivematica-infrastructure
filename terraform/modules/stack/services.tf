@@ -32,7 +32,7 @@ module "gearman_service" {
   name      = "gearman"
   namespace = var.namespace
 
-  container_image = "artefactual/gearmand:1.1.18-alpine"
+  container_image = "artefactual/gearmand:2.0.0-alpine"
 
   command = [
     "--queue-type=redis",
