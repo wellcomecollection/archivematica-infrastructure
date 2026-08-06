@@ -14,12 +14,12 @@ locals {
     nginx              = local.infra_state["ecr_nginx_repo_url"]
   }
 
-  ecr_image_tags = {
-    dashboard          = "v1.17.1-3f3444807015e98865d9e137ac9d1ae7e26088f0"
-    mcp_client         = "v1.17.1-3f3444807015e98865d9e137ac9d1ae7e26088f0"
-    mcp_server         = "v1.17.1-3f3444807015e98865d9e137ac9d1ae7e26088f0"
-    am_storage_service = "v0.23.0-3f3444807015e98865d9e137ac9d1ae7e26088f0"
-    clamavd            = "f60df7b65fe0e405d89191053f7196a1769e4ccf"
+ecr_image_tags = {
+    dashboard          = "306db6773216e607cf5687f84fb0be353949ddb7-9e548c1d89ffe0707eddc75047c3bcd7d9901710"
+    mcp_client         = "306db6773216e607cf5687f84fb0be353949ddb7-9e548c1d89ffe0707eddc75047c3bcd7d9901710"
+    mcp_server         = "306db6773216e607cf5687f84fb0be353949ddb7-9e548c1d89ffe0707eddc75047c3bcd7d9901710"
+    am_storage_service = "e1996eb9c7ce7488a4ce31175bb25efe125e58bd-9e548c1d89ffe0707eddc75047c3bcd7d9901710"
+    clamavd            = "5e40a69bcf4381fe11428324d487fdbb9c828b43"
     nginx              = "120f7da2bd3a1377974ae1f5523711694d1ba11c"
   }
 }
