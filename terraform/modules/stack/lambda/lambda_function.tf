@@ -15,6 +15,7 @@ module "lambda_function" {
 
   handler = var.handler
 
+  # Keep this in sync with the repository's .python-version file.
   runtime     = "python3.14"
   timeout     = var.timeout
   memory_size = var.memory_size

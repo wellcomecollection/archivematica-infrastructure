@@ -6,6 +6,13 @@ steps:
 
   - wait
 
+  - label: ":python: s3_start_transfer tests"
+    command: .buildkite/scripts/run_s3_start_transfer_tests.sh
+    agents:
+      queue: "scala"
+
+  - wait
+
   - label: ":docker: dashboard"
     command: archivematica-apps/archivematica/build_and_publish_image.sh dashboard
     agents:
