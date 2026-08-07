@@ -257,8 +257,13 @@ def run_transfer_lambda():
 
 
 def main(event, _):
-    run_transfer_lambda()
+    try:
+        run_transfer_lambda()
+    finally:
+        # Lambda may reuse this execution environment, and more files get
+        # stored between runs, so don't let one run's results answer the next.
+        get_stored_xml_file_names.cache_clear()
 
 
 if __name__ == "__main__":
-    run_transfer_lambda()
+    main(None, None)
