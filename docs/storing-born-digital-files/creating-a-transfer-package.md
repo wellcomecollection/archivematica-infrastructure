@@ -29,11 +29,11 @@ We use two metadata files in our transfer packages:
     ```
 
     In both cases, the CSV only ever has `objects/` as the filename.
-* `rights.csv`, which is optional and describes the rights attached to individual files or directories.
+* `rights.csv`, which is optional and describes the rights attached to individual files.
 
-    The file must have a header row and at least one row of rights information. Every row must have a `file` and `basis` value. The `file` is the Archivematica path to the file or directory, so it must begin with `objects/`. The supported bases are `copyright`, `donor`, `license`, `other`, `policy`, and `statute`.
+    The file must have a header row and at least one row of rights information. Every row must have a `file` and `basis` value. The `file` must identify a file in the transfer package and use its Archivematica path, beginning with `objects/`. The supported bases are `copyright`, `donor`, `license`, `other`, `policy`, and `statute`.
 
-    For a copyright basis, `status` and `jurisdiction` are also required. For a statute basis, `citation` and `jurisdiction` are required. To describe access, use `grant_act` together with `grant_restriction`, whose value must be `allow`, `conditional`, or `disallow`.
+    For a copyright basis, `status` and `jurisdiction` are also required. For a statute basis, `citation` and `jurisdiction` are required. If any grant information is supplied, both `grant_act` and `grant_restriction` must have values. The restriction must be `allow`, `conditional`, or `disallow`.
 
     The optional columns are `status`, `determination_date`, `start_date`, `end_date`, `jurisdiction`, `terms`, `citation`, `note`, `grant_act`, `grant_restriction`, `grant_start_date`, `grant_end_date`, `grant_note`, `doc_id_type`, `doc_id_value`, and `doc_id_role`. No other columns are accepted.
 

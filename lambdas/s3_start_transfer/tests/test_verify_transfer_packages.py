@@ -158,21 +158,26 @@ class TestVerifyOnlyMetadataAndRightsCsvInMetadataDir:
 
 
 class TestVerifyRightsCsv:
+    file_listing = ["reports/summary.pdf", "metadata/rights.csv"]
     valid_rights_metadata = """\
 file,basis,status,jurisdiction,grant_act,grant_restriction
 objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
 """
 
     def test_rights_csv_is_optional(self):
-        verify_rights_csv_is_valid(rights_metadata=None)
+        verify_rights_csv_is_valid(rights_metadata=None, file_listing=[])
 
     def test_valid_rights_csv_is_okay(self):
-        verify_rights_csv_is_valid(rights_metadata=self.valid_rights_metadata)
+        verify_rights_csv_is_valid(
+            rights_metadata=self.valid_rights_metadata,
+            file_listing=self.file_listing,
+        )
 
     def test_rights_csv_is_passed_to_package_verification(self):
         contents = io.BytesIO()
         with zipfile.ZipFile(contents, "w") as zf:
             zf.writestr("metadata/rights.csv", self.valid_rights_metadata)
+            zf.writestr("reports/summary.pdf", b"")
 
         contents.seek(0)
         with zipfile.ZipFile(contents) as zf:
@@ -180,6 +185,45 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
                 logger=Logger(),
                 zip_file=zf,
                 verifications=[verify_rights_csv_is_valid],
+            )
+
+    @pytest.mark.parametrize(
+        "file_listing, file_path",
+        [
+            (["reports/summary.pdf"], "objects/reports/missing.pdf"),
+            (["reports/"], "objects/reports/"),
+            (["metadata/rights.csv"], "objects/metadata/rights.csv"),
+        ],
+    )
+    def test_file_must_resolve_to_an_imported_file(self, file_listing, file_path):
+        rights_metadata = f"file,basis\n{file_path},policy\n"
+
+        with pytest.raises(VerificationFailure, match="refers to a file"):
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=file_listing,
+            )
+
+    @pytest.mark.parametrize(
+        "grant_column, value",
+        [
+            ("grant_act", "disseminate"),
+            ("grant_restriction", "allow"),
+            ("grant_start_date", "2026-01-01"),
+            ("grant_end_date", "2026-12-31"),
+            ("grant_note", "Only in the reading room"),
+        ],
+    )
+    def test_grant_fields_must_be_paired(self, grant_column, value):
+        rights_metadata = (
+            f"file,basis,{grant_column}\n"
+            f"objects/reports/summary.pdf,policy,{value}\n"
+        )
+
+        with pytest.raises(VerificationFailure, match="incomplete grant information"):
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=self.file_listing,
             )
 
     @pytest.mark.parametrize(
@@ -216,14 +260,18 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
                 "Row 2 of your rights.csv is missing a 'citation' value.",
             ),
             (
-                "file,basis,grant_restriction\nobjects/reports/summary.pdf,policy,maybe\n",
+                "file,basis,grant_act,grant_restriction\n"
+                "objects/reports/summary.pdf,policy,disseminate,maybe\n",
                 "Row 2 of your rights.csv has an unsupported",
             ),
         ],
     )
     def test_rejects_invalid_rights_csv(self, rights_metadata, message):
         with pytest.raises(VerificationFailure, match=message):
-            verify_rights_csv_is_valid(rights_metadata=rights_metadata)
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=self.file_listing,
+            )
 
 
 class TestVerifyMetadataCsvHasDcIdentifier:

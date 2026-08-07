@@ -250,13 +250,20 @@ RIGHTS_CSV_ALLOWED_BASES = {
     "statute",
 }
 RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS = {"allow", "conditional", "disallow"}
+RIGHTS_CSV_GRANT_COLUMNS = {
+    "grant_act",
+    "grant_restriction",
+    "grant_start_date",
+    "grant_end_date",
+    "grant_note",
+}
 RIGHTS_CSV_REQUIRED_FIELDS_BY_BASIS = {
     "copyright": {"status", "jurisdiction"},
     "statute": {"citation", "jurisdiction"},
 }
 
 
-def verify_rights_csv_is_valid(rights_metadata):
+def verify_rights_csv_is_valid(rights_metadata, file_listing):
     if rights_metadata is None:
         return
 
@@ -314,6 +321,12 @@ def verify_rights_csv_is_valid(rights_metadata):
             """
         )
 
+    package_files = {
+        path
+        for path in file_listing
+        if not path.endswith("/") and not path.startswith("metadata/")
+    }
+
     for row_number, row in enumerate(rows, start=2):
         if row.get(None):
             raise VerificationFailure(
@@ -335,13 +348,26 @@ def verify_rights_csv_is_valid(rights_metadata):
                     """
                 )
 
-        if not row["file"].strip().startswith("objects/"):
+        file_path = row["file"].strip()
+        if not file_path.startswith("objects/"):
             raise VerificationFailure(
                 f"""
                 Row {row_number} of your rights.csv has an invalid file value:
                 {row['file']}.
 
                 The file path must begin with 'objects/'.
+                """
+            )
+
+        package_path = file_path[len("objects/") :]
+        if package_path not in package_files:
+            raise VerificationFailure(
+                f"""
+                Row {row_number} of your rights.csv refers to a file that is not
+                present in the transfer package: {file_path}.
+
+                The 'file' value must identify a file in the package, using the
+                'objects/' prefix.
                 """
             )
 
@@ -364,6 +390,24 @@ def verify_rights_csv_is_valid(rights_metadata):
                     It is required when the basis is '{basis}'.
                     """
                 )
+
+        supplied_grant_columns = {
+            column
+            for column in RIGHTS_CSV_GRANT_COLUMNS
+            if (row.get(column) or "").strip()
+        }
+        if supplied_grant_columns and not {
+            "grant_act",
+            "grant_restriction",
+        }.issubset(supplied_grant_columns):
+            raise VerificationFailure(
+                f"""
+                Row {row_number} of your rights.csv has incomplete grant information.
+
+                If any grant information is supplied, both 'grant_act' and
+                'grant_restriction' must have values.
+                """
+            )
 
         restriction = (row.get("grant_restriction") or "").strip().lower()
         if restriction and restriction not in RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS:
