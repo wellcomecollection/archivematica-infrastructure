@@ -357,9 +357,10 @@ def wait_for_async(response, *, operation):
     storage side effects happened.
 
     Once Storage Service has accepted the operation, a missing status resource,
-    failed poll, or expired deadline has an unknown outcome. The raised
-    ``AsyncOutcomeUnknown`` retains the Async ID and warns callers not to submit
-    duplicate work before reconciling Storage Service and storage state.
+    persistent failed polls, an invalid status response, or an expired deadline
+    has an unknown outcome. The raised ``AsyncOutcomeUnknown`` retains the Async
+    ID and warns callers not to submit duplicate work before reconciling Storage
+    Service and storage state.
 
     All raised client errors remain instances of
     ``requests.exceptions.RequestException`` for caller compatibility.
@@ -394,6 +395,17 @@ def wait_for_async(response, *, operation):
         LOGGER.error("%s", err)
         raise err
 
+    def raise_outcome_unknown(reason, *, cause):
+        err = AsyncOutcomeUnknown(
+            operation=operation,
+            async_id=async_id,
+            poll_url=poll_url,
+            elapsed_seconds=elapsed_seconds(),
+            reason=reason,
+        )
+        LOGGER.error("%s", err)
+        raise err from cause
+
     while True:
         remaining_seconds = deadline_at - time.monotonic()
         if remaining_seconds <= 0:
@@ -407,40 +419,66 @@ def wait_for_async(response, *, operation):
             poll_url,
             remaining_seconds,
         )
+        completed = False
         try:
             poll_response = _storage_api_session(
                 timeout=min(ASYNC_POLL_TIMEOUT_SECONDS, remaining_seconds)
             ).get(poll_url)
             poll_response.raise_for_status()
-            payload = poll_response.json()
-            completed = payload["completed"]
-            if completed:
-                was_error = payload["was_error"]
-                if was_error:
-                    remote_error = payload["error"]
-                    remote_error_code = payload.get("error_code")
-                else:
-                    result = payload["result"]
-        except (
-            requests.exceptions.RequestException,
-            KeyError,
-            TypeError,
-            ValueError,
-        ) as exc:
+        except requests.exceptions.RequestException as exc:
             status_code = getattr(getattr(exc, "response", None), "status_code", None)
             if status_code == 404:
-                reason = "the Storage Service status resource returned HTTP 404"
-            else:
-                reason = f"the Storage Service status request failed: {exc}"
-            err = AsyncOutcomeUnknown(
-                operation=operation,
-                async_id=async_id,
-                poll_url=poll_url,
-                elapsed_seconds=elapsed_seconds(),
-                reason=reason,
+                raise_outcome_unknown(
+                    "the Storage Service status resource returned HTTP 404",
+                    cause=exc,
+                )
+
+            retryable = isinstance(
+                exc,
+                (
+                    requests.exceptions.ChunkedEncodingError,
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                ),
+            ) or (
+                status_code is not None
+                and (status_code in {408, 429} or 500 <= status_code < 600)
             )
-            LOGGER.error("%s", err)
-            raise err from exc
+            if not retryable:
+                if status_code is None:
+                    reason = f"the Storage Service status request failed: {exc}"
+                else:
+                    reason = (
+                        "the Storage Service status request returned "
+                        f"HTTP {status_code}"
+                    )
+                raise_outcome_unknown(
+                    reason,
+                    cause=exc,
+                )
+
+            LOGGER.warning(
+                "Storage Service status request for async operation %s failed "
+                "transiently and will be retried: %s",
+                async_id,
+                exc,
+            )
+        else:
+            try:
+                payload = poll_response.json()
+                completed = payload["completed"]
+                if completed:
+                    was_error = payload["was_error"]
+                    if was_error:
+                        remote_error = payload["error"]
+                        remote_error_code = payload.get("error_code")
+                    else:
+                        result = payload["result"]
+            except (KeyError, TypeError, ValueError) as exc:
+                raise_outcome_unknown(
+                    f"the Storage Service status response was invalid: {exc}",
+                    cause=exc,
+                )
 
         if not completed:
             remaining_seconds = deadline_at - time.monotonic()
