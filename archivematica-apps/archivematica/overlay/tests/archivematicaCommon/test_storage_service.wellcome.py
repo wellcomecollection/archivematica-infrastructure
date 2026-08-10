@@ -297,9 +297,67 @@ def test_wait_for_async_reports_terminal_interruption_as_unknown(
     assert "Storage Service reported an interrupted operation" in exc_info.value.reason
 
 
-def test_wait_for_async_reports_poll_failure_as_unknown(monkeypatch, fake_clock):
+@pytest.mark.parametrize(
+    "transient_failure",
+    [
+        storageService.requests.ConnectionError("unavailable"),
+        storageService.requests.exceptions.ChunkedEncodingError("incomplete response"),
+        async_status_response(status_code=502),
+    ],
+    ids=["connection", "chunked", "502"],
+)
+def test_wait_for_async_retries_transient_poll_failure(
+    monkeypatch, fake_clock, caplog, transient_failure
+):
+    session = mock.Mock()
+    session.get.side_effect = [
+        transient_failure,
+        async_status_response(
+            {"completed": True, "was_error": False, "result": {"uuid": "file"}}
+        ),
+    ]
+    monkeypatch.setattr(
+        storageService, "_storage_api_session", mock.Mock(return_value=session)
+    )
+    monkeypatch.setattr(
+        storageService, "_storage_service_url", lambda: "http://ss/api/v2/"
+    )
+
+    result = storageService.wait_for_async(async_response(), operation="create_file")
+
+    assert result == {"uuid": "file"}
+    assert fake_clock.now == 2
+    assert session.get.call_count == 2
+    assert "failed transiently and will be retried" in caplog.text
+
+
+def test_wait_for_async_reports_persistent_poll_failure_at_deadline(
+    monkeypatch, fake_clock, caplog
+):
+    monkeypatch.setattr(storageService, "ASYNC_OBSERVATION_DEADLINE_SECONDS", 3)
     session = mock.Mock()
     session.get.side_effect = storageService.requests.ConnectionError("unavailable")
+    monkeypatch.setattr(
+        storageService, "_storage_api_session", mock.Mock(return_value=session)
+    )
+    monkeypatch.setattr(
+        storageService, "_storage_service_url", lambda: "http://ss/api/v2/"
+    )
+
+    with pytest.raises(storageService.AsyncObservationDeadlineExceeded) as exc_info:
+        storageService.wait_for_async(async_response(), operation="create_file")
+
+    assert exc_info.value.async_id == "158"
+    assert fake_clock.now == 3
+    assert session.get.call_count == 2
+    assert "failed transiently and will be retried" in caplog.text
+
+
+def test_wait_for_async_reports_invalid_status_response_as_unknown(
+    monkeypatch, fake_clock
+):
+    session = mock.Mock()
+    session.get.return_value = async_status_response({"completed": True})
     monkeypatch.setattr(
         storageService, "_storage_api_session", mock.Mock(return_value=session)
     )
@@ -311,8 +369,9 @@ def test_wait_for_async_reports_poll_failure_as_unknown(monkeypatch, fake_clock)
         storageService.wait_for_async(async_response(), operation="create_file")
 
     assert exc_info.value.async_id == "158"
-    assert "status request failed: unavailable" in str(exc_info.value)
-    assert isinstance(exc_info.value.__cause__, storageService.requests.ConnectionError)
+    assert "status response was invalid" in str(exc_info.value)
+    assert "status request failed" not in str(exc_info.value)
+    assert isinstance(exc_info.value.__cause__, KeyError)
 
 
 def test_wait_for_async_preserves_reported_terminal_failure(monkeypatch, fake_clock):
