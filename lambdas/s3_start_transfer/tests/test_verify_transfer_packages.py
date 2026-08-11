@@ -63,6 +63,26 @@ class TestVerifyPackage:
         with zipfile.ZipFile(zip_path) as zf:
             verify_package(logger=logger, zip_file=zf, verifications=self.verifications)
 
+    @pytest.mark.parametrize("path", ["metadata/metadata.csv", "metadata/rights.csv"])
+    def test_invalid_csv_encoding_is_logged_as_a_verification_failure(self, path):
+        contents = io.BytesIO()
+        with zipfile.ZipFile(contents, "w") as zf:
+            metadata = b"filename,dc.identifier\nobjects/,LEMON\n"
+            if path == "metadata/metadata.csv":
+                metadata = b"filename,dc.identifier\nobjects/,\xff\n"
+            zf.writestr("metadata/metadata.csv", metadata)
+
+            if path == "metadata/rights.csv":
+                zf.writestr(path, b"file,basis\nobjects/report.txt,pol\xffcy\n")
+
+        contents.seek(0)
+        logger = Logger()
+        with zipfile.ZipFile(contents) as zf:
+            assert not verify_package(logger=logger, zip_file=zf, verifications=[])
+
+        assert f"The ``{path}`` file" in logger.text()
+        assert "Save the CSV using UTF-8 encoding" in logger.text()
+
 
 class TestVerifyAllFilesNotUnderSingleDir:
     def test_single_dir_is_exception(self):
@@ -227,10 +247,38 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
             )
 
     @pytest.mark.parametrize(
+        "rights_metadata, line_number",
+        [
+            (
+                "file,basis\n\nobjects/reports/summary.pdf,unknown\n",
+                3,
+            ),
+            (
+                'file,basis,note\nobjects/reports/summary.pdf,policy,"First\n'
+                'line"\nobjects/reports/summary.pdf,unknown,\n',
+                4,
+            ),
+        ],
+    )
+    def test_reports_physical_line_number(self, rights_metadata, line_number):
+        with pytest.raises(
+            VerificationFailure,
+            match=f"Line {line_number} of your rights.csv has an unsupported basis",
+        ):
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=self.file_listing,
+            )
+
+    @pytest.mark.parametrize(
         "rights_metadata, message",
         [
             ("", "Your rights.csv is empty."),
             ("file,basis\n", "Your rights.csv has no rights information."),
+            (
+                "file,basis,basis\n" "objects/reports/summary.pdf,policy,policy\n",
+                "Your rights.csv has duplicate column headings: basis.",
+            ),
             (
                 "file,status\nobjects/reports/summary.pdf,copyrighted\n",
                 "Your rights.csv is missing mandatory column headings: basis.",
@@ -240,29 +288,33 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
                 "Your rights.csv has unsupported column headings: unsupported.",
             ),
             (
+                "file,basis\nobjects/reports/summary.pdf,policy,extra\n",
+                "Line 2 of your rights.csv has more values than column",
+            ),
+            (
                 "file,basis\nobjects/reports/summary.pdf,\n",
-                "Row 2 of your rights.csv has an empty 'basis' value.",
+                "Line 2 of your rights.csv has an empty 'basis' value.",
             ),
             (
                 "file,basis\nreports/summary.pdf,policy\n",
-                "Row 2 of your rights.csv has an invalid file value:",
+                "Line 2 of your rights.csv has an invalid file value:",
             ),
             (
                 "file,basis\nobjects/reports/summary.pdf,unknown\n",
-                "Row 2 of your rights.csv has an unsupported basis: unknown.",
+                "Line 2 of your rights.csv has an unsupported basis: unknown.",
             ),
             (
                 "file,basis,jurisdiction\nobjects/reports/summary.pdf,copyright,GB\n",
-                "Row 2 of your rights.csv is missing a 'status' value.",
+                "Line 2 of your rights.csv is missing a 'status' value.",
             ),
             (
                 "file,basis,jurisdiction\nobjects/reports/summary.pdf,statute,GB\n",
-                "Row 2 of your rights.csv is missing a 'citation' value.",
+                "Line 2 of your rights.csv is missing a 'citation' value.",
             ),
             (
                 "file,basis,grant_act,grant_restriction\n"
                 "objects/reports/summary.pdf,policy,disseminate,maybe\n",
-                "Row 2 of your rights.csv has an unsupported",
+                "Line 2 of your rights.csv has an unsupported",
             ),
         ],
     )

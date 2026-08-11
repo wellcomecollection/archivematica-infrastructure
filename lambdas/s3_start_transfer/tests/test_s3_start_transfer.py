@@ -50,11 +50,13 @@ def _write_package_bytes(
     return key
 
 
-def _package_with_metadata(metadata):
+def _package_with_metadata(metadata, rights_metadata=None):
     archive = io.BytesIO()
     with zipfile.ZipFile(archive, "w") as zf:
         zf.writestr("record.txt", "test transfer")
         zf.writestr("metadata/metadata.csv", metadata)
+        if rights_metadata is not None:
+            zf.writestr("metadata/rights.csv", rights_metadata)
 
     return archive.getvalue()
 
@@ -230,10 +232,22 @@ class TestStartTransfer:
     @pytest.mark.parametrize(
         "body, expected_error",
         [
-            (b"not a ZIP archive", b"File is not a zip file"),
+            (
+                b"not a ZIP archive",
+                b"Unable to read transfer package: File is not a zip file",
+            ),
             (
                 _package_with_metadata(b"filename,dc.identifier\nobjects/,\xff\n"),
-                b"codec can't decode byte 0xff",
+                b"The ``metadata/metadata.csv`` file in your transfer package "
+                b"is not valid UTF-8",
+            ),
+            (
+                _package_with_metadata(
+                    b"filename,dc.identifier\nobjects/,LEMON\n",
+                    rights_metadata=b"file,basis\nobjects/record.txt,pol\xffcy\n",
+                ),
+                b"The ``metadata/rights.csv`` file in your transfer package "
+                b"is not valid UTF-8",
             ),
         ],
     )
@@ -258,7 +272,6 @@ class TestStartTransfer:
         assert log_object.key == _log_key(key, "failed", event)
 
         log_text = log_object.get()["Body"].read()
-        assert b"Unable to read transfer package:" in log_text
         assert expected_error in log_text
 
     @mock_aws

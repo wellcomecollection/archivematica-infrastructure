@@ -29,7 +29,17 @@ def extract_csv(zip_file, path):
     except KeyError:
         return None
     else:
-        csv_contents = csv_file.read().decode("utf8")
+        try:
+            csv_contents = csv_file.read().decode("utf8")
+        except UnicodeDecodeError as err:
+            raise VerificationFailure(
+                f"""
+                The ``{path}`` file in your transfer package is not valid UTF-8.
+
+                Save the CSV using UTF-8 encoding, recompress the package, and
+                upload it again.
+                """
+            ) from err
 
         # Replace any byte-order marks in the CSV, we don't need them.
         # These are sometimes written by Excel and the like, I think?
@@ -52,10 +62,15 @@ def verify_package(*, logger, zip_file, verifications):
     # package.
     file_listing = zip_file.namelist()
 
-    metadata = extract_metadata(zip_file)
-    rights_metadata = extract_rights_metadata(zip_file)
-
     logger.write(f"Running {len(verifications)} checks for {zip_file}")
+
+    try:
+        metadata = extract_metadata(zip_file)
+        rights_metadata = extract_rights_metadata(zip_file)
+    except VerificationFailure as err:
+        logger.write("Check failed:\n")
+        logger.write(str(err) + "\n")
+        return False
 
     for i, verify_function in enumerate(verifications, start=1):
         logger.write(f"== Check {i}: {verify_function.__name__} ==")
@@ -312,26 +327,21 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
             """
         )
 
-    rows = list(csv_reader)
-    if not rows:
-        raise VerificationFailure(
-            """
-            Your rights.csv has no rights information. Add at least one row, or
-            remove the file from the transfer package.
-            """
-        )
-
     package_files = {
         path
         for path in file_listing
         if not path.endswith("/") and not path.startswith("metadata/")
     }
 
-    for row_number, row in enumerate(rows, start=2):
+    has_rights_information = False
+    for row in csv_reader:
+        has_rights_information = True
+        line_number = csv_reader.line_num
+
         if row.get(None):
             raise VerificationFailure(
                 f"""
-                Row {row_number} of your rights.csv has more values than column
+                Line {line_number} of your rights.csv has more values than column
                 headings.
 
                 Check that every value containing a comma is quoted.
@@ -342,7 +352,7 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
             if not (row.get(column) or "").strip():
                 raise VerificationFailure(
                     f"""
-                    Row {row_number} of your rights.csv has an empty '{column}' value.
+                    Line {line_number} of your rights.csv has an empty '{column}' value.
 
                     The 'file' and 'basis' values are required for every row.
                     """
@@ -352,7 +362,7 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
         if not file_path.startswith("objects/"):
             raise VerificationFailure(
                 f"""
-                Row {row_number} of your rights.csv has an invalid file value:
+                Line {line_number} of your rights.csv has an invalid file value:
                 {row['file']}.
 
                 The file path must begin with 'objects/'.
@@ -363,7 +373,7 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
         if package_path not in package_files:
             raise VerificationFailure(
                 f"""
-                Row {row_number} of your rights.csv refers to a file that is not
+                Line {line_number} of your rights.csv refers to a file that is not
                 present in the transfer package: {file_path}.
 
                 The 'file' value must identify a file in the package, using the
@@ -375,7 +385,7 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
         if basis not in RIGHTS_CSV_ALLOWED_BASES:
             raise VerificationFailure(
                 f"""
-                Row {row_number} of your rights.csv has an unsupported basis: {row['basis']}.
+                Line {line_number} of your rights.csv has an unsupported basis: {row['basis']}.
 
                 The basis must be one of: {', '.join(sorted(RIGHTS_CSV_ALLOWED_BASES))}.
                 """
@@ -385,7 +395,7 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
             if not (row.get(column) or "").strip():
                 raise VerificationFailure(
                     f"""
-                    Row {row_number} of your rights.csv is missing a '{column}' value.
+                    Line {line_number} of your rights.csv is missing a '{column}' value.
 
                     It is required when the basis is '{basis}'.
                     """
@@ -402,7 +412,7 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
         }.issubset(supplied_grant_columns):
             raise VerificationFailure(
                 f"""
-                Row {row_number} of your rights.csv has incomplete grant information.
+                Line {line_number} of your rights.csv has incomplete grant information.
 
                 If any grant information is supplied, both 'grant_act' and
                 'grant_restriction' must have values.
@@ -413,12 +423,20 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
         if restriction and restriction not in RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS:
             raise VerificationFailure(
                 f"""
-                Row {row_number} of your rights.csv has an unsupported
+                Line {line_number} of your rights.csv has an unsupported
                 grant_restriction value: {row['grant_restriction']}.
 
                 The value must be one of: {', '.join(sorted(RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS))}.
                 """
             )
+
+    if not has_rights_information:
+        raise VerificationFailure(
+            """
+            Your rights.csv has no rights information. Add at least one row, or
+            remove the file from the transfer package.
+            """
+        )
 
 
 def verify_metadata_csv_has_dc_identifier(metadata):
