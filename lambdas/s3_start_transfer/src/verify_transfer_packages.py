@@ -23,7 +23,7 @@ class VerificationFailure(Exception):
         super().__init__(textwrap.dedent(message).strip())
 
 
-def extract_csv(zip_file, path):
+def extract_csv(zip_file, path, *, reject_byte_order_mark=False):
     try:
         csv_file = zip_file.open(path)
     except KeyError:
@@ -41,9 +41,20 @@ def extract_csv(zip_file, path):
                 """
             ) from err
 
-        # Replace any byte-order marks in the CSV, we don't need them.
-        # These are sometimes written by Excel and the like, I think?
         if "\ufeff" in csv_contents:
+            if reject_byte_order_mark:
+                raise VerificationFailure(
+                    f"""
+                    The ``{path}`` file in your transfer package contains a UTF-8
+                    byte-order mark (BOM).
+
+                    Save the CSV using UTF-8 without a BOM, recompress the package,
+                    and upload it again.
+                    """
+                )
+
+            # Retain the existing tolerance for metadata.csv files created by
+            # software which writes a byte-order mark.
             csv_contents = csv_contents.replace("\ufeff", "")
 
         return csv_contents
@@ -54,7 +65,11 @@ def extract_metadata(zip_file):
 
 
 def extract_rights_metadata(zip_file):
-    return extract_csv(zip_file, "metadata/rights.csv")
+    return extract_csv(
+        zip_file,
+        "metadata/rights.csv",
+        reject_byte_order_mark=True,
+    )
 
 
 def verify_package(*, logger, zip_file, verifications):
@@ -204,7 +219,8 @@ def verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing):
         raise VerificationFailure(
             """
             Your transfer package has unexpected files in the ``metadata/`` folder.
-            The only file in ``metadata/`` should be ``metadata/metadata.csv``.
+            The only files allowed in ``metadata/`` are ``metadata/metadata.csv``
+            and the optional ``metadata/rights.csv``.
 
             Move the other files to a different directory, recompress your transfer
             package, then upload it again.
@@ -236,6 +252,11 @@ def verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing):
         )
 
 
+# The rights schema is derived from RightsValidator and rights_from_csv.py on
+# Archivematica's qa/1.x branch. The Lambda intentionally strengthens several
+# inconsistent upstream checks to prevent import failures or silently discarded
+# metadata. See the README's "Rights CSV validation" section for the deployed
+# revision and source-of-truth hierarchy.
 RIGHTS_CSV_REQUIRED_COLUMNS = {"file", "basis"}
 RIGHTS_CSV_OPTIONAL_COLUMNS = {
     "status",
@@ -276,13 +297,55 @@ RIGHTS_CSV_REQUIRED_FIELDS_BY_BASIS = {
     "copyright": {"status", "jurisdiction"},
     "statute": {"citation", "jurisdiction"},
 }
+RIGHTS_CSV_BASIS_FIELDS = {
+    "status",
+    "determination_date",
+    "start_date",
+    "end_date",
+    "jurisdiction",
+    "terms",
+    "citation",
+    "note",
+}
+RIGHTS_CSV_PERSISTED_FIELDS_BY_BASIS = {
+    "copyright": {
+        "status",
+        "determination_date",
+        "start_date",
+        "end_date",
+        "jurisdiction",
+        "note",
+    },
+    "donor": {"start_date", "end_date", "note"},
+    "license": {"start_date", "end_date", "terms", "note"},
+    "other": {"start_date", "end_date", "note"},
+    "policy": {"start_date", "end_date", "note"},
+    "statute": {
+        "determination_date",
+        "start_date",
+        "end_date",
+        "jurisdiction",
+        "citation",
+        "note",
+    },
+}
+RIGHTS_CSV_UNSUPPORTED_FIELDS_BY_BASIS = {
+    basis: RIGHTS_CSV_BASIS_FIELDS - persisted_fields
+    for basis, persisted_fields in RIGHTS_CSV_PERSISTED_FIELDS_BY_BASIS.items()
+}
+RIGHTS_CSV_DOCUMENTATION_COLUMNS = {
+    "doc_id_type",
+    "doc_id_value",
+    "doc_id_role",
+}
+RIGHTS_CSV_REQUIRED_DOCUMENTATION_COLUMNS = {"doc_id_type", "doc_id_value"}
 
 
 def verify_rights_csv_is_valid(rights_metadata, file_listing):
     if rights_metadata is None:
         return
 
-    csv_reader = csv.DictReader(io.StringIO(rights_metadata))
+    csv_reader = csv.DictReader(io.StringIO(rights_metadata, newline=""))
 
     if csv_reader.fieldnames is None:
         raise VerificationFailure(
@@ -334,6 +397,7 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
     }
 
     has_rights_information = False
+    imported_combinations = set()
     for row in csv_reader:
         has_rights_information = True
         line_number = csv_reader.line_num
@@ -401,6 +465,53 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
                     """
                 )
 
+        unsupported_fields = {
+            column
+            for column in RIGHTS_CSV_UNSUPPORTED_FIELDS_BY_BASIS.get(basis, set())
+            if (row.get(column) or "").strip()
+        }
+        if unsupported_fields:
+            raise VerificationFailure(
+                f"""
+                Line {line_number} of your rights.csv has fields that do not apply
+                to the '{basis}' basis: {', '.join(sorted(unsupported_fields))}.
+
+                Remove those values, then upload a new transfer package.
+                """
+            )
+
+        end_date = (row.get("end_date") or "").strip().lower()
+        if basis == "copyright" and end_date == "open":
+            raise VerificationFailure(
+                f"""
+                Line {line_number} of your rights.csv cannot use 'open' as the
+                end_date for a copyright basis.
+
+                This Archivematica version does not import that value correctly.
+                Supply a date or leave the value empty.
+                """
+            )
+
+        supplied_documentation_columns = {
+            column
+            for column in RIGHTS_CSV_DOCUMENTATION_COLUMNS
+            if (row.get(column) or "").strip()
+        }
+        if supplied_documentation_columns and not (
+            RIGHTS_CSV_REQUIRED_DOCUMENTATION_COLUMNS.issubset(
+                supplied_documentation_columns
+            )
+        ):
+            raise VerificationFailure(
+                f"""
+                Line {line_number} of your rights.csv has incomplete documentation
+                identifier information.
+
+                If any documentation identifier information is supplied, both
+                'doc_id_type' and 'doc_id_value' must have values.
+                """
+            )
+
         supplied_grant_columns = {
             column
             for column in RIGHTS_CSV_GRANT_COLUMNS
@@ -429,6 +540,20 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
                 The value must be one of: {', '.join(sorted(RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS))}.
                 """
             )
+
+        grant_act = (row.get("grant_act") or "").strip().lower()
+        imported_combination = (file_path, basis, grant_act)
+        if imported_combination in imported_combinations:
+            raise VerificationFailure(
+                f"""
+                Line {line_number} of your rights.csv duplicates a file, basis,
+                and grant_act combination from an earlier row.
+
+                Archivematica would skip this row. Combine the information into
+                one row or use a different grant_act.
+                """
+            )
+        imported_combinations.add(imported_combination)
 
     if not has_rights_information:
         raise VerificationFailure(

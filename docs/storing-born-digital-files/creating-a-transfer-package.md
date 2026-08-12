@@ -34,15 +34,25 @@ Both files must use UTF-8 encoding:
     In both cases, the CSV only ever has `objects/` as the filename.
 *   `rights.csv`, which is optional and describes the rights attached to individual files.
 
+    The file must use UTF-8 without a byte-order mark (BOM).
     The file must have a header row and at least one row of rights information.
     Every row must have a `file` and `basis` value.
     The `file` must identify a file in the transfer package and use its Archivematica path, beginning with `objects/`.
     The supported bases are `copyright`, `donor`, `license`, `other`, `policy`, and `statute`.
 
     For a copyright basis, `status` and `jurisdiction` are also required.
+    Copyright rows may also have `determination_date`, `start_date`, `end_date`, and `note` values.
+    A copyright `end_date` must be a date or empty and cannot be `open`.
+    For a donor, other, or policy basis, rows may have `start_date`, `end_date`, and `note` values.
+    For a license basis, rows may have `start_date`, `end_date`, `terms`, and `note` values.
     For a statute basis, `citation` and `jurisdiction` are required.
+    Statute rows may also have `determination_date`, `start_date`, `end_date`, and `note` values.
+    Basis-specific fields not listed for the selected basis must be empty because Archivematica would discard them.
     If any grant information is supplied, both `grant_act` and `grant_restriction` must have values.
     The restriction must be `allow`, `conditional`, or `disallow`.
+    If any documentation identifier information is supplied, both `doc_id_type` and `doc_id_value` must have values.
+    The `doc_id_role` value is optional.
+    Each combination of `file`, `basis`, and `grant_act` may appear only once after surrounding whitespace and letter case are normalized.
 
     The optional columns are `status`, `determination_date`, `start_date`, `end_date`, `jurisdiction`, `terms`, `citation`, `note`, `grant_act`, `grant_restriction`, `grant_start_date`, `grant_end_date`, `grant_note`, `doc_id_type`, `doc_id_value`, and `doc_id_role`.
     No other columns are accepted.

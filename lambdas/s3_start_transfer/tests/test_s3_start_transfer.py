@@ -204,6 +204,35 @@ class TestStartTransfer:
     @mock_aws
     @patch.object(archivematica, "start_transfer")
     @patch.object(archivematica, "get_target_path")
+    def test_invalid_rights_schema_writes_failed_log_without_starting_transfer(
+        self,
+        mock_get_target_path,
+        mock_start_transfer,
+        bucket_name,
+    ):
+        sess = boto3.Session()
+        body = _package_with_metadata(
+            b"filename,dc.identifier\nobjects/,LEMON\n",
+            rights_metadata=b"file,status\nobjects/record.txt,copyrighted\n",
+        )
+        key = _write_package_bytes(sess, bucket_name=bucket_name, body=body)
+        event = _event(bucket_name, key)
+
+        s3_start_transfer.run_transfer(sess, event=event)
+
+        mock_get_target_path.assert_not_called()
+        mock_start_transfer.assert_not_called()
+
+        log_object = _find_log_object(sess, bucket_name=bucket_name)
+        assert log_object.key == _log_key(key, "failed", event)
+
+        log_text = log_object.get()["Body"].read()
+        assert b"verify_rights_csv_is_valid" in log_text
+        assert b"missing mandatory column headings: basis" in log_text
+
+    @mock_aws
+    @patch.object(archivematica, "start_transfer")
+    @patch.object(archivematica, "get_target_path")
     @pytest.mark.parametrize(
         "filename, key",
         [
