@@ -2,6 +2,12 @@ data "archive_file" "deployment_package" {
   type        = "zip"
   source_dir  = var.source_dir
   output_path = "${var.name}.zip"
+
+  excludes = [
+    "**/__pycache__/**",
+    "**/*.pyc",
+    "**/*.pyo",
+  ]
 }
 
 module "lambda_function" {
