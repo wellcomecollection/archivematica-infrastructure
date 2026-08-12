@@ -41,18 +41,18 @@ def extract_csv(zip_file, path, *, reject_byte_order_mark=False):
                 """
             ) from err
 
-        if "\ufeff" in csv_contents:
-            if reject_byte_order_mark:
-                raise VerificationFailure(
-                    f"""
-                    The ``{path}`` file in your transfer package contains a UTF-8
-                    byte-order mark (BOM).
+        if reject_byte_order_mark and csv_contents.startswith("\ufeff"):
+            raise VerificationFailure(
+                f"""
+                The ``{path}`` file in your transfer package contains a UTF-8
+                byte-order mark (BOM).
 
-                    Save the CSV using UTF-8 without a BOM, recompress the package,
-                    and upload it again.
-                    """
-                )
+                Save the CSV using UTF-8 without a BOM, recompress the package,
+                and upload it again.
+                """
+            )
 
+        if not reject_byte_order_mark and "\ufeff" in csv_contents:
             # Retain the existing tolerance for metadata.csv files created by
             # software which writes a byte-order mark.
             csv_contents = csv_contents.replace("\ufeff", "")
@@ -347,6 +347,22 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
 
     csv_reader = csv.DictReader(io.StringIO(rights_metadata, newline=""))
 
+    try:
+        _verify_rights_csv_reader_is_valid(csv_reader, file_listing)
+    except csv.Error as err:
+        line_number = csv_reader.line_num + 1
+        raise VerificationFailure(
+            f"""
+            Line {line_number} of your rights.csv could not be read as CSV:
+            {err}.
+
+            Check that the row is valid CSV and that individual values are not
+            excessively large.
+            """
+        ) from err
+
+
+def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
     if csv_reader.fieldnames is None:
         raise VerificationFailure(
             """
@@ -409,6 +425,22 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
                 headings.
 
                 Check that every value containing a comma is quoted.
+                """
+            )
+
+        missing_values = [
+            column
+            for column, value in row.items()
+            if column is not None and value is None
+        ]
+        if missing_values:
+            raise VerificationFailure(
+                f"""
+                Line {line_number} of your rights.csv has fewer values than column
+                headings.
+
+                Add an empty value for every unused trailing column.
+                Missing values: {', '.join(missing_values)}.
                 """
             )
 
@@ -488,7 +520,7 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
                 end_date for a copyright basis.
 
                 This Archivematica version does not import that value correctly.
-                Supply a date or leave the value empty.
+                Leave the value empty instead.
                 """
             )
 
@@ -541,7 +573,7 @@ def verify_rights_csv_is_valid(rights_metadata, file_listing):
                 """
             )
 
-        grant_act = (row.get("grant_act") or "").strip().lower()
+        grant_act = (row.get("grant_act") or "").strip().lower().capitalize()
         imported_combination = (file_path, basis, grant_act)
         if imported_combination in imported_combinations:
             raise VerificationFailure(

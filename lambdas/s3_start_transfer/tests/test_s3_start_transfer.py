@@ -278,6 +278,18 @@ class TestStartTransfer:
                 b"The ``metadata/rights.csv`` file in your transfer package "
                 b"is not valid UTF-8",
             ),
+            pytest.param(
+                _package_with_metadata(
+                    b"filename,dc.identifier\nobjects/,LEMON\n",
+                    rights_metadata=(
+                        b"file,basis,note\nobjects/record.txt,policy,"
+                        + (b"a" * 131_073)
+                        + b"\n"
+                    ),
+                ),
+                b"Line 2 of your rights.csv could not be read as CSV",
+                id="oversized-rights-value",
+            ),
         ],
     )
     def test_malformed_package_writes_failed_log_without_starting_transfer(

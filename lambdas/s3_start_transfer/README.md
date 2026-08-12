@@ -54,9 +54,12 @@ The upstream reference for this contract is Archivematica's `qa/1.x` branch:
 *   Archivematica's [`RightsValidator`](https://github.com/artefactual/archivematica/blob/qa/1.x/src/archivematica/dashboard/components/api/validators.py) defines the intended CSV schema, including allowed columns, basis-specific fields, documentation identifiers, and grant restrictions.
 *   Archivematica's [`rights_from_csv.py`](https://github.com/artefactual/archivematica/blob/qa/1.x/src/archivematica/MCPClient/clientScripts/rights_from_csv.py) is the actual importer and therefore determines which values are persisted or cause an import failure.
 
-These source links intentionally follow `qa/1.x`, while [the image build](../../archivematica-apps/archivematica/build_and_publish_image.sh) pins a commit selected from that branch for a reproducible image.
-The final upstream and Wellcome overlay commit hashes can vary as images are updated or environments are rolled independently.
-To identify the exact revisions selected for deployment, inspect the `ecr_image_tags` variables in the [staging locals](../../terraform/stack_staging/locals.tf) or [production locals](../../terraform/stack_prod/locals.tf), where each Archivematica image tag contains the upstream commit followed by the overlay commit.
+These source links intentionally follow `qa/1.x`, while [the current image build](../../archivematica-apps/archivematica/build_and_publish_image.sh) pins a commit selected from that branch for reproducible future images.
+An environment may still run an image produced by an earlier version of the build script.
+The final upstream and Wellcome overlay revisions can vary as images are updated or environments are rolled independently.
+To identify the exact revisions selected for deployment, inspect the `ecr_image_tags` variables in the [staging locals](../../terraform/stack_staging/locals.tf) or [production locals](../../terraform/stack_prod/locals.tf).
+Each Archivematica image tag contains an upstream revision, which may be a commit SHA or a release tag, followed by the overlay commit.
+For a release-tagged image, inspect the build script at the overlay commit and resolve the release tag in the upstream Archivematica repository.
 
 These upstream implementations are not completely consistent, so the Lambda deliberately adds stricter checks where accepting a row would cause an unhandled import failure or silently discard metadata:
 

@@ -135,27 +135,17 @@ class TestVerifyPackage:
         assert f"The ``{path}`` file" in logger.text()
         assert "Save the CSV using UTF-8 encoding" in logger.text()
 
-    @pytest.mark.parametrize(
-        "rights_metadata",
-        [
-            pytest.param(
-                b"\xef\xbb\xbffile,basis\nobjects/report.txt,policy\n",
-                id="leading-bom",
-            ),
-            pytest.param(
-                b"file,basis,note\nobjects/report.txt,policy,\xef\xbb\xbf\n",
-                id="embedded-bom",
-            ),
-        ],
-    )
-    def test_rights_csv_byte_order_mark_is_logged_as_a_failure(self, rights_metadata):
+    def test_rights_csv_byte_order_mark_is_logged_as_a_failure(self):
         contents = io.BytesIO()
         with zipfile.ZipFile(contents, "w") as zf:
             zf.writestr(
                 "metadata/metadata.csv",
                 b"filename,dc.identifier\nobjects/,LEMON\n",
             )
-            zf.writestr("metadata/rights.csv", rights_metadata)
+            zf.writestr(
+                "metadata/rights.csv",
+                b"\xef\xbb\xbffile,basis\nobjects/report.txt,policy\n",
+            )
 
         contents.seek(0)
         logger = Logger()
@@ -164,6 +154,23 @@ class TestVerifyPackage:
 
         assert "byte-order mark (BOM)" in logger.text()
         assert "Save the CSV using UTF-8 without a BOM" in logger.text()
+
+    def test_rights_csv_accepts_byte_order_mark_character_in_a_value(self):
+        contents = io.BytesIO()
+        with zipfile.ZipFile(contents, "w") as zf:
+            zf.writestr(
+                "metadata/rights.csv",
+                "file,basis,note\nobjects/report.txt,policy,\ufeff\n",
+            )
+            zf.writestr("report.txt", b"")
+
+        contents.seek(0)
+        with zipfile.ZipFile(contents) as zf:
+            assert verify_package(
+                logger=Logger(),
+                zip_file=zf,
+                verifications=[verify_rights_csv_is_valid],
+            )
 
 
 class TestVerifyAllFilesNotUnderSingleDir:
@@ -648,6 +655,23 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
                 ),
                 id="normalized-with-grant-act",
             ),
+            pytest.param(
+                (
+                    {
+                        "file": "objects/reports/summary.pdf",
+                        "basis": "policy",
+                        "grant_act": "ß",
+                        "grant_restriction": "allow",
+                    },
+                    {
+                        "file": "objects/reports/summary.pdf",
+                        "basis": "policy",
+                        "grant_act": "ss",
+                        "grant_restriction": "allow",
+                    },
+                ),
+                id="importer-unicode-normalization",
+            ),
         ],
     )
     def test_rejects_duplicate_importer_combinations(self, rows):
@@ -682,6 +706,59 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
             rights_metadata=rights_metadata,
             file_listing=self.file_listing,
         )
+
+    def test_csv_parser_errors_are_verification_failures(self):
+        rights_metadata = (
+            "file,basis,note\n"
+            "objects/reports/summary.pdf,policy,"
+            f"{'a' * 131_073}\n"
+        )
+
+        with pytest.raises(
+            VerificationFailure,
+            match="Line 2 of your rights.csv could not be read as CSV",
+        ) as err:
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=self.file_listing,
+            )
+
+        assert isinstance(err.value.__cause__, csv.Error)
+
+    @pytest.mark.parametrize(
+        "rights_metadata, line_number, missing_value",
+        [
+            pytest.param(
+                "file,basis,note\nobjects/reports/summary.pdf,policy\n",
+                2,
+                "note",
+                id="ordinary-row",
+            ),
+            pytest.param(
+                'file,basis,note\nobjects/reports/summary.pdf,policy,"First\n'
+                'line"\nobjects/reports/summary.pdf,policy\n',
+                4,
+                "note",
+                id="after-multiline-row",
+            ),
+        ],
+    )
+    def test_rejects_rows_with_missing_trailing_values(
+        self,
+        rights_metadata,
+        line_number,
+        missing_value,
+    ):
+        with pytest.raises(
+            VerificationFailure,
+            match=f"Line {line_number} of your rights.csv has fewer values",
+        ) as err:
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=self.file_listing,
+            )
+
+        assert f"Missing values: {missing_value}." in str(err.value)
 
     @pytest.mark.parametrize(
         "rights_metadata, line_number",

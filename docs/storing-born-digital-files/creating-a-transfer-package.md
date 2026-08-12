@@ -42,7 +42,7 @@ Both files must use UTF-8 encoding:
 
     For a copyright basis, `status` and `jurisdiction` are also required.
     Copyright rows may also have `determination_date`, `start_date`, `end_date`, and `note` values.
-    A copyright `end_date` must be a date or empty and cannot be `open`.
+    A copyright `end_date` cannot be `open`; leave the value empty for no end date.
     For a donor, other, or policy basis, rows may have `start_date`, `end_date`, and `note` values.
     For a license basis, rows may have `start_date`, `end_date`, `terms`, and `note` values.
     For a statute basis, `citation` and `jurisdiction` are required.
@@ -52,7 +52,8 @@ Both files must use UTF-8 encoding:
     The restriction must be `allow`, `conditional`, or `disallow`.
     If any documentation identifier information is supplied, both `doc_id_type` and `doc_id_value` must have values.
     The `doc_id_role` value is optional.
-    Each combination of `file`, `basis`, and `grant_act` may appear only once after surrounding whitespace and letter case are normalized.
+    Each combination of `file`, `basis`, and `grant_act` may appear only once.
+    Surrounding whitespace is ignored for all three values, while letter case is ignored for `basis` and `grant_act`; file paths remain case-sensitive.
 
     The optional columns are `status`, `determination_date`, `start_date`, `end_date`, `jurisdiction`, `terms`, `citation`, `note`, `grant_act`, `grant_restriction`, `grant_start_date`, `grant_end_date`, `grant_note`, `doc_id_type`, `doc_id_value`, and `doc_id_role`.
     No other columns are accepted.
