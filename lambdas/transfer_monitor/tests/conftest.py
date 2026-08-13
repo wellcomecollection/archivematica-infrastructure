@@ -1,7 +1,6 @@
 # -*- encoding: utf-8
 
 import json
-import os
 import pathlib
 import sys
 import urllib.request
@@ -11,14 +10,6 @@ import pytest
 from moto import mock_aws
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
-
-# Set before transfer_monitor is imported, since it creates a boto3 Session at
-# module scope. Pinned to us-east-1 so create_bucket works without a location
-# constraint, and to dummy credentials so a stray real profile can't be used.
-os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
-os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
-os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
-os.environ.setdefault("AWS_SESSION_TOKEN", "test")
 
 REPORTING_SECRET = "archivematica/transfer_monitor/reporting_credentials"
 SLACK_SECRET = "archivematica/transfer_monitor/slack_webhook"
@@ -89,8 +80,21 @@ class FakeUrlopen:
         return [c for c in self.calls if c["url"].startswith(ES_ENDPOINT)]
 
 
+@pytest.fixture(autouse=True)
+def aws_environment(monkeypatch):
+    monkeypatch.delenv("AWS_PROFILE", raising=False)
+    monkeypatch.delenv("AWS_DEFAULT_PROFILE", raising=False)
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "testing")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "testing")
+    monkeypatch.setenv("AWS_SECURITY_TOKEN", "testing")
+    monkeypatch.setenv("AWS_SESSION_TOKEN", "testing")
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+
+
+# Depends on aws_environment: transfer_monitor builds a boto3 Session at module
+# scope, so the env must be clean before the first import.
 @pytest.fixture
-def monitor():
+def monitor(aws_environment):
     """
     transfer_monitor with both caches cleared.
 
