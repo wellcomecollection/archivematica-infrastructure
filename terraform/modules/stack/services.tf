@@ -91,6 +91,7 @@ module "mcp_server_service" {
     ARCHIVEMATICA_MCPSERVER_CLIENT_DATABASE = "MCP"
 
     ARCHIVEMATICA_MCPSERVER_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
+    ARCHIVEMATICA_MCPSERVER_CONCURRENT_PACKAGES    = "3"
 
     # We don't enable indexing or search with Elasticsearch.  Data from the
     # storage service is indexed separately in the reporting cluster.
