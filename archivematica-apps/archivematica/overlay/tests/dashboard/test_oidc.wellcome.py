@@ -294,15 +294,17 @@ def test_get_userinfo(settings: pytest_django.Settings) -> None:
     # Encoded at https://www.jsonwebtoken.io/
     # {"email": "test@example.com"}
     id_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJqdGkiOiI1M2QyMzUzMy04NDk0LTQyZWQtYTJiZC03Mzc2MjNmMjUzZjciLCJpYXQiOjE1NzMwMzE4NDQsImV4cCI6MTU3MzAzNTQ0NH0.m3nHgvj_DyVJMcW5eyYuUss1Y0PNzJV2O3bX0b_DCmI"
-    # {"upn": "test@example.com"}
-    access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cG4iOiJ0ZXN0QGV4YW1wbGUuY29tIn0.6x1erJSwc4Oi5xslse-6PQn4NcroSyDoAcdGKj2tUK8"
+    # {"given_name": "Test", "family_name": "User"}
+    access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJnaXZlbl9uYW1lIjoiVGVzdCIsImZhbWlseV9uYW1lIjoiVXNlciIsImp0aSI6ImRhZjIwNTNiLWE4MTgtNDE1Yy1hM2Y1LTkxYWVhMTMxYjljZCIsImlhdCI6MTU3MzAzMTk3OSwiZXhwIjoxNTczMDM1NTc5fQ.cGcmt7d9IuKndvrqPpAH3Dvb3KyCOMqixUWgS7sg8r4"
     backend = CustomOIDCBackend()
 
     info = backend.get_userinfo(
         access_token=access_token, id_token=id_token, verified_id={}
     )
 
-    assert info == {"email": "test@example.com"}
+    assert info["email"] == "test@example.com"
+    assert info["first_name"] == "Test"
+    assert info["last_name"] == "User"
 
 
 @pytest.mark.django_db
@@ -353,9 +355,31 @@ def test_get_or_create_user_returns_existing_user_when_creation_disabled(
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize(
+    "id_token_claims",
+    [{}, {"email": "different@example.com"}],
+)
+def test_azure_upn_mapping_is_used_with_or_without_id_token_email(
+    settings: pytest_django.Settings,
+    id_token_claims: dict[str, str],
+) -> None:
+    settings.OIDC_ACCESS_ATTRIBUTE_MAP = {"upn": "email"}
+    backend = CustomOIDCBackend()
+
+    info = backend.get_userinfo(
+        access_token=encode_token({"upn": "existing@example.com"}),
+        id_token=encode_token(id_token_claims),
+        verified_id={},
+    )
+
+    assert info == {"email": "existing@example.com"}
+
+
+@pytest.mark.django_db
 def test_existing_user_logs_in_via_upn_when_creation_is_disabled(
     settings: pytest_django.Settings,
 ) -> None:
+    settings.OIDC_ACCESS_ATTRIBUTE_MAP = {"upn": "email"}
     settings.OIDC_CREATE_USER = False
     existing_user = User.objects.create_user(
         username="existing@example.com", email="existing@example.com"
@@ -370,3 +394,37 @@ def test_existing_user_logs_in_via_upn_when_creation_is_disabled(
 
     assert user == existing_user
     assert User.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_unknown_upn_is_not_created_when_creation_is_disabled(
+    settings: pytest_django.Settings,
+) -> None:
+    settings.OIDC_ACCESS_ATTRIBUTE_MAP = {"upn": "email"}
+    settings.OIDC_CREATE_USER = False
+    backend = CustomOIDCBackend()
+
+    user = backend.get_or_create_user(
+        access_token=encode_token({"upn": "new@example.com"}),
+        id_token=encode_token({"email": "different@example.com"}),
+        payload={"sub": "test"},
+    )
+
+    assert user is None
+    assert User.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_id_token_email_is_used_when_access_token_has_no_upn(
+    settings: pytest_django.Settings,
+) -> None:
+    settings.OIDC_ACCESS_ATTRIBUTE_MAP = {"upn": "email"}
+    backend = CustomOIDCBackend()
+
+    info = backend.get_userinfo(
+        access_token=encode_token({"sub": "test"}),
+        id_token=encode_token({"email": "fallback@example.com"}),
+        verified_id={},
+    )
+
+    assert info == {"email": "fallback@example.com"}

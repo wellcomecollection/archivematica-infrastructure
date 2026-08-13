@@ -369,9 +369,11 @@ module "dashboard_service" {
 
     # Send the session cookie when Azure redirects back to the OIDC callback.
     # Require an admin to create OIDC users before their first login.
+    # Preserve the existing Azure UPN-to-email mapping.
     ARCHIVEMATICA_DASHBOARD_DASHBOARD_SESSION_COOKIE_SAMESITE = "Lax"
     ARCHIVEMATICA_DASHBOARD_OIDC_AUTHENTICATION               = "true"
     ARCHIVEMATICA_DASHBOARD_OIDC_AUTO_CREATE_USER             = "false"
+    OIDC_ACCESS_ATTRIBUTE_MAP                                 = jsonencode({ upn = "email" })
     AZURE_TENANT_ID                                           = var.azure_tenant_id
     OIDC_RP_CLIENT_ID                                         = var.oidc_client_id
     OIDC_RP_SIGN_ALGO                                         = "RS256"
