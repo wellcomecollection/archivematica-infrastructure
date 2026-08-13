@@ -3,9 +3,9 @@
 set -o errexit
 set -o nounset
 
-# This untagged commit was in qa/0.x when the overlay was updated.
-# It is the Storage Service revision used by Archivematica 306db677.
-UPSTREAM_COMMIT=e1996eb9c7ce7488a4ce31175bb25efe125e58bd
+# This untagged commit was the tip of qa/0.x when the overlay was updated.
+# Pin the SHA so later changes to the branch do not alter this build.
+UPSTREAM_COMMIT=324f1cfcabe1a3ad9e4a9191735e8e9367f52456
 
 ROOT=$(git rev-parse --show-toplevel)
 OVERLAY_COMMIT=$(git log -1 --pretty=format:"%H" "$ROOT"/archivematica-apps/archivematica-storage-service)
