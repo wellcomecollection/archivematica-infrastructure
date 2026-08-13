@@ -11,7 +11,7 @@ fi
 
 # This untagged commit was the tip of qa/1.x when the overlay was updated.
 # Pin the SHA so later changes to the branch do not alter this build.
-UPSTREAM_COMMIT=306db6773216e607cf5687f84fb0be353949ddb7
+UPSTREAM_COMMIT=569f09215ce2eb3de353656cfa47a6a86639c1b6
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
