@@ -7,7 +7,12 @@ steps:
   - wait
 
   - label: ":python: s3_start_transfer tests"
-    command: .buildkite/scripts/run_s3_start_transfer_tests.sh
+    command: .buildkite/scripts/run_lambda_tests.sh s3_start_transfer
+    agents:
+      queue: "scala"
+
+  - label: ":python: transfer_monitor tests"
+    command: .buildkite/scripts/run_lambda_tests.sh transfer_monitor
     agents:
       queue: "scala"
 
