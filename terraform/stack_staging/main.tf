@@ -1,10 +1,5 @@
-data "aws_ami" "container_host_ami" {
-  most_recent = true
-  owners      = ["self"]
-  filter {
-    name   = "name"
-    values = ["weco-amzn2-ecs-optimised-hvm-x86_64*"]
-  }
+data "aws_ssm_parameter" "container_host_ami" {
+  name = "/imagebuilder/weco-al2023-ecs-optimised-x86_64/latest"
 }
 
 module "stack" {
@@ -52,7 +47,9 @@ module "stack" {
   service_egress_security_group_id = data.terraform_remote_state.workflow.outputs.service_egress_security_group_id
   service_lb_security_group_id     = data.terraform_remote_state.workflow.outputs.service_lb_security_group_id
 
-  container_host_ami = "resolve:ssm:arn:aws:ssm:eu-west-1:299497370133:parameter/imagebuilder/weco-al2023-ecs-optimised-x86_64/latest"
+  # Resolve the parameter here so Terraform compares concrete AMI IDs and does
+  # not propose replacing the instance again after every successful apply.
+  container_host_ami = data.aws_ssm_parameter.container_host_ami.value
 
   admin_cidr_ingress = local.admin_cidr_ingress
 
