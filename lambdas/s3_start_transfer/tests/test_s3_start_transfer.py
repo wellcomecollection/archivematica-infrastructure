@@ -50,11 +50,13 @@ def _write_package_bytes(
     return key
 
 
-def _package_with_metadata(metadata):
+def _package_with_metadata(metadata, rights_metadata=None):
     archive = io.BytesIO()
     with zipfile.ZipFile(archive, "w") as zf:
         zf.writestr("record.txt", "test transfer")
         zf.writestr("metadata/metadata.csv", metadata)
+        if rights_metadata is not None:
+            zf.writestr("metadata/rights.csv", rights_metadata)
 
     return archive.getvalue()
 
@@ -202,6 +204,35 @@ class TestStartTransfer:
     @mock_aws
     @patch.object(archivematica, "start_transfer")
     @patch.object(archivematica, "get_target_path")
+    def test_invalid_rights_schema_writes_failed_log_without_starting_transfer(
+        self,
+        mock_get_target_path,
+        mock_start_transfer,
+        bucket_name,
+    ):
+        sess = boto3.Session()
+        body = _package_with_metadata(
+            b"filename,dc.identifier\nobjects/,LEMON\n",
+            rights_metadata=b"file,status\nobjects/record.txt,copyrighted\n",
+        )
+        key = _write_package_bytes(sess, bucket_name=bucket_name, body=body)
+        event = _event(bucket_name, key)
+
+        s3_start_transfer.run_transfer(sess, event=event)
+
+        mock_get_target_path.assert_not_called()
+        mock_start_transfer.assert_not_called()
+
+        log_object = _find_log_object(sess, bucket_name=bucket_name)
+        assert log_object.key == _log_key(key, "failed", event)
+
+        log_text = log_object.get()["Body"].read()
+        assert b"verify_rights_csv_is_valid" in log_text
+        assert b"missing mandatory column headings: basis" in log_text
+
+    @mock_aws
+    @patch.object(archivematica, "start_transfer")
+    @patch.object(archivematica, "get_target_path")
     @pytest.mark.parametrize(
         "filename, key",
         [
@@ -230,10 +261,34 @@ class TestStartTransfer:
     @pytest.mark.parametrize(
         "body, expected_error",
         [
-            (b"not a ZIP archive", b"File is not a zip file"),
+            (
+                b"not a ZIP archive",
+                b"Unable to read transfer package: File is not a zip file",
+            ),
             (
                 _package_with_metadata(b"filename,dc.identifier\nobjects/,\xff\n"),
-                b"codec can't decode byte 0xff",
+                b"The ``metadata/metadata.csv`` file in your transfer package "
+                b"is not valid UTF-8",
+            ),
+            (
+                _package_with_metadata(
+                    b"filename,dc.identifier\nobjects/,LEMON\n",
+                    rights_metadata=b"file,basis\nobjects/record.txt,pol\xffcy\n",
+                ),
+                b"The ``metadata/rights.csv`` file in your transfer package "
+                b"is not valid UTF-8",
+            ),
+            pytest.param(
+                _package_with_metadata(
+                    b"filename,dc.identifier\nobjects/,LEMON\n",
+                    rights_metadata=(
+                        b"file,basis,note\nobjects/record.txt,policy,"
+                        + (b"a" * 131_073)
+                        + b"\n"
+                    ),
+                ),
+                b"Line 2 of your rights.csv could not be read as CSV",
+                id="oversized-rights-value",
             ),
         ],
     )
@@ -258,7 +313,6 @@ class TestStartTransfer:
         assert log_object.key == _log_key(key, "failed", event)
 
         log_text = log_object.get()["Body"].read()
-        assert b"Unable to read transfer package:" in log_text
         assert expected_error in log_text
 
     @mock_aws

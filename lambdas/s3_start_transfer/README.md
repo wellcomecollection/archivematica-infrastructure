@@ -44,6 +44,36 @@ It records a success/fail result by uploading a small log file alongside the ori
 If it starts a transfer successfully, it tags the S3 object with the transfer ID.
 The [transfer monitor Lambda](../transfer_monitor) uses these tags to report Archivematica successes and failures and remove successfully stored packages from the transfer bucket.
 
+## Rights CSV validation
+
+The supported Wellcome transfer-package contract is documented in [Creating a transfer package](../../docs/storing-born-digital-files/creating-a-transfer-package.md).
+The Lambda validates that contract locally before submitting a transfer; it does not call Archivematica's validation API.
+
+The upstream reference for this contract is Archivematica's `qa/1.x` branch:
+
+*   Archivematica's [`RightsValidator`](https://github.com/artefactual/archivematica/blob/qa/1.x/src/archivematica/dashboard/components/api/validators.py) defines the intended CSV schema, including allowed columns, basis-specific fields, documentation identifiers, and grant restrictions.
+*   Archivematica's [`rights_from_csv.py`](https://github.com/artefactual/archivematica/blob/qa/1.x/src/archivematica/MCPClient/clientScripts/rights_from_csv.py) is the actual importer and therefore determines which values are persisted or cause an import failure.
+
+These source links intentionally follow `qa/1.x`, while [the current image build](../../archivematica-apps/archivematica/build_and_publish_image.sh) pins a commit selected from that branch for reproducible future images.
+An environment may still run an image produced by an earlier version of the build script.
+The final upstream and Wellcome overlay revisions can vary as images are updated or environments are rolled independently.
+To identify the exact revisions selected for deployment, inspect the `ecr_image_tags` variables in the [staging locals](../../terraform/stack_staging/locals.tf) or [production locals](../../terraform/stack_prod/locals.tf).
+Each Archivematica image tag contains an upstream revision, which may be a commit SHA or a release tag, followed by the overlay commit.
+For a release-tagged image, inspect the build script at the overlay commit and resolve the release tag in the upstream Archivematica repository.
+
+These upstream implementations are not completely consistent, so the Lambda deliberately adds stricter checks where accepting a row would cause an unhandled import failure or silently discard metadata:
+
+*   Every `objects/` path must resolve to a real, non-metadata file in the transfer package.
+*   A populated basis-specific field is accepted only when `rights_from_csv.py` persists that field for the selected basis.
+*   Any grant information requires both `grant_act` and `grant_restriction`, because the importer only persists a grant when `grant_act` has a value.
+*   Any documentation identifier requires both `doc_id_type` and `doc_id_value`, following the upstream validator's stated requirement rather than its more permissive conditional.
+*   Each normalized file, basis, and grant-act combination may appear only once, because the importer silently skips later duplicates.
+*   Copyright rows cannot use `open` as their `end_date`, because the importer version selected from `qa/1.x` does not set the open-ended flag correctly for that basis.
+*   Duplicate headings, malformed row widths, non-UTF-8 input, UTF-8 byte-order marks, and empty files are rejected with depositor-facing messages.
+
+When `qa/1.x` or a deployed image revision changes, compare both upstream files with `verify_rights_csv_is_valid`, its tests, and the transfer-package documentation.
+If the upstream validator and importer disagree, preserve importer compatibility first and document any intentionally stricter Wellcome rule.
+
 ## Idempotency
 
 S3 and Lambda can deliver the same notification more than once.
