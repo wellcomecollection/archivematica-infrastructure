@@ -252,11 +252,11 @@ def verify_only_metadata_and_rights_csv_in_metadata_dir(file_listing):
         )
 
 
-# The rights schema is derived from RightsValidator and rights_from_csv.py on
-# Archivematica's qa/1.x branch. The Lambda intentionally strengthens several
-# inconsistent upstream checks to prevent import failures or silently discarded
-# metadata. See the README's "Rights CSV validation" section for the deployed
-# revision and source-of-truth hierarchy.
+# The rights schema combines Archivematica's import requirements with the
+# Wellcome rights profile consumed by iiif-builder. The Lambda intentionally
+# strengthens several inconsistent upstream checks to prevent import failures or
+# silently discarded metadata. See the README's "Rights CSV validation" section
+# for the deployed revision and source-of-truth hierarchy.
 RIGHTS_CSV_REQUIRED_COLUMNS = {"file", "basis"}
 RIGHTS_CSV_OPTIONAL_COLUMNS = {
     "status",
@@ -293,9 +293,35 @@ RIGHTS_CSV_GRANT_COLUMNS = {
     "grant_end_date",
     "grant_note",
 }
+RIGHTS_CSV_GRANT_DETAIL_COLUMNS = RIGHTS_CSV_GRANT_COLUMNS - {"grant_act"}
+RIGHTS_CSV_GRANT_DATE_COLUMNS = {"grant_start_date", "grant_end_date"}
 RIGHTS_CSV_REQUIRED_FIELDS_BY_BASIS = {
-    "copyright": {"status", "jurisdiction"},
-    "statute": {"citation", "jurisdiction"},
+    "copyright": (
+        "status",
+        "jurisdiction",
+        "note",
+        "grant_act",
+        "grant_note",
+    ),
+    "license": ("note", "grant_act", "grant_note"),
+    "statute": ("citation", "jurisdiction"),
+}
+RIGHTS_CSV_ALLOWED_NOTES_BY_BASIS = {
+    "copyright": {
+        "All Rights Reserved",
+        "In copyright",
+    },
+    "license": {
+        "CC-0",
+        "CC-BY",
+        "CC-BY-NC",
+        "CC-BY-NC-ND",
+        "CC-BY-NC-SA",
+        "CC-BY-SA",
+        "OGL",
+        "OPL",
+        "PDM",
+    },
 }
 RIGHTS_CSV_BASIS_FIELDS = {
     "status",
@@ -487,7 +513,7 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
                 """
             )
 
-        for column in RIGHTS_CSV_REQUIRED_FIELDS_BY_BASIS.get(basis, set()):
+        for column in RIGHTS_CSV_REQUIRED_FIELDS_BY_BASIS.get(basis, ()):
             if not (row.get(column) or "").strip():
                 raise VerificationFailure(
                     f"""
@@ -496,6 +522,18 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
                     It is required when the basis is '{basis}'.
                     """
                 )
+
+        note = (row.get("note") or "").strip()
+        allowed_notes = RIGHTS_CSV_ALLOWED_NOTES_BY_BASIS.get(basis)
+        if allowed_notes is not None and note not in allowed_notes:
+            raise VerificationFailure(
+                f"""
+                Line {line_number} of your rights.csv has an unsupported note
+                value for the '{basis}' basis: {row.get('note', '')}.
+
+                The value must be one of: {', '.join(sorted(allowed_notes))}.
+                """
+            )
 
         unsupported_fields = {
             column
@@ -544,25 +582,39 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
                 """
             )
 
-        supplied_grant_columns = {
+        supplied_grant_detail_columns = {
             column
-            for column in RIGHTS_CSV_GRANT_COLUMNS
+            for column in RIGHTS_CSV_GRANT_DETAIL_COLUMNS
             if (row.get(column) or "").strip()
         }
-        if supplied_grant_columns and not {
-            "grant_act",
-            "grant_restriction",
-        }.issubset(supplied_grant_columns):
+        if supplied_grant_detail_columns and not (row.get("grant_act") or "").strip():
             raise VerificationFailure(
                 f"""
                 Line {line_number} of your rights.csv has incomplete grant information.
 
-                If any grant information is supplied, both 'grant_act' and
-                'grant_restriction' must have values.
+                If any grant information is supplied, 'grant_act' must have a
+                value because Archivematica otherwise discards the grant details.
                 """
             )
 
         restriction = (row.get("grant_restriction") or "").strip().lower()
+        supplied_grant_date_columns = {
+            column
+            for column in RIGHTS_CSV_GRANT_DATE_COLUMNS
+            if (row.get(column) or "").strip()
+        }
+        if supplied_grant_date_columns and not restriction:
+            raise VerificationFailure(
+                f"""
+                Line {line_number} of your rights.csv has grant dates without a
+                grant_restriction value.
+
+                If 'grant_start_date' or 'grant_end_date' is supplied,
+                'grant_restriction' must have a value so Archivematica can include
+                the dates in the PREMIS rights statement.
+                """
+            )
+
         if restriction and restriction not in RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS:
             raise VerificationFailure(
                 f"""
