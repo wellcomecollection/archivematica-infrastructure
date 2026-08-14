@@ -79,7 +79,18 @@ _RIGHTS_PERSISTED_FIELDS_BY_BASIS = {
     ),
 }
 _RIGHTS_REQUIRED_FIELDS_BY_BASIS = {
-    "copyright": {"status": "copyrighted", "jurisdiction": "GB"},
+    "copyright": {
+        "status": "copyrighted",
+        "jurisdiction": "GB",
+        "note": "In copyright",
+        "grant_act": "disseminate",
+        "grant_note": "Open",
+    },
+    "license": {
+        "note": "CC-BY",
+        "grant_act": "disseminate",
+        "grant_note": "Open",
+    },
     "statute": {"citation": "Example Act 2026", "jurisdiction": "GB"},
 }
 
@@ -271,8 +282,8 @@ class TestVerifyRightsCsv:
     file_path = "objects/reports/summary.pdf"
     file_listing = ["reports/summary.pdf", "metadata/rights.csv"]
     valid_rights_metadata = """\
-file,basis,status,jurisdiction,grant_act,grant_restriction
-objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
+file,basis,status,jurisdiction,note,grant_act,grant_note
+objects/reports/summary.pdf,copyright,copyrighted,GB,In copyright,disseminate,Open
 """
 
     def test_rights_csv_is_optional(self):
@@ -289,11 +300,15 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
         [
             pytest.param(
                 "copyright",
-                {"status": "copyrighted", "jurisdiction": "GB"},
+                _RIGHTS_REQUIRED_FIELDS_BY_BASIS["copyright"],
                 id="copyright",
             ),
             pytest.param("donor", {}, id="donor"),
-            pytest.param("license", {}, id="license"),
+            pytest.param(
+                "license",
+                _RIGHTS_REQUIRED_FIELDS_BY_BASIS["license"],
+                id="license",
+            ),
             pytest.param("other", {}, id="other"),
             pytest.param("policy", {}, id="policy"),
             pytest.param(
@@ -356,7 +371,7 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
                 "start_date": "2026-01-01",
                 "end_date": "2026-12-31",
                 "jurisdiction": "GB",
-                "note": "Copyright statement",
+                "note": "All Rights Reserved",
                 "grant_act": "disseminate",
                 "grant_restriction": "disallow",
                 "grant_start_date": "2026-01-01",
@@ -370,6 +385,7 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
                 "file": self.file_path,
                 "basis": "license",
                 "terms": "Example licence terms",
+                **_RIGHTS_REQUIRED_FIELDS_BY_BASIS["license"],
             },
             {
                 "file": self.file_path,
@@ -447,14 +463,13 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
     @pytest.mark.parametrize(
         "grant_column, value",
         [
-            ("grant_act", "disseminate"),
             ("grant_restriction", "allow"),
             ("grant_start_date", "2026-01-01"),
             ("grant_end_date", "2026-12-31"),
             ("grant_note", "Only in the reading room"),
         ],
     )
-    def test_grant_fields_must_be_paired(self, grant_column, value):
+    def test_grant_details_require_an_act(self, grant_column, value):
         rights_metadata = (
             f"file,basis,{grant_column}\n"
             f"objects/reports/summary.pdf,policy,{value}\n"
@@ -467,26 +482,88 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
             )
 
     @pytest.mark.parametrize(
-        "basis, supplied_field, supplied_value, missing_field",
+        "grant_values",
         [
-            ("copyright", "status", "copyrighted", "jurisdiction"),
-            ("copyright", "jurisdiction", "GB", "status"),
-            ("statute", "citation", "Example Act 2026", "jurisdiction"),
-            ("statute", "jurisdiction", "GB", "citation"),
+            pytest.param({"grant_act": "disseminate"}, id="act-only"),
+            pytest.param(
+                {
+                    "grant_act": "disseminate",
+                    "grant_note": "Only in the reading room",
+                },
+                id="act-and-note",
+            ),
         ],
     )
-    def test_requires_basis_specific_fields(
-        self,
-        basis,
-        supplied_field,
-        supplied_value,
-        missing_field,
-    ):
+    def test_grant_restriction_is_optional(self, grant_values):
+        rights_metadata = _make_rights_csv(
+            {
+                "file": self.file_path,
+                "basis": "policy",
+                **grant_values,
+            }
+        )
+
+        verify_rights_csv_is_valid(
+            rights_metadata=rights_metadata,
+            file_listing=self.file_listing,
+        )
+
+    @pytest.mark.parametrize(
+        "grant_date, value",
+        [
+            pytest.param("grant_start_date", "2026-01-01", id="start-date"),
+            pytest.param("grant_end_date", "2026-12-31", id="end-date"),
+        ],
+    )
+    def test_grant_dates_require_a_restriction(self, grant_date, value):
+        rights_metadata = _make_rights_csv(
+            {
+                "file": self.file_path,
+                "basis": "policy",
+                "grant_act": "disseminate",
+                grant_date: value,
+            }
+        )
+
+        with pytest.raises(VerificationFailure, match="grant dates without"):
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=self.file_listing,
+            )
+
+    def test_accepts_grant_dates_with_a_restriction(self):
+        rights_metadata = _make_rights_csv(
+            {
+                "file": self.file_path,
+                "basis": "policy",
+                "grant_act": "disseminate",
+                "grant_restriction": "conditional",
+                "grant_start_date": "2026-01-01",
+                "grant_end_date": "2026-12-31",
+            }
+        )
+
+        verify_rights_csv_is_valid(
+            rights_metadata=rights_metadata,
+            file_listing=self.file_listing,
+        )
+
+    @pytest.mark.parametrize(
+        "basis, missing_field",
+        [
+            pytest.param(basis, field, id=f"{basis}-{field}")
+            for basis, values in _RIGHTS_REQUIRED_FIELDS_BY_BASIS.items()
+            for field in values
+        ],
+    )
+    def test_requires_basis_specific_fields(self, basis, missing_field):
+        required_values = _RIGHTS_REQUIRED_FIELDS_BY_BASIS[basis].copy()
+        required_values.pop(missing_field)
         rights_metadata = _make_rights_csv(
             {
                 "file": self.file_path,
                 "basis": basis,
-                supplied_field: supplied_value,
+                **required_values,
             }
         )
 
@@ -494,6 +571,63 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
             VerificationFailure,
             match=f"missing a '{missing_field}' value",
         ):
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=self.file_listing,
+            )
+
+    @pytest.mark.parametrize(
+        "basis, note",
+        [
+            pytest.param("copyright", "In copyright", id="in-copyright"),
+            pytest.param(
+                "copyright",
+                "All Rights Reserved",
+                id="all-rights-reserved",
+            ),
+            pytest.param("license", "CC-0", id="cc-0"),
+            pytest.param("license", "CC-BY", id="cc-by"),
+            pytest.param("license", "CC-BY-NC", id="cc-by-nc"),
+            pytest.param("license", "CC-BY-NC-ND", id="cc-by-nc-nd"),
+            pytest.param("license", "CC-BY-NC-SA", id="cc-by-nc-sa"),
+            pytest.param("license", "CC-BY-SA", id="cc-by-sa"),
+            pytest.param("license", "OGL", id="ogl"),
+            pytest.param("license", "OPL", id="opl"),
+            pytest.param("license", "PDM", id="pdm"),
+        ],
+    )
+    def test_accepts_wellcome_rights_note_codes(self, basis, note):
+        rights_values = {
+            "file": self.file_path,
+            "basis": basis,
+            **_RIGHTS_REQUIRED_FIELDS_BY_BASIS[basis],
+            "note": note,
+        }
+        rights_metadata = _make_rights_csv(rights_values)
+
+        verify_rights_csv_is_valid(
+            rights_metadata=rights_metadata,
+            file_listing=self.file_listing,
+        )
+
+    @pytest.mark.parametrize(
+        "basis, note",
+        [
+            pytest.param("copyright", "Copyright statement", id="copyright"),
+            pytest.param("license", "cc-by", id="license-wrong-case"),
+            pytest.param("license", "CC-BY-ND", id="license-unsupported-code"),
+        ],
+    )
+    def test_rejects_unsupported_wellcome_rights_note_codes(self, basis, note):
+        rights_values = {
+            "file": self.file_path,
+            "basis": basis,
+            **_RIGHTS_REQUIRED_FIELDS_BY_BASIS[basis],
+            "note": note,
+        }
+        rights_metadata = _make_rights_csv(rights_values)
+
+        with pytest.raises(VerificationFailure, match="unsupported note"):
             verify_rights_csv_is_valid(
                 rights_metadata=rights_metadata,
                 file_listing=self.file_listing,
@@ -508,11 +642,15 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
         ],
     )
     def test_accepts_fields_persisted_for_basis(self, basis, field):
+        field_value = _RIGHTS_BASIS_FIELD_VALUES[field]
+        if field == "note" and field in _RIGHTS_REQUIRED_FIELDS_BY_BASIS.get(basis, {}):
+            field_value = _RIGHTS_REQUIRED_FIELDS_BY_BASIS[basis][field]
+
         rights_values = {
             "file": self.file_path,
             "basis": basis,
             **_RIGHTS_REQUIRED_FIELDS_BY_BASIS.get(basis, {}),
-            field: _RIGHTS_BASIS_FIELD_VALUES[field],
+            field: field_value,
         }
         rights_metadata = _make_rights_csv(rights_values)
 
@@ -556,8 +694,7 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,disseminate,disallow
             {
                 "file": self.file_path,
                 "basis": "copyright",
-                "status": "copyrighted",
-                "jurisdiction": "GB",
+                **_RIGHTS_REQUIRED_FIELDS_BY_BASIS["copyright"],
                 "end_date": end_date,
             }
         )

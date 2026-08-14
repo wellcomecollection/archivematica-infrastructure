@@ -65,11 +65,15 @@ These upstream implementations are not completely consistent, so the Lambda deli
 
 *   Every `objects/` path must resolve to a real, non-metadata file in the transfer package.
 *   A populated basis-specific field is accepted only when `rights_from_csv.py` persists that field for the selected basis.
-*   Any grant information requires both `grant_act` and `grant_restriction`, because the importer only persists a grant when `grant_act` has a value.
+*   Any grant details require `grant_act`, because the importer only persists a grant when `grant_act` has a value; `grant_restriction` remains optional for grants without dates, but Archivematica's PREMIS serializer requires it when `grant_start_date` or `grant_end_date` is supplied.
 *   Any documentation identifier requires both `doc_id_type` and `doc_id_value`, following the upstream validator's stated requirement rather than its more permissive conditional.
 *   Each normalized file, basis, and grant-act combination may appear only once, because the importer silently skips later duplicates.
 *   Copyright rows cannot use `open` as their `end_date`, because the importer version selected from `qa/1.x` does not set the open-ended flag correctly for that basis.
 *   Duplicate headings, malformed row widths, non-UTF-8 input, UTF-8 byte-order marks, and empty files are rejected with depositor-facing messages.
+
+The Lambda also validates the Wellcome rights profile consumed by the IIIF manifest builder.
+Copyright and license rows require a controlled `note` value together with `grant_act` and `grant_note`.
+These requirements are stricter than Archivematica's importer because the downstream manifest builder interprets the notes as rights and licence codes.
 
 When `qa/1.x` or a deployed image revision changes, compare both upstream files with `verify_rights_csv_is_valid`, its tests, and the transfer-package documentation.
 If the upstream validator and importer disagree, preserve importer compatibility first and document any intentionally stricter Wellcome rule.
