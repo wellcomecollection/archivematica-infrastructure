@@ -17,12 +17,17 @@ resource "aws_instance" "container_host" {
   user_data = templatefile(
     "${path.module}/ebs.tpl",
     {
-      cluster_name  = var.cluster_name
-      ebs_volume_id = "/dev/xvdb"
-      ebs_host_path = "/ebs"
-      region        = var.region
+      cluster_name = var.cluster_name
+
+      ebs_device_path = "/dev/disk/by-id/nvme-Amazon_Elastic_Block_Store_${replace(var.ebs_volume_id, "-", "")}"
+      ebs_host_path   = "/ebs"
+      ebs_volume_id   = var.ebs_volume_id
     }
   )
+
+  # Updating the bootstrap should stop and start the existing instance so the
+  # persistent EBS volume remains attached. Do not replace the instance.
+  user_data_replace_on_change = false
 
   iam_instance_profile = module.instance_profile.name
 
