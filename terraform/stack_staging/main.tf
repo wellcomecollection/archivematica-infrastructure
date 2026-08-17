@@ -1,7 +1,3 @@
-data "aws_ssm_parameter" "container_host_ami" {
-  name = "/imagebuilder/weco-al2023-ecs-optimised-x86_64/latest"
-}
-
 module "stack" {
   source = "../modules/stack"
 
@@ -47,9 +43,9 @@ module "stack" {
   service_egress_security_group_id = data.terraform_remote_state.workflow.outputs.service_egress_security_group_id
   service_lb_security_group_id     = data.terraform_remote_state.workflow.outputs.service_lb_security_group_id
 
-  # Resolve the parameter here so Terraform compares concrete AMI IDs and does
-  # not propose replacing the instance again after every successful apply.
-  container_host_ami = data.aws_ssm_parameter.container_host_ami.value
+  # Pin the deployed image so AMI upgrades require an explicit change and do
+  # not replace the container host during an unrelated Terraform apply.
+  container_host_ami = "ami-0eafe05b6c8ffd11d"
 
   admin_cidr_ingress = local.admin_cidr_ingress
 
