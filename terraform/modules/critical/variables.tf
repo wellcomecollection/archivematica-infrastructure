@@ -12,6 +12,9 @@ variable "ebs_volume_size" {
   description = "How much EBS storage you need. A good rule of thumb is to have ~3x the size of the largest package you expect to process."
   type        = number
 }
+
 variable "snapshot_identifier" {
-  type = string
+  description = "The snapshot used to create an existing cluster, retained to keep its Terraform state stable"
+  type        = string
+  default     = null
 }

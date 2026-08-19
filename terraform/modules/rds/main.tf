@@ -14,26 +14,34 @@ resource "aws_rds_cluster" "cluster" {
   vpc_security_group_ids = [var.db_security_group_id]
 
   storage_encrypted    = false
-  enable_http_endpoint = true
+  enable_http_endpoint = false
   deletion_protection  = true
 
-  serverlessv2_scaling_configuration {
-    max_capacity = var.max_scaling_capacity
-    min_capacity = var.min_scaling_capacity
+  dynamic "serverlessv2_scaling_configuration" {
+    for_each = var.serverlessv2_scaling_configuration == null ? [] : [var.serverlessv2_scaling_configuration]
+
+    content {
+      max_capacity = serverlessv2_scaling_configuration.value.max_capacity
+      min_capacity = serverlessv2_scaling_configuration.value.min_capacity
+    }
+  }
+
+  lifecycle {
+    prevent_destroy = true
   }
 }
 
-resource "aws_rds_cluster_instance" "migration_instance" {
+resource "aws_rds_cluster_instance" "instance" {
   cluster_identifier = aws_rds_cluster.cluster.id
-  instance_class     = var.migration_instance_class
+  instance_class     = var.instance_class
   engine             = aws_rds_cluster.cluster.engine
   engine_version     = aws_rds_cluster.cluster.engine_version
 }
 
-# NOTE: This can be uncommented during serverless migration
-# resource "aws_rds_cluster_instance" "serverless_instance" {
-#   cluster_identifier = aws_rds_cluster.cluster.id
-#   instance_class     = "db.serverless"
-#   engine             = aws_rds_cluster.cluster.engine
-#   engine_version     = aws_rds_cluster.cluster.engine_version
-# }
+# This rename removes migration terminology without changing resource identity.
+# Keep the move so older states adopt the new address without replacing the DB
+# instance.
+moved {
+  from = aws_rds_cluster_instance.migration_instance
+  to   = aws_rds_cluster_instance.instance
+}

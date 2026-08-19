@@ -8,6 +8,8 @@ module "critical" {
     aws.digitisation = aws.digitisation
   }
 
+  # Terraform records the snapshot used to create this cluster. Retain the
+  # creation input so plans do not try to clear it from the live resource.
   snapshot_identifier = "archivematicaprod-20251123-before-migration-trimmed"
 
   network_private_subnets = data.terraform_remote_state.workflow.outputs.private_subnets

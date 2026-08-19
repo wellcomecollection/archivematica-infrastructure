@@ -24,21 +24,20 @@ variable "aws_db_subnet_group_name" {
 }
 
 variable "snapshot_identifier" {
-  type = string
+  description = "The snapshot used to create an existing cluster, retained to keep its Terraform state stable"
+  type        = string
+  default     = null
 }
 
-
-variable "max_scaling_capacity" {
-  type    = number
-  default = 8.0
+variable "serverlessv2_scaling_configuration" {
+  type = object({
+    max_capacity = number
+    min_capacity = number
+  })
+  default = null
 }
 
-variable "min_scaling_capacity" {
-  type    = number
-  default = 0.5
-}
-
-variable "migration_instance_class" {
+variable "instance_class" {
   type    = string
   default = "db.t4g.medium"
 }
