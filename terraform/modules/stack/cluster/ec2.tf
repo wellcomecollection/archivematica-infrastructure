@@ -33,10 +33,3 @@ module "bastion_host" {
   subnet_list      = var.public_subnets
   bastion_host_ami = var.bastion_host_ami
 }
-
-# The bastion was originally an uncounted module. Preserve the production
-# resources when making that module optional.
-moved {
-  from = module.bastion_host
-  to   = module.bastion_host[0]
-}
