@@ -27,7 +27,7 @@ locals {
 }
 
 module "gearman_service" {
-  source = "./fargate_service"
+  source = "./ec2_service"
 
   name      = "gearman"
   namespace = var.namespace
@@ -38,6 +38,11 @@ module "gearman_service" {
 
   cpu    = 256
   memory = 512
+
+  # Gearman holds queued and running jobs in memory, so never run two servers
+  # during a deployment. Stop the old task before starting its replacement.
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
 
   cluster_arn  = aws_ecs_cluster.archivematica.id
   namespace_id = aws_service_discovery_private_dns_namespace.archivematica.id
