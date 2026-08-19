@@ -48,6 +48,8 @@ module "service" {
 
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
+
+  turn_off_outside_office_hours = var.turn_off_outside_office_hours
 }
 
 module "app_container" {
@@ -55,6 +57,8 @@ module "app_container" {
   name   = "app"
 
   image = var.container_image
+
+  command = var.command
 
   environment  = var.environment
   secrets      = var.secrets

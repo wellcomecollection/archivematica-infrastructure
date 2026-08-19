@@ -8,6 +8,11 @@ variable "memory" {}
 
 variable "container_image" {}
 
+variable "command" {
+  default = null
+  type    = list(string)
+}
+
 variable "mount_points" {
   type = list(object({
     containerPath = string
@@ -49,4 +54,9 @@ variable "deployment_minimum_healthy_percent" {
 
 variable "deployment_maximum_percent" {
   type = number
+}
+
+variable "turn_off_outside_office_hours" {
+  type    = bool
+  default = false
 }
