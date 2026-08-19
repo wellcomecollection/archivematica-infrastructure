@@ -37,11 +37,3 @@ resource "aws_rds_cluster_instance" "instance" {
   engine             = aws_rds_cluster.cluster.engine
   engine_version     = aws_rds_cluster.cluster.engine_version
 }
-
-# This rename removes migration terminology without changing resource identity.
-# Keep the move so older states adopt the new address without replacing the DB
-# instance.
-moved {
-  from = aws_rds_cluster_instance.migration_instance
-  to   = aws_rds_cluster_instance.instance
-}
