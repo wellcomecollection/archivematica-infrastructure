@@ -1,44 +1,62 @@
-# SSH into the Archivematica container hosts
+# Connect to the Archivematica container hosts
 
-It can be useful to SSH into the Archivematica container hosts for debugging.
+It can be useful to open a shell on an Archivematica container host for debugging.
+The hosts are in private subnets and are accessed with AWS Systems Manager Session Manager; they do not need a bastion host or inbound SSH access.
 
-There's [an unmaintained script](https://github.com/alexwlchan/pathscripts/blob/ef34c4f4dd32403bade2a304751458fbddd27412/ssh\_to\_archivematica), or you can follow the instructions below.
+## Using the helper script
 
-The Archivematica container hosts aren't connected directly to the Internet; instead you have to go through the bastion host. There are only a handful of EC2 instances in the workflow account:
+Before starting, install the AWS CLI and the [Session Manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html), and obtain AWS credentials for the workflow account (`299497370133`).
 
+With the standard Wellcome profiles, log in once using the `weco` SSO profile.
+Then run the helper from the repository root using the `workflow-developer` profile, which assumes the role in the workflow account:
 
-Steps:
+```shell
+aws sso login --profile weco
+env AWS_PROFILE=workflow-developer scripts/ssh_to_archivematica <prod|staging>
+```
 
-1. Download the `wellcomedigitalworkflow` SSH key from Secrets Manager in the platform account.
-2.  Identify the container/bastion hsot pair you want to SSH into. Let's suppose I want to log into the staging instance.
+Do not run the helper without `AWS_PROFILE` unless your default AWS profile already targets the workflow account.
+Running `aws sso login` refreshes the cached SSO session, but it does not change the profile used by subsequent commands.
+A second SSO login is not necessary.
 
-    ![A list of EC2 instances in the console. Two of them are named Goobi; the others are "Archivematica staging container host", "Archivematica prod container host", "Archivematica prod bastion" and "Archivematica staging bastion". The two instances named "staging" are highlighted with pink arrows.](../howto/ec2\_instance\_list.png)
-3.  Select the bastion instance, then the "Security" tab. There should be two security groups:
+The script finds the active container instance registered with the selected ECS cluster, resolves its underlying EC2 instance ID, and starts an SSM session.
+The profile name is a local choice; use `workflow-dev` or another name if that is how your credentials are configured.
+The script verifies the effective account before looking up the container instance.
 
-    * full egress (which allows all outbound traffic from the instance)
-    * SSH controlled ingress (which filters inbound traffic to the instance)
+The EC2 host must be running and connected to ECS before the session can start.
+The staging host is normally stopped outside office hours; if the script finds no connected container instance, check the host state before trying again.
 
-    ![The "Security" tab of the EC2 Console. There's a pink hand-drawn circle highlighting the two security groups.](../howto/ec2\_security\_group.png)
-4.  Select the SSH controlled ingress security group. In the security group console, add an inbound rule that allows SSH from your current IP address. Add your name and the current date to provide an audit trail.
+## Using the AWS CLI directly
 
-    ![Adding an inbound rule with type "SSH" and source "My IP"](../howto/ec2\_inbound\_rule.png)
-5. Find the DNS names of the instances:
-   * the public DNS name of the bastion instance
-   * the private DNS name of the container instance
+First find the ECS container instance.
+Replace `staging` with `prod` when needed:
 
-6.  SSH through the instances. I feel like there's probably a way to do this a single tunneling command, but I find it easier to move keys around:
+```shell
+CLUSTER_NAME=archivematica-staging
 
-    ```shell
-    # Upload the SSH key to the bastion instance
-    scp -i key_on_local key_on_local ec2-user@BASTION_HOST:key_on_bastion
+CONTAINER_INSTANCE_ARN=$(env AWS_PROFILE=workflow-developer aws ecs list-container-instances \
+  --region eu-west-1 \
+  --cluster "$CLUSTER_NAME" \
+  --status ACTIVE \
+  --filter 'agentConnected == true' \
+  --query 'containerInstanceArns[0]' \
+  --output text)
 
-    # SSH into the bastion instance
-    ssh -i key_on_local ec2-user@BASTION_HOST
+EC2_INSTANCE_ID=$(env AWS_PROFILE=workflow-developer aws ecs describe-container-instances \
+  --region eu-west-1 \
+  --cluster "$CLUSTER_NAME" \
+  --container-instances "$CONTAINER_INSTANCE_ARN" \
+  --query 'containerInstances[0].ec2InstanceId' \
+  --output text)
+```
 
-    # SSH from the bastion instance into the private instance
-    # (on the bastion)
-    ssh -i key_on_bastion ec2-user@CONTAINER_HOST
-    ```
+Then start the session:
+
+```shell
+env AWS_PROFILE=workflow-developer aws ssm start-session \
+  --region eu-west-1 \
+  --target "$EC2_INSTANCE_ID"
+```
 
 ## Interesting locations on the file system
 

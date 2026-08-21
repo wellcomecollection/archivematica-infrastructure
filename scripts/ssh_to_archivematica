@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# This script will SSH you into the Archivematica container host.
+# This script starts an SSM session on the Archivematica ECS container host.
 #
 # == Usage ==
 #
@@ -7,16 +7,16 @@
 #
 # == Prerequisites ==
 #
-#   *   You have the `workflow-dev` role configured in your local AWS config
-#   *   You have local AWS credentials
-#   *   You have the `wellcomedigitalworkflow` SSH key at
-#       `~/.ssh/wellcomedigitalworkflow`
+#   *   You have AWS credentials for the workflow account
+#   *   You have the AWS CLI and Session Manager plugin installed
 #
 
 set -o errexit
 set -o nounset
 
 ENVIRONMENT="${1:-}"
+AWS_REGION="eu-west-1"
+WORKFLOW_ACCOUNT_ID="299497370133"
 
 if [[ "${ENVIRONMENT:-}" != "prod" && "${ENVIRONMENT:-}" != "staging" ]]
 then
@@ -24,49 +24,75 @@ then
   exit 1
 fi
 
-SECURITY_GROUP_ID=$(
-  AWS_PROFILE=workflow-dev aws ec2 describe-security-groups \
-    | jq .SecurityGroups \
-    | jq "map(select(.GroupName | startswith(\"archivematica-$ENVIRONMENT-bastion_ssh_controlled_ingress\")))" \
-    | jq -r '.[0].GroupId'
+if ! command -v aws >/dev/null
+then
+  echo "The AWS CLI is required." >&2
+  exit 1
+fi
+
+if ! command -v session-manager-plugin >/dev/null
+then
+  echo "The AWS Session Manager plugin is required." >&2
+  exit 1
+fi
+
+if ! CALLER_ACCOUNT_ID=$(
+  aws sts get-caller-identity \
+    --region "$AWS_REGION" \
+    --query Account \
+    --output text
+)
+then
+  echo "Unable to authenticate with the selected AWS credentials." >&2
+  echo "An SSO login does not select a profile for subsequent commands." >&2
+  echo "Set AWS_PROFILE, for example:" >&2
+  echo "  env AWS_PROFILE=workflow-developer $0 $ENVIRONMENT" >&2
+  exit 1
+fi
+
+if [[ "$CALLER_ACCOUNT_ID" != "$WORKFLOW_ACCOUNT_ID" ]]
+then
+  echo "Expected workflow account $WORKFLOW_ACCOUNT_ID, authenticated to $CALLER_ACCOUNT_ID." >&2
+  echo "Select appropriate AWS credentials, for example with AWS_PROFILE." >&2
+  exit 1
+fi
+
+CLUSTER_NAME="archivematica-$ENVIRONMENT"
+
+CONTAINER_INSTANCE_ARN=$(
+  aws ecs list-container-instances \
+    --region "$AWS_REGION" \
+    --cluster "$CLUSTER_NAME" \
+    --status ACTIVE \
+    --filter 'agentConnected == true' \
+    --query 'containerInstanceArns[0]' \
+    --output text
 )
 
-MY_IP=$(curl -q 'https://ifconfig.me')
+if [[ -z "$CONTAINER_INSTANCE_ARN" || "$CONTAINER_INSTANCE_ARN" == "None" ]]
+then
+  echo "No connected container instance found in $CLUSTER_NAME" >&2
+  echo "The EC2 host may be stopped or its ECS agent may be disconnected." >&2
+  exit 1
+fi
 
-set +o errexit  # InvalidPermission.Duplicate
-AWS_PROFILE=workflow-dev aws ec2 authorize-security-group-ingress \
-  --group-id "$SECURITY_GROUP_ID" \
-  --protocol tcp \
-  --port 22 \
-  --cidr "$MY_IP/32"
-set -o errexit
-
-BASTION_HOST=$(
-  AWS_PROFILE=workflow-dev aws ec2 describe-instances \
-    | jq '.Reservations' \
-    | jq 'map(.Instances) | flatten' \
-    | jq 'map(.Tags |= from_entries)' \
-    | jq "map(select(.Tags.Name | startswith(\"archivematica-$ENVIRONMENT-bastion\")))[0]" \
-    | jq -r '.PublicDnsName'
+EC2_INSTANCE_ID=$(
+  aws ecs describe-container-instances \
+    --region "$AWS_REGION" \
+    --cluster "$CLUSTER_NAME" \
+    --container-instances "$CONTAINER_INSTANCE_ARN" \
+    --query 'containerInstances[0].ec2InstanceId' \
+    --output text
 )
 
-CONTAINER_HOST=$(
-  AWS_PROFILE=workflow-dev aws ec2 describe-instances \
-    | jq '.Reservations' \
-    | jq 'map(.Instances) | flatten' \
-    | jq 'map(.Tags |= from_entries)' \
-    | jq 'map(select(.State.Name == "running"))' \
-    | jq "map(select(.Tags.Name | startswith(\"archivematica-$ENVIRONMENT-container\")))[0]" \
-    | jq -r '.PrivateIpAddress'
-)
+if [[ -z "$EC2_INSTANCE_ID" || "$EC2_INSTANCE_ID" == "None" ]]
+then
+  echo "No connected EC2 instance found in $CLUSTER_NAME" >&2
+  exit 1
+fi
 
-echo "BASTION_HOST=$BASTION_HOST"
-echo "CONTAINER_HOST=$CONTAINER_HOST"
+echo "Starting an SSM session on $EC2_INSTANCE_ID ($CLUSTER_NAME)"
 
-scp -i ~/.ssh/wellcomedigitalworkflow \
-  ~/.ssh/wellcomedigitalworkflow \
-  "ec2-user@$BASTION_HOST:wellcomedigitalworkflow"
-
-ssh -t -i ~/.ssh/wellcomedigitalworkflow \
-  "ec2-user@$BASTION_HOST" \
-  ssh -t -i wellcomedigitalworkflow "ec2-user@$CONTAINER_HOST"
+exec aws ssm start-session \
+  --region "$AWS_REGION" \
+  --target "$EC2_INSTANCE_ID"
