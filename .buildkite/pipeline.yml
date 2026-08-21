@@ -1,51 +1,37 @@
 steps:
   - command: .buildkite/scripts/run_autoformat.py
     label: "run autoformatting"
-    agents:
-      queue: "scala"
 
   - wait
 
   - label: ":python: s3_start_transfer tests"
     command: .buildkite/scripts/run_lambda_tests.sh s3_start_transfer
-    agents:
-      queue: "scala"
 
   - label: ":python: transfer_monitor tests"
     command: .buildkite/scripts/run_lambda_tests.sh transfer_monitor
-    agents:
-      queue: "scala"
 
   - wait
 
   - label: ":docker: dashboard"
     command: archivematica-apps/archivematica/build_and_publish_image.sh dashboard
-    agents:
-      queue: "scala"
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
 
   - label: ":docker: MCP client"
     command: archivematica-apps/archivematica/build_and_publish_image.sh mcp-client
-    agents:
-      queue: "scala"
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
 
   - label: ":docker: MCP server"
     command: archivematica-apps/archivematica/build_and_publish_image.sh mcp-server
-    agents:
-      queue: "scala"
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
 
   - label: ":docker: Archivematica storage service"
     command: archivematica-apps/archivematica-storage-service/build_and_publish_image.sh
-    agents:
-      queue: "scala"
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
