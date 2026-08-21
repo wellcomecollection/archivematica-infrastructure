@@ -54,15 +54,7 @@ variable "interservice_security_group_id" {}
 variable "service_egress_security_group_id" {}
 variable "service_lb_security_group_id" {}
 
-variable "admin_cidr_ingress" {
-  type = list(string)
-}
-
 variable "lambda_error_alarm_arn" {}
-
-variable "aws_region" {
-  default = "eu-west-1"
-}
 
 variable "azure_tenant_id" {}
 variable "oidc_client_id" {}
@@ -75,10 +67,4 @@ variable "turn_off_outside_office_hours" {
 variable "container_host_ami" {
   description = "The AMI to use for the container host"
   type        = string
-}
-
-variable "bastion_host_ami" {
-  description = "The AMI for the optional bastion host; null disables it"
-  type        = string
-  default     = null
 }

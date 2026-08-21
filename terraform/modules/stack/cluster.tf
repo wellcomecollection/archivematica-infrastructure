@@ -1,18 +1,10 @@
 module "cluster" {
   source = "./cluster"
 
-  name = "archivematica-${var.namespace}"
-
   vpc_id          = var.vpc_id
-  public_subnets  = var.network_public_subnets
   private_subnets = var.network_private_subnets
 
-  region   = var.aws_region
-  key_name = "wellcomedigitalworkflow"
-
   ebs_volume_id = var.ebs_volume_id
-
-  controlled_access_cidr_ingress = var.admin_cidr_ingress
 
   cluster_name = aws_ecs_cluster.archivematica.name
 
@@ -24,5 +16,4 @@ module "cluster" {
   instance_type = "c5.4xlarge"
 
   container_host_ami = var.container_host_ami
-  bastion_host_ami   = var.bastion_host_ami
 }

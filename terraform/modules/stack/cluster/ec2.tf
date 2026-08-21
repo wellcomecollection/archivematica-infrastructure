@@ -4,32 +4,16 @@ module "container_host" {
   cluster_name = var.cluster_name
   vpc_id       = var.vpc_id
 
-  ssh_ingress_security_groups = flatten(module.bastion_host[*].ssh_controlled_ingress_sg)
+  subnets = var.private_subnets
 
-  subnets  = var.private_subnets
+  # key_name is a ForceNew attribute of aws_instance. Retain this legacy
+  # setting so removing the bastion does not also replace the ECS host. Remove
+  # it during the next planned host replacement, after confirming that the new
+  # host is managed and reachable through SSM.
   key_name = "wellcomedigitalworkflow"
-
-  region = var.region
 
   instance_type = var.instance_type
 
   ebs_volume_id      = var.ebs_volume_id
   container_host_ami = var.container_host_ami
-}
-
-# Production still uses the bastion introduced in #149. Staging omits the AMI
-# after #172 and therefore has no bastion resources.
-module "bastion_host" {
-  source = "./bastion_host"
-  count  = var.bastion_host_ami == null ? 0 : 1
-
-  vpc_id = var.vpc_id
-
-  name = "${var.name}-bastion"
-
-  controlled_access_cidr_ingress = var.controlled_access_cidr_ingress
-
-  key_name         = var.key_name
-  subnet_list      = var.public_subnets
-  bastion_host_ami = var.bastion_host_ami
 }

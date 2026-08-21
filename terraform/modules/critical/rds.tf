@@ -31,7 +31,7 @@ resource "aws_security_group" "database_sg" {
     to_port   = 3306
 
     # The database is in a private subnet, so this CIDR only gives access to
-    # other instances in the private subnet (in order to reach via bastion host)
+    # other instances with network access to the private subnet.
     cidr_blocks = [
       "0.0.0.0/0",
     ]
