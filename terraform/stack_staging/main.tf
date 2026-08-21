@@ -47,8 +47,6 @@ module "stack" {
   # not replace the container host during an unrelated Terraform apply.
   container_host_ami = "ami-0eafe05b6c8ffd11d"
 
-  admin_cidr_ingress = local.admin_cidr_ingress
-
   lambda_error_alarm_arn = local.lambda_error_alarm_arn
 
   providers = {
