@@ -93,6 +93,56 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,In copyright,disseminate,Op
             file_listing=self.file_listing,
         )
 
+    def test_accepts_transfer_wide_rights(self):
+        rights_metadata = _make_rights_csv(
+            {
+                "file": "objects/",
+                "basis": "policy",
+                "grant_act": "disseminate",
+            },
+            {
+                "file": "objects/",
+                "basis": "policy",
+                "grant_act": "use",
+            },
+        )
+
+        verify_rights_csv_is_valid(
+            rights_metadata=rights_metadata,
+            file_listing=[],
+        )
+
+    @pytest.mark.parametrize(
+        "rows",
+        [
+            pytest.param(
+                (
+                    {"file": "objects/", "basis": "policy"},
+                    {"file": "objects/reports/summary.pdf", "basis": "policy"},
+                ),
+                id="transfer-then-file",
+            ),
+            pytest.param(
+                (
+                    {"file": "objects/reports/summary.pdf", "basis": "policy"},
+                    {"file": "objects/", "basis": "policy"},
+                ),
+                id="file-then-transfer",
+            ),
+        ],
+    )
+    def test_rejects_mixed_transfer_and_file_targets(self, rows):
+        rights_metadata = _make_rights_csv(*rows)
+
+        with pytest.raises(
+            VerificationFailure,
+            match=r"mixes transfer-wide and\s+file-specific rights targets",
+        ):
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=self.file_listing,
+            )
+
     @pytest.mark.parametrize(
         "basis, extra_values",
         [
@@ -256,6 +306,32 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,In copyright,disseminate,Op
             verify_rights_csv_is_valid(
                 rights_metadata=rights_metadata,
                 file_listing=file_listing,
+            )
+
+    @pytest.mark.parametrize(
+        "file_path, message",
+        [
+            pytest.param("objects", "invalid file value", id="no-trailing-slash"),
+            pytest.param("/objects", "invalid file value", id="leading-slash"),
+            pytest.param(
+                "data/objects/",
+                "invalid file value",
+                id="bagit-data-prefix",
+            ),
+            pytest.param(
+                "objects/reports/",
+                "refers to a file",
+                id="subdirectory",
+            ),
+        ],
+    )
+    def test_rejects_other_transfer_and_directory_targets(self, file_path, message):
+        rights_metadata = f"file,basis\n{file_path},policy\n"
+
+        with pytest.raises(VerificationFailure, match=message):
+            verify_rights_csv_is_valid(
+                rights_metadata=rights_metadata,
+                file_listing=self.file_listing,
             )
 
     @pytest.mark.parametrize(

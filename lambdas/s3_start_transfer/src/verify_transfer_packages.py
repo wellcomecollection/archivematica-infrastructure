@@ -440,6 +440,7 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
 
     has_rights_information = False
     imported_combinations = set()
+    rights_target_type = None
     for row in csv_reader:
         has_rights_information = True
         line_number = csv_reader.line_num
@@ -491,8 +492,9 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
                 """
             )
 
+        is_transfer_target = file_path == "objects/"
         package_path = file_path[len("objects/") :]
-        if package_path not in package_files:
+        if not is_transfer_target and package_path not in package_files:
             raise VerificationFailure(
                 f"""
                 Line {line_number} of your rights.csv refers to a file that is not
@@ -500,6 +502,20 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
 
                 The 'file' value must identify a file in the package, using the
                 'objects/' prefix.
+                """
+            )
+
+        row_target_type = "transfer-wide" if is_transfer_target else "file-specific"
+        if rights_target_type is None:
+            rights_target_type = row_target_type
+        elif rights_target_type != row_target_type:
+            raise VerificationFailure(
+                f"""
+                Line {line_number} of your rights.csv mixes transfer-wide and
+                file-specific rights targets.
+
+                Use 'objects/' in every row to apply rights to the whole transfer,
+                or refer only to individual files. A rights.csv cannot use both.
                 """
             )
 
