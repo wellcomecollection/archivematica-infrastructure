@@ -63,13 +63,15 @@ For a release-tagged image, inspect the build script at the overlay commit and r
 
 These upstream implementations are not completely consistent, so the Lambda deliberately adds stricter checks where accepting a row would cause an unhandled import failure or silently discard metadata:
 
-*   Every `objects/` path must resolve to a real, non-metadata file in the transfer package.
+*   A rights CSV can apply every row to the whole transfer with the exact `objects/` target, or every row can identify a real, non-metadata file in the transfer package. Transfer-wide and file-specific targets cannot be mixed, and subdirectory targets are not supported.
 *   A populated basis-specific field is accepted only when `rights_from_csv.py` persists that field for the selected basis.
 *   Any grant details require `grant_act`, because the importer only persists a grant when `grant_act` has a value; `grant_restriction` remains optional for grants without dates, but Archivematica's PREMIS serializer requires it when `grant_start_date` or `grant_end_date` is supplied.
 *   Any documentation identifier requires both `doc_id_type` and `doc_id_value`, following the upstream validator's stated requirement rather than its more permissive conditional.
 *   Each normalized file, basis, and grant-act combination may appear only once, because the importer silently skips later duplicates.
 *   Copyright rows cannot use `open` as their `end_date`, because the importer version selected from `qa/1.x` does not set the open-ended flag correctly for that basis.
 *   Duplicate headings, malformed row widths, non-UTF-8 input, UTF-8 byte-order marks, and empty files are rejected with depositor-facing messages.
+
+The single-scope rule avoids ambiguous PREMIS output. Archivematica serializes both transfer- and file-scoped statements for a matching file without defining which takes precedence, and their order differs between transfer and AIP METS. A mixed CSV could therefore preserve conflicting rights rather than applying an override.
 
 The Lambda also validates the Wellcome rights profile consumed by the IIIF manifest builder.
 Copyright and license rows require a controlled `note` value together with `grant_act` and `grant_note`.

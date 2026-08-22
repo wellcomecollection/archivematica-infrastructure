@@ -32,12 +32,15 @@ Both files must use UTF-8 encoding:
     ```
 
     In both cases, the CSV only ever has `objects/` as the filename.
-*   `rights.csv`, which is optional and describes the rights attached to individual files.
+*   `rights.csv`, which is optional and describes the rights attached to the transfer or to individual files.
 
     The file must use UTF-8 without a byte-order mark (BOM).
     The file must have a header row and at least one row of rights information.
     Every row must have a `file` and `basis` value.
-    The `file` must identify a file in the transfer package and use its Archivematica path, beginning with `objects/`.
+    The `file` value can be exactly `objects/` to apply the row to every original file in the transfer.
+    Alternatively, it can identify an individual file using its Archivematica path, beginning with `objects/`.
+    A single rights CSV cannot mix `objects/` with individual file paths because partial transfer restrictions are not supported.
+    Subdirectory paths and other spellings such as `/objects` are not supported.
     The supported bases are `copyright`, `donor`, `license`, `other`, `policy`, and `statute`.
 
     For a copyright basis, `status`, `jurisdiction`, `note`, `grant_act`, and `grant_note` are also required.
@@ -62,12 +65,14 @@ Both files must use UTF-8 encoding:
     The optional columns are `status`, `determination_date`, `start_date`, `end_date`, `jurisdiction`, `terms`, `citation`, `note`, `grant_act`, `grant_restriction`, `grant_start_date`, `grant_end_date`, `grant_note`, `doc_id_type`, `doc_id_value`, and `doc_id_role`.
     No other columns are accepted.
 
-    For example, this applies an in-copyright statement to a file:
+    For example, this applies an in-copyright statement to every original file in the transfer:
 
     ```csv
     file,basis,status,jurisdiction,note,grant_act,grant_note
-    objects/reports/summary.pdf,copyright,copyrighted,GB,In copyright,disseminate,Open
+    objects/,copyright,copyrighted,GB,In copyright,disseminate,Open
     ```
+
+    Existing rights CSVs that name individual files remain supported, but every row in such a CSV must name an individual file.
 
 ## Compressing the package
 
