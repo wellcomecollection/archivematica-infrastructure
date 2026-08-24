@@ -144,18 +144,17 @@ module "mcp_client_service" {
   container_image = var.mcp_client_container_image
 
   environment = {
-    DJANGO_SETTINGS_MODULE                                         = "archivematica.MCPClient.settings.common"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                            = var.rds_username
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                        = var.rds_password
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                            = var.rds_host
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                            = var.rds_port
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                        = "MCP"
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER       = "${local.gearmand_hostname}:4730"
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
-    ARCHIVEMATICA_MCPCLIENT_WORKERS                                = 5
-    ARCHIVEMATICA_MCPCLIENT_MAX_TASKS_PER_CHILD                    = 1
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER                = "${local.clamav_hostname}:3310"
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND        = "clamdscanner"
+    DJANGO_SETTINGS_MODULE                                   = "archivematica.MCPClient.settings.common"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                      = var.rds_username
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                  = var.rds_password
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                      = var.rds_host
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                      = var.rds_port
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                  = "MCP"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
+    ARCHIVEMATICA_MCPCLIENT_WORKERS                          = 5
+    ARCHIVEMATICA_MCPCLIENT_MAX_TASKS_PER_CHILD              = 1
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER          = "${local.clamav_hostname}:3310"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND  = "clamdscanner"
 
     # This causes MCP client to stream files to ClamAV, rather than passing
     # it a path.  This means ClamAV doesn't need access to the shared
@@ -171,10 +170,19 @@ module "mcp_client_service" {
     # discussion in this issue: https://github.com/archivematica/Issues/issues/114
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_STORAGE_SERVICE_CLIENT_QUICK_TIMEOUT = 600
 
-    # This means we don't capture stdout/stderr from client script subprocesses.
-    # This is an attempt to reduce the amount of data we have to write to
-    # the database during transfers with lots of files, and reduce the
-    # number of times we get the error (2006, ‘MySQL server has gone away’).
+    # Persist client-script stdout/stderr in task records so operators can inspect
+    # preservation-tool failures in the Archivematica dashboard. Very verbose
+    # tasks have historically produced hundreds of MB of output; storing it
+    # increases database traffic, write I/O, and storage, and may exceed MySQL
+    # packet or redo-log limits, causing task-completion errors such as "MySQL
+    # server has gone away".
+    #
+    # This setting controls database persistence; MCPClient still logs the streams
+    # and returns output requested by workflows. Consider disabling it only if
+    # output persistence causes material database pressure or errors and shared
+    # logging is an acceptable diagnostic substitute; disabling it normally
+    # removes stdout/stderr from new dashboard task records. See
+    # https://github.com/archivematica/Issues/issues/314.
     ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CAPTURE_CLIENT_SCRIPT_OUTPUT = true
 
     # We don't enable indexing or search with Elasticsearch.  Data from the
