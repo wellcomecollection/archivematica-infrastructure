@@ -37,3 +37,13 @@ We keep both the upstream and Wellcome-specific copy in the tree so that we can 
 This also allows us to maintain the divergence if the upstream code changes, because we can see what our changes from the original were.
 
 The `.artefactual.py` file is the upstream version and the `.wellcome.py` file is its complete Wellcome replacement.
+
+## Current overlays
+
+Keep this inventory up to date when adding or removing an overlay pair. It records the behavior we own, why it differs from upstream, and when the divergence can be removed.
+
+| Concept | Overlay pairs | Purpose and removal condition |
+| --- | --- | --- |
+| Transfer-wide rights imports | `src/archivematica/MCPClient/clientScripts/rights_from_csv.{artefactual,wellcome}.py` | Treats `objects/` in `rights.csv` as a transfer-scoped target for [issue #114](https://github.com/wellcomecollection/archivematica-infrastructure/issues/114). This is a temporary bridge that can be removed when `UPSTREAM_COMMIT` includes [artefactual/archivematica#2376](https://github.com/artefactual/archivematica/pull/2376). |
+| Asynchronous Storage Service operations | `src/archivematica/archivematicaCommon/storageService.{artefactual,wellcome}.py` and `tests/archivematicaCommon/test_storage_service.{artefactual,wellcome}.py` | Restores asynchronous Storage Service operations with bounded polling and explicit unknown-outcome errors for long-running Wellcome storage work. Revisit this overlay when a durable, idempotent asynchronous workflow replaces it; see [issue #176](https://github.com/wellcomecollection/archivematica-infrastructure/issues/176). |
+| Azure OIDC UPN behavior | `tests/dashboard/test_oidc.{artefactual,wellcome}.py` | Adds Wellcome-specific regression coverage for mapping the Azure access-token `upn` claim to an Archivematica email. This is a test-only overlay; retain it while the deployed authentication configuration depends on that behavior. |
