@@ -1,6 +1,7 @@
 # The Archivematica apps
 
-Archivematica is made up of seven different apps. This is a brief summary of those apps, and how they apply to our use case.
+Our deployment contains four Archivematica applications and several supporting services.
+This is a brief summary of the parts which are important for our use case.
 
 *   **dashboard** – the interface to Archivematica. This includes both the graphical component (i.e. the web dashboard) and the Archivematica API.
 
@@ -9,11 +10,14 @@ Archivematica is made up of seven different apps. This is a brief summary of tho
 
 <figure><img src="../../.gitbook/assets/storage-service.png" alt=""><figcaption></figcaption></figure>
 
-*   **MCP services** – these are the tasks that do the actual processing in Archivematica. See [Gearman and the MCP server/client](gearman-and-the-mcp-server-client.md) for more details.
+* **MCP server** – decides what work needs to be performed, records it in MySQL, and submits jobs to Gearman.
+* **Gearman** – distributes jobs from the MCP server to the MCP clients. Its queue is held in memory and does not survive a restart.
+* **MCP client** – performs the work requested by the MCP server. We run multiple clients so several tasks can be processed at once.
+* **ClamAV** – scans files for viruses. It runs separately in Fargate, and the MCP clients stream files to it rather than sharing a filesystem with it.
 
-    * MCP Server decides what tasks need to be performed, records them in MySQL, and sends them to Gearman for execution. Gearman's built-in queue is held in memory and does not survive a Gearman restart.
-    * MCP Client gets tasks from MCP Server (possibly via Gearman), and actually does the work. It may use other containers to help do its work, in particular FITS (for file format identification) and ClamAV (for virus scanning).
+The dashboard, Storage Service, MCP server, MCP clients, and Gearman run as ECS tasks on a single EC2 container host.
+The dashboard and Storage Service each have an Nginx sidecar, while ClamAV runs as a Fargate service.
 
+See [Gearman and the MCP server/client](gearman-and-the-mcp-server-client.md) for more detail about how Archivematica schedules processing work.
 
-
-    <figure><img src="../../.gitbook/assets/Untitled 2 (1) (1).png" alt=""><figcaption></figcaption></figure>
+![](../../images/mcp\_architecture.svg)
