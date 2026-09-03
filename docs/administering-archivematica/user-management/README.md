@@ -1,5 +1,8 @@
 # User management
 
-We use OpenID Connect and Azure AD to manage users in Archivematica.
+We use OpenID Connect with Azure AD to authenticate users in Archivematica. Access and roles are managed with local application accounts.
 
-**Note:** at time of writing (November 2022), OpenID Connect logins are broken. See [https://github.com/wellcomecollection/archivematica-infrastructure/issues/111](https://github.com/wellcomecollection/archivematica-infrastructure/issues/111)
+Terraform configures OpenID Connect login for both the Archivematica dashboard and the Archivematica Storage Service.
+The applications have separate user databases and automatic account creation is disabled, so a matching account is needed in each application and environment the person uses.
+
+See [How to add or remove users](add-or-remove-users.md) for account management and [Authentication with Azure AD](authentication.md) for an explanation of the login flow.
