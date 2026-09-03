@@ -8,7 +8,7 @@ This processing includes:
 
 * Analysing files in the archive, like virus scanning, file format identification, and fixity checking
 * Creating a metadata description of the archive that can be read by downstream applications
-8 Uploading the archive to our permanent cloud storage
+* Uploading the archive to our permanent cloud storage
 
 It's an open-source application created by [Artefactual], and we run a lightly modified fork.
 
@@ -21,7 +21,7 @@ You can read more about our Archivematica deployment in [our documentation][docs
 
 ## Repo layout
 
-*   [`archivematica-apps`](./archivematica-apps) – our [forked versions](./docs/developers/archivematica-forks.md) of the core Archivematica apps.
+*   [`archivematica-apps`](./archivematica-apps) – our [forked versions](./docs/service-architecture/how-is-our-deployment-unusual/archivematica-forks.md) of the core Archivematica apps.
 *   [`azure_ad_login`](./azure_ad_login) – instructions for configuring SSO for Archivematica.
 *   [`born_digital_listener`](./born_digital_listener) – a Lambda that sends notifications of newly-stored born digital material to the IIIF Builder workflow.
 *   [`docs`](./docs) – documentation and instructions, which are published using GitBook

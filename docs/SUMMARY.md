@@ -50,4 +50,4 @@
   * [NotADirectoryError in the Extract zipped transfer stage](debugging-archivematica/troubleshooting-known-errors/not-a-directory-in-the-extract-zipped-transfer-stage.md)
 
 * [Restarting services if a task is stuck](debugging-archivematica/restarting-services-if-a-task-is-stuck.md)
-* [SSH into the Archivematica container hosts](debugging-archivematica/ssh-into-container-hosts.md)
+* [Connect to the Archivematica container hosts](debugging-archivematica/ssh-into-container-hosts.md)

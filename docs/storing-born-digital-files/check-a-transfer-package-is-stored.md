@@ -14,9 +14,9 @@ Search for a bag with the same identifier (either catalogue reference or accessi
 
 If you find a result with:
 
-* a matching `info.externalIdentifier` matches
+* an `info.externalIdentifier` which matches the transfer package identifier
 * a `createdDate` from after you uploaded your transfer package to S3
 
-then your transfer package has been stored successfully.
+Then your transfer package has been stored successfully.
 
 If your transfer package doesn't appear within a day, then ask a developer to look at the Archivematica logs in the `#wc-preservation-feedback` channel in Slack.
