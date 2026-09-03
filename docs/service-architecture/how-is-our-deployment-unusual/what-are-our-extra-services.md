@@ -9,7 +9,7 @@ The [**s3\_start\_transfer Lambda**](https://github.com/wellcomecollection/archi
 * For archivists, this means they can start processing a transfer package by uploading it to S3, rather than using the Archivematica dashboard.
 * For the platform team, this means we can do some checks on packages before they're sent to Archivematica (e.g. that the metadata has been supplied correctly).
 
-The [**start\_test**_**\_**_**transfer Lambda**](https://github.com/wellcomecollection/archivematica-infrastructure/tree/main/lambdas/start\_test\_transfer) gives us a way to do end-to-end testing of Archivematica. When you run it, it creates and uploads a new transfer package to the S3 bucket. This simulates the behaviour of an archivists.
+The [**start\_test\_transfer Lambda**](https://github.com/wellcomecollection/archivematica-infrastructure/tree/main/lambdas/start\_test\_transfer) gives us a way to do end-to-end testing of Archivematica. When you run it, it creates and uploads a new transfer package to the S3 bucket. This simulates the behaviour of an archivist.
 
 We can then monitor that package being processed by Archivematica.
 

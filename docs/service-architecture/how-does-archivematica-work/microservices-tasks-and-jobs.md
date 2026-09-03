@@ -14,11 +14,9 @@ Microservices contain jobs, jobs spawn tasks:
 
 ![](../../images/microservices.svg)
 
-Sometimes actions get stuck and need to be restarted; the only way I know how to do this is to restart the Archivematica containers (more on that below). Doing this may cause weird things to happen:
+Sometimes actions get stuck and may need to be restarted. See [Restarting services if a task is stuck](../../debugging-archivematica/restarting-services-if-a-task-is-stuck.md) for the risks and checks before restarting a service. Restarting a service may cause weird things to happen:
 
 *   When the job is re-run, it gets scheduled twice, which might cause interesting things to happen downstream. Here's an example: this ingest had failed at the `Prepare AIP` step, I restarted the containers, and every job in and after Prepare AIP was run twice:
 
     ![](../../images/double\_scheduling\_task.png)
 * Not all tasks tolerate being run twice, e.g. they try to create a directory and fail if the directory already exists (from a previous run of the task).
-
-##

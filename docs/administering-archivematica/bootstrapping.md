@@ -3,20 +3,20 @@
 At time of writing, we run two Archivematica instances:
 
 * The _production_ instance writes into the production Wellcome Archival Storage. This is accessible at [https://archivematica.wellcomecollection.org](https://archivematica.wellcomecollection.org). You should use this for everything you want to keep.
-* The _staging_ instances writes into the staging Wellcome Archival Storage. This is accessible at [https://archivematica-stage.wellcomecollection.org](https://archivematica-stage.wellcomecollection.org). This is used for experiments, testing Archivematica, and so on. Don't use this for anything you want to keep long-term.
+* The _staging_ instance writes into the staging Wellcome Archival Storage. This is accessible at [https://archivematica-stage.wellcomecollection.org](https://archivematica-stage.wellcomecollection.org). This is used for experiments, testing Archivematica, and so on. Don't use this for anything you want to keep long-term.
 
 These are the steps for creating a new stack.
 
-1. [Create a new ACM certificate (maybe)](#step1)
-2. [Create a new Terraform stack](#step2)
+1. [Create a new ACM certificate (maybe)](#step_1)
+2. [Create a new Terraform stack](#step_2)
 3. [Format the EBS volume](#ebs)
 4. [Create the Archivematica databases](#databases)
-5. [Run the Django database migrations](#step4)
-6. [Create initial users](#step5)
-7. [Connect to the Wellcome Archival Storage](#step6)
-8. [Connect to the transfer source bucket](#step7)
-9. [Configure the local filesystem storage](#step8)
-10. [Set up the default processing configuration](#step9)
+5. [Run the Django database migrations](#step_4)
+6. [Create initial users](#step_5)
+7. [Connect to the Wellcome Archival Storage](#step_6)
+8. [Connect to the transfer source bucket](#step_7)
+9. [Configure the local filesystem storage](#step_8)
+10. [Set up the default processing configuration](#step_9)
 
 ## 1. Create a new ACM certificate (maybe) <a href="#step_1" id="step_1"></a>
 
@@ -45,7 +45,7 @@ This volume needs to be formatted before it can be used.
 
 To format the volume:
 
-1.  SSH into the EC2 container host.
+1.  [Connect to the EC2 container host](../debugging-archivematica/ssh-into-container-hosts.md).
 2.  Run the command `df -h`.  You should see output something like:
 
     ```console
@@ -63,7 +63,7 @@ To format the volume:
 
 3.  Run `sudo bash /format_ebs_volume.sh`, then reboot the instance by running `sudo reboot`.
 
-4.  When the instance has rebooted, SSH back in and run `df -h` again. This time you should see an entry "Mounted on: `/ebs`", for example:
+4.  When the instance has rebooted, connect again and run `df -h` again. This time you should see an entry "Mounted on: `/ebs`", for example:
 
     ```console
     $ df -h
@@ -87,7 +87,7 @@ When you first create your Archivematica stack, you'll notice that none of the t
 
 To fix this:
 
-1. SSH into one of the EC2 container hosts. This gets you inside the security group that connects to RDS.
+1. Connect to the EC2 container host. This gets you inside the security group that connects to RDS.
 2.  Start a Docker container and install MySQL:
 
     ```
@@ -116,7 +116,7 @@ Once the databases have been created, we need to run Django migrations.
 
 To fix this:
 
-1. SSH into the EC2 container hosts.
+1. Connect to the EC2 container host.
 2.  Run the Django migrations in the dashboard:
 
     ```
@@ -235,7 +235,7 @@ This step tells Archivematica how to read uploads from the S3 transfer bucket.
 
     Give it a description of "S3 transfer source" or similar.
 
-    The relative path corresponds to the name of the drop directory (within the root path) into which files should be dropped and an automated transfer started on Archivematica. It must match the name of a workflow on Archivematica (with dashes replaced by underscores, e.g. born-digital directory will trigger a transfer using the born\_digital flow)
+    The relative path corresponds to the name of the drop directory (within the root path) into which files should be dropped and an automated transfer started on Archivematica. It must match the name of a workflow on Archivematica (with dashes replaced by underscores, e.g. born-digital directory will trigger a transfer using the born\_digital flow).
 
     You need to create locations for `/born-digital` and `/born-digital-accessions`.
 
@@ -256,8 +256,6 @@ If these are not set, you may get "No space left on device" errors when trying t
 1. Log in to the Archivematica Dashboard (e.g. at [https://archivematica.wellcomecollection.org/](https://archivematica.wellcomecollection.org/)).
 2. Select "Administration" in the top tab bar. Select "Processing configuration" in the sidebar.
 3.  Set the following settings in the "Default" configuration:
-
-    data
 
     | Scan for viruses                                                         | Yes                  |
     | ------------------------------------------------------------------------ | -------------------- |
@@ -290,8 +288,6 @@ If these are not set, you may get "No space left on device" errors when trying t
     | Add metadata if desired            | Continue                                  |
     | Store AIP                          | Yes                                       |
 5.  Create a "b\_dig\_accessions" config, with the default settings above and additionally:
-
-    processing
 
     | Extract packages                   | No                             |
     | ---------------------------------- | ------------------------------ |
