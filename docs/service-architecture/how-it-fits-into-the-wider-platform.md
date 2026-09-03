@@ -1,11 +1,11 @@
 # How it fits into the wider platform
 
-<figure><img src="../.gitbook/assets/Untitled 2.png" alt=""><figcaption></figcaption></figure>
+Born-digital material which is processed by Archivematica is stored in the **Wellcome storage service**, which is the permanent storage for all our digital collections.
 
-Born-digital material which is processed by Archivematica is stored in the **Wellcome storage service**, which the permanent storage for all our digital collections.
+## Downstream notifications
 
-### Future work (as of November 2022)
+The Wellcome storage service publishes a notification when it registers a new bag.
+The born-digital listener receives these notifications and publishes events for the `born-digital` space to an SNS topic, which fans them out to subscribed queues.
 
-Newly-stored material will be sent to **iiif-builder**, which constructs a IIIF Presentation manifest for the born-digital archive. This will allow the archive to be served via DLCS.
-
-This will then allow us to present the archive on a **works page** on wellcomecollection.org, e.g. allowing users to browse and download the files in an archive (if access conditions permit).
+The IIIF Builder WorkflowProcessor consumes one of these queues and uses the identifier to retrieve the stored METS and file information, register material with DLCS, and build IIIF Presentation resources.
+The listener ignores events for accessions in `born-digital-accessions` and test packages in `testing`.
