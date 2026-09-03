@@ -6,7 +6,9 @@ We do package the Archivematica apps as Docker containers, but they run on a sin
 
 Gearman also runs on this instance, although it does not use the shared volume. Keeping it on the same host as the MCP services makes its lifecycle more predictable and avoids independent Fargate replacements.
 
-This mimics how Archivematica expects to be run: all the services on the same server. We still package the services as Docker containers, orchestrated by ECS, so things behave similar to our other services -- but we're mounting a persistent EBS volume inside the containers to provide the shared file system.
+ClamAV is the exception: it runs in Fargate and receives files as a stream from the MCP clients.
+
+Keeping the main Archivematica applications on one host mimics how Archivematica expects to be run. We still package the services as Docker containers, orchestrated by ECS, so things behave similarly to our other services -- but we mount a persistent EBS volume inside the containers which need the shared file system.
 
 As much as possible, these Docker images look similar to our other services, e.g. they're published by Buildkite, stored in ECR, managed by ECS.
 

@@ -14,6 +14,7 @@ We use Amazon RDS as our MySQL database.
 
 ## Shared file system: EBS
 
-Archivematica uses a shared file system to pass files between tasks. All the services have access to the same volume, so a service can say _"get the file from path A"_ and another service can pick that up.
+Archivematica uses a shared file system to pass files between tasks. The dashboard, Storage Service, MCP server, and MCP clients have access to the same volume, so one service can say _"get the file from path A"_ and another service can pick it up.
 
-We use an EBS volume, which is mounted on the EC2 instance and shared between all the containers.
+We use an EBS volume, which is mounted on the EC2 instance and shared between those containers.
+Gearman does not use the shared volume, and ClamAV runs in Fargate and receives file contents as a stream.
