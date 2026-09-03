@@ -9,17 +9,18 @@ This can be fixed by restarting the MCP client tasks, followed by the MCP server
 My hypothesis: the MCP server relies on Gearman, and I think it might struggle when it can't connect to it – that is, when there aren't any Gearman tasks running.
 Even when Gearman comes back, it can't regain its connection.
 
-## Rolling out a Gearman replacement
+## Restarting or replacing Gearman
 
-Gearman is a singleton with stop-before-start deployments. Replacing it interrupts its in-memory queue and existing MCP connections, so plan the replacement while no transfers or ingests are running.
+Gearman is a singleton with stop-before-start deployments. Replacing it interrupts its in-memory queue and existing MCP connections, so prevent new uploads or submissions and plan the replacement while no transfers or ingests are running.
 
-Use this sequence to roll the change from staging to production:
+Use this sequence whenever Gearman is restarted or replaced:
 
-1. Review the Terraform plan and confirm that the target image is `artefactual/gearmand:2.0.0-alpine` and that the ECS service will be replaced. The production rollout intentionally combines any pending image upgrade with the move to EC2.
-2. Apply the staging stack from the pull request.
-3. Wait for the new Gearman task to be `RUNNING` on EC2 and registered in service discovery. Terraform does not wait for the ECS service to reach steady state.
-4. Restart the MCP client service, then restart the MCP server service. This lets the workers register with Gearman before the server schedules new work.
-5. Run an end-to-end transfer in staging.
-6. Merge the pull request only after the staging checks pass, then repeat the sequence for production during an idle maintenance window.
+1. Confirm in the dashboard that no transfers or ingests are running and that new transfer intake has been paused.
+2. Stop the current Gearman task and allow its ECS service to replace it, or force a new deployment of the Gearman service.
+3. Wait for the new Gearman task to be `RUNNING` on the EC2 container host and registered in service discovery, then check its logs for a successful start.
+4. Restart the MCP client service. Wait for it to reach its expected task count and confirm in its logs that the workers have registered with Gearman.
+5. Restart the MCP server service, wait for it to reach its expected task count, and confirm in its logs that it has connected to Gearman.
+6. While normal transfer intake remains paused, run a controlled end-to-end transfer and check that it completes successfully.
+7. Restore transfer intake.
 
-Rollback also replaces Gearman and must follow the same idle-window and MCP restart sequence. Reverting the EC2 migration returns Gearman to version 2.0.0 on Fargate; it does not restore an older image that may still have been running in production before the rollout.
+To roll back a Gearman change, revert the Terraform configuration to a known-compatible version, review the plan, and apply it using the same idle-window and readiness checks.
