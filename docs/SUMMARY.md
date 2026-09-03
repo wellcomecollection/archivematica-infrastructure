@@ -37,7 +37,6 @@
   * [Authentication with Azure AD](administering-archivematica/user-management/authentication.md)
 * [Upgrading to a new version of Archivematica](administering-archivematica/upgrading-to-a-new-version-of-archivematica.md)
 * [Running an end-to-end test](administering-archivematica/running-an-end-to-end-test.md)
-* [Clearing old transfers from the dashboard](administering-archivematica/clearing-old-transfers-from-the-dashboard.md)
 
 ## Debugging Archivematica
 
