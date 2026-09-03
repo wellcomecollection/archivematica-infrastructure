@@ -25,7 +25,7 @@
 
 ## About our deployment
 
-* [Using Wellcome catalogue identifiers](about-our-deployment/external-identifiers.md)
+* [Using catalogue references and accession numbers](about-our-deployment/external-identifiers.md)
 * [Different environments](about-our-deployment/different-environments.md)
 * [Working storage: MySQL and EBS](service-architecture/how-does-archivematica-work/working-storage-mysql-and-ebs.md)
 
