@@ -9,15 +9,16 @@ are restarted so they pick up a new copy of the secrets.
 import datetime as dt
 import functools
 import json
-import secrets
 import subprocess
 import sys
+import uuid
 
 import boto3
 from botocore.exceptions import ClientError
 
 
 WORKFLOW_DEV_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
+AWS_REGION = "eu-west-1"
 
 
 def az(*args):
@@ -45,18 +46,24 @@ def get_az_ad_app(display_name):
     return resp[0]
 
 
-def create_password():
+def get_az_client_secrets(*, app_id):
     """
-    Returns a cryptographically secure new password.
+    Returns an Azure application's password credentials.
     """
-    return secrets.token_hex(32)
+    cli_output = az(
+        "ad", "app", "credential", "list", "--id", app_id, "--output", "json"
+    )
+    return json.loads(cli_output)
 
 
-def store_az_client_secret(*, app_id, env, password):
+def create_az_client_secret(*, app_id, env, rotation_id):
     """
-    Stores a new client secret with an Azure application.
+    Creates a new client secret and returns its value.
     """
-    az(
+    display_name = f"weco/{env}/{rotation_id}"
+    print(f"[{env}] Creating Azure client secret {display_name}")
+
+    cli_output = az(
         "ad",
         "app",
         "credential",
@@ -70,26 +77,41 @@ def store_az_client_secret(*, app_id, env, password):
         # Expires one year after it's created
         "--end-date",
         (dt.date.today() + dt.timedelta(days=365)).isoformat(),
-        # Unfortunately, this description can only be a handful of characters
-        # long, and the error message is quite confusing.
-        # See https://github.com/Azure/azure-cli/issues/10720
-        "--credential-description",
-        f"weco/{env}",
-        # The password
-        "--password",
-        password,
+        "--display-name",
+        display_name,
+        "--output",
+        "json",
     )
+    response = json.loads(cli_output)
+
+    password = response.get("password")
+    if not password:
+        raise RuntimeError("Azure CLI did not return the new client secret")
+
+    matching_credentials = [
+        credential
+        for credential in get_az_client_secrets(app_id=app_id)
+        if credential.get("displayName") == display_name
+    ]
+    if len(matching_credentials) != 1:
+        raise RuntimeError(
+            f"Could not identify Azure credential {display_name}: "
+            f"found {len(matching_credentials)} matching credentials"
+        )
+
+    return password
 
 
 @functools.lru_cache()
 def get_aws_client(resource, *, role_arn):
-    sts_client = boto3.client("sts")
+    sts_client = boto3.client("sts", region_name=AWS_REGION)
     assumed_role_object = sts_client.assume_role(
         RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
     )
     credentials = assumed_role_object["Credentials"]
     return boto3.client(
         resource,
+        region_name=AWS_REGION,
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
@@ -138,12 +160,20 @@ if __name__ == "__main__":
     app = get_az_ad_app("Wellcome Collection Archivematica")
     app_id = app["appId"]
 
-    for env in ("staging", "prod"):
-        new_password = create_password()
-        print(f"[{env}] Generated new client secret")
+    get_aws_client("secretsmanager", role_arn=WORKFLOW_DEV_ROLE_ARN)
+    get_aws_client("ecs", role_arn=WORKFLOW_DEV_ROLE_ARN)
+    print("Authenticated to the workflow AWS account")
 
-        store_az_client_secret(app_id=app_id, env=env, password=new_password)
-        print(f"[{env}] Stored new client secret in Azure")
+    rotation_id = (
+        f"{dt.datetime.now(dt.timezone.utc):%Y%m%dT%H%M%SZ}-{uuid.uuid4().hex[:8]}"
+    )
+    print(f"Rotation ID: {rotation_id}")
+
+    for env in ("staging", "prod"):
+        new_password = create_az_client_secret(
+            app_id=app_id, env=env, rotation_id=rotation_id
+        )
+        print(f"[{env}] Created Azure client secret weco/{env}/{rotation_id}")
 
         secret_id = f"archivematica/{env}/oidc_rp_client_secret"
         store_secrets_manager_secret(
