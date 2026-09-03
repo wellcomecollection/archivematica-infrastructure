@@ -15,7 +15,8 @@ We can then monitor that package being processed by Archivematica.
 
 Any packages created this way are stored in a special `testing` space in the storage service, so they can be distinguished from real content.
 
-The [**born-digital listener**](https://github.com/wellcomecollection/archivematica-infrastructure/tree/main/born\_digital\_listener) **** sends notifications of newly-stored born-digital bags to an SNS topic. This tells iiif-builder about new born-digital content, and allows it to create a IIIF Presentation manifest for this archive.
+The [**born-digital listener**](https://github.com/wellcomecollection/archivematica-infrastructure/tree/main/born\_digital\_listener) sends notifications of newly-stored bags in the `born-digital` space to an SNS topic used by the IIIF Builder workflow.
+It does not forward notifications for accessions or test packages, which are stored in different spaces.
 
 The [**transfer monitor**](https://github.com/wellcomecollection/archivematica-infrastructure/tree/main/lambdas/transfer\_monitor) monitors the state of transfer packages in Archivematica. In particular, once a week it scans for new transfer packages in the transfer source bucket, and checks if they're in the storage service.
 
