@@ -19,7 +19,11 @@ For example, if you were using the AWS CLI and you had an uncatalogued accession
 aws s3 cp 1234.zip s3://wellcomecollection-archivematica-transfer-source/born-digital-accessions/1234.zip
 ```
 
-A few seconds after you upload, you should see a log file appear in the bucket, with either "success" or "failed" in the name.
+The `s3_start_transfer` Lambda runs as soon as a zip file is uploaded.
+The staging container host is scheduled to run from 07:00 to 19:00 UTC, Monday to Friday.
+If the host is stopped, Lambda retries a failed invocation twice and then sends the event to its dead-letter queue; it does not wait for staging to start again.
+
+If no feedback log appears, do not upload another copy until a developer has checked the `s3_start_transfer` Lambda logs and dead-letter queue.
 
 * If it says "success" – your package has been accepted and is being sent to Archivematica
-* If it says "failed" – your package has not been accepted; it's structured incorrectly. Download the log file for instructions on how to fix it.
+* If it says "failed" – your package has not been accepted. Download the log to see whether the package needs correcting or a developer needs to investigate.

@@ -1,14 +1,15 @@
 # transfer_monitor
 
-This Lambda monitors the "transfer source" S3 bucket, and does two things:
+This Lambda runs once a week and examines objects from the last 14 days in the "transfer source" S3 bucket.
+It only considers objects which have the Transfer ID tag written by the [s3_start_transfer Lambda](../s3_start_transfer).
+It does two things:
 
-*   It posts a message to Slack telling us about transfers, including both successes and failures
+*   It posts a message to Slack telling us which tagged packages have or have not been matched to a stored METS file
 
 *   It cleans up leftover files from successful transfers, so the transfer bucket doesn't fill up with files which are duplicated in the storage service
 
-It's triggered on a schedule.
-
-It uses the tags written by the [s3_start_transfer Lambda](../s3_start_transfer) to match package in the transfer bucket to bags in the storage service.
+A package reported as failed has no matching stored METS file at the time of the check, but Archivematica may still be processing it.
+Objects without a Transfer ID tag are not included in the report.
 
 
 

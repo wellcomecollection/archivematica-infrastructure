@@ -18,9 +18,13 @@ Any packages created this way are stored in a special `testing` space in the sto
 The [**born-digital listener**](https://github.com/wellcomecollection/archivematica-infrastructure/tree/main/born\_digital\_listener) sends notifications of newly-stored bags in the `born-digital` space to an SNS topic used by the IIIF Builder workflow.
 It does not forward notifications for accessions or test packages, which are stored in different spaces.
 
-The [**transfer monitor**](https://github.com/wellcomecollection/archivematica-infrastructure/tree/main/lambdas/transfer\_monitor) monitors the state of transfer packages in Archivematica. In particular, once a week it scans for new transfer packages in the transfer source bucket, and checks if they're in the storage service.
+The [**transfer monitor**](https://github.com/wellcomecollection/archivematica-infrastructure/tree/main/lambdas/transfer\_monitor) runs once a week and checks objects from the last 14 days which have an Archivematica Transfer ID tag.
+For each tagged package, it looks for a matching METS file in the storage service.
 
 * If a package has been successfully stored, it deletes the copy in the source bucket
-* If a package hasn't been successfully stored, it leaves the package as-is and logs a warning
+* If it cannot find a matching stored package, it leaves the source package as-is and logs a warning
 
-It posts its results to the #wc-preservation channel in Slack, so we're alerted of any packages that didn't store correctly.
+An object without a Transfer ID tag is not included in this report.
+A reported failure means that no matching stored METS file was found during that check; it does not necessarily mean Archivematica has reached a terminal failure.
+
+The monitor posts its results to Slack using the configured transfer-monitor webhook, so we're alerted to packages which need investigation.

@@ -52,7 +52,7 @@ resource "aws_scheduler_schedule" "instances_scale_up" {
     mode = "OFF"
   }
 
-  # Run it each Monday
+  # Run it every weekday
   schedule_expression = "cron(0 7 ? * MON,TUE,WED,THUR,FRI *)"
 
   target {
@@ -75,7 +75,7 @@ resource "aws_scheduler_schedule" "instances_scale_down" {
     mode = "OFF"
   }
 
-  # Run it each Monday
+  # Run it every weekday
   schedule_expression = "cron(0 19 ? * MON,TUE,WED,THUR,FRI *)"
 
   target {
