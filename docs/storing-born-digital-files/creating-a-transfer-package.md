@@ -84,4 +84,5 @@ The files **must** be in the top-level of the zip; there can't be an enclosing f
 
 ## See also
 
-[Transfer in the Archivematica documentation](https://www.archivematica.org/en/docs/archivematica-1.13/user-manual/transfer/transfer/#prepare-transfer) – we use the "zipped directory" transfer type.
+[Transfer types in the Archivematica 1.18 documentation](https://www.archivematica.org/en/docs/archivematica-1.18/user-manual/transfer/transfer/#transfer-types) – we use the "zipped directory" transfer type.
+The pinned upstream revision may not match this manual, so confirm upgrade-sensitive behaviour against the source revision used to build the images.
