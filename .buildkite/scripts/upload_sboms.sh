@@ -9,8 +9,17 @@ if [[ "${BUILDKITE_BRANCH:-}" != "main" || "${BUILDKITE_PULL_REQUEST:-false}" !=
   exit 0
 fi
 
-: "${DEPENDENCY_TRACK_URL:?Set the DEPENDENCY_TRACK_URL secret}"
-: "${DEPENDENCY_TRACK_API_KEY:?Set the DEPENDENCY_TRACK_API_KEY secret}"
+# The agent's instance role can read builds/* in the platform account.
+get_secret() {
+  aws secretsmanager get-secret-value \
+    --region eu-west-1 \
+    --secret-id "$1" \
+    --query SecretString \
+    --output text
+}
+
+DEPENDENCY_TRACK_URL=$(get_secret builds/dependency_track/url)
+DEPENDENCY_TRACK_API_KEY=$(get_secret builds/dependency_track/api_key)
 
 SBOM_DIR=$(mktemp -d)
 trap 'rm -rf "$SBOM_DIR"' EXIT
