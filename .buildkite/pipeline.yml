@@ -38,7 +38,6 @@ steps:
 
   - label: ":docker: nginx"
     commands:
-      - 
       - "./.buildkite/scripts/build_docker_image.sh archivematica-nginx"
       - "./.buildkite/scripts/publish_docker_image.sh archivematica-nginx"
     plugins:
@@ -52,3 +51,15 @@ steps:
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
+
+  - wait
+
+  - label: ":shield: Upload SBOMs to Dependency-Track"
+    command: bash .buildkite/scripts/upload_sboms.sh
+    if: 'build.branch == "main" && build.pull_request.id == null && build.env("SBOM_GENERATE") != "false" && build.env("SBOM_UPLOAD") != "false"'
+    concurrency: 1
+    concurrency_group: archivematica-infrastructure/dependency-track
+    timeout_in_minutes: 10
+    secrets:
+      - DEPENDENCY_TRACK_URL
+      - DEPENDENCY_TRACK_API_KEY

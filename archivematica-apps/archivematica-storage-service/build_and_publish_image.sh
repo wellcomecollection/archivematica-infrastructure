@@ -44,5 +44,7 @@ pushd $(mktemp -d)
 
   docker push "$ECR_IMAGE_TAG"
 
+  bash "$ROOT/.buildkite/scripts/generate_sbom.sh" "$ECR_IMAGE_TAG" "archivematica-storage-service"
+
   buildkite-agent annotate --append --style info "Published image archivematica-storage-service:$IMAGE_TAG<br/>Upstream Storage Service commit: $UPSTREAM_COMMIT<br/>Wellcome overlay commit: $OVERLAY_COMMIT<br/>"
 popd
