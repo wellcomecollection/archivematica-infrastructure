@@ -26,6 +26,7 @@ echo "Source commit: $SOURCE_COMMIT"
 echo "Image tag: $SOURCE_COMMIT"
 docker tag "$LOCAL_IMAGE_TAG" "$REMOTE_IMAGE_TAG"
 docker push "$REMOTE_IMAGE_TAG"
+bash "$ROOT/.buildkite/scripts/generate_sbom.sh" "$REMOTE_IMAGE_TAG" "$SERVICE_ID"
 docker rmi "$REMOTE_IMAGE_TAG"
 
 buildkite-agent annotate --append --style info "Published image $LOCAL_IMAGE_TAG<br/>Source commit: $SOURCE_COMMIT<br/>"
