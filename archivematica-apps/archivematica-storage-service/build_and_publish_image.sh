@@ -3,9 +3,8 @@
 set -o errexit
 set -o nounset
 
-# This untagged commit was the tip of qa/0.x when the overlay was updated.
-# Pin the SHA so later changes to the branch do not alter this build.
-UPSTREAM_COMMIT=324f1cfcabe1a3ad9e4a9191735e8e9367f52456
+# Pin the commit for v0.25.0-rc.2.
+UPSTREAM_COMMIT=d08d6e73ba352f3ae6c3d48ee50369ddfa3419c2
 
 ROOT=$(git rev-parse --show-toplevel)
 OVERLAY_COMMIT=$(git log -1 --pretty=format:"%H" "$ROOT"/archivematica-apps/archivematica-storage-service)

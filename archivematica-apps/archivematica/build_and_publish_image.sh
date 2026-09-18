@@ -9,9 +9,8 @@ then
   exit 1
 fi
 
-# This untagged commit was the tip of qa/1.x when the overlay was updated.
-# Pin the SHA so later changes to the branch do not alter this build.
-UPSTREAM_COMMIT=569f09215ce2eb3de353656cfa47a6a86639c1b6
+# Pin the commit for v1.19.0-rc.2.
+UPSTREAM_COMMIT=887d3a24b89de0f1bddbe6c85004e6d1d50487b4
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
