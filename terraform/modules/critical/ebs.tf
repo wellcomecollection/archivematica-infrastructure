@@ -11,7 +11,8 @@ resource "aws_ebs_volume" "ebs" {
   availability_zone = "eu-west-1a"
   size              = local.ebs_volume_size
 
-  type = "gp3"
+  type       = "gp3"
+  throughput = var.ebs_volume_throughput
 
   tags = {
     Name = local.ebs_name

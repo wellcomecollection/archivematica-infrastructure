@@ -18,3 +18,9 @@ variable "snapshot_identifier" {
   type        = string
   default     = null
 }
+
+variable "ebs_volume_throughput" {
+  description = "Provisioned gp3 volume throughput in MiB/s"
+  type        = number
+  default     = 125
+}

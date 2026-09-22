@@ -21,5 +21,6 @@ module "critical" {
 
   unpacker_task_role_arn = data.terraform_remote_state.storage_service_prod.outputs.unpacker_task_role_arn
 
-  ebs_volume_size = 2000
+  ebs_volume_size       = 2000
+  ebs_volume_throughput = 250
 }
