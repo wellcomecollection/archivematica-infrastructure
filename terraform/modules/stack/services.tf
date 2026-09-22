@@ -263,7 +263,7 @@ module "storage_service" {
   healthcheck_timeout = 120
 
   cpu    = local.storage_service_cpu
-  memory = 4096
+  memory = 6 * 1024
 
   environment = {
     FORWARDED_ALLOW_IPS       = "*"
