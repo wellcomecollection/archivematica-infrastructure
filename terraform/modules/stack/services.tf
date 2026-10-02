@@ -98,6 +98,11 @@ module "mcp_server_service" {
     ARCHIVEMATICA_MCPSERVER_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
     ARCHIVEMATICA_MCPSERVER_CONCURRENT_PACKAGES    = "3"
 
+    # Leave private endpoints configured when collection is switched off, so a
+    # monitoring toggle does not restart application tasks.
+    ARCHIVEMATICA_MCPSERVER_MCPSERVER_PROMETHEUS_BIND_ADDRESS = "0.0.0.0"
+    ARCHIVEMATICA_MCPSERVER_MCPSERVER_PROMETHEUS_BIND_PORT    = "9100"
+
     # We don't enable indexing or search with Elasticsearch.  Data from the
     # storage service is indexed separately in the reporting cluster.
     ARCHIVEMATICA_MCPSERVER_MCPSERVER_SEARCH_ENABLED = false
@@ -144,17 +149,20 @@ module "mcp_client_service" {
   container_image = var.mcp_client_container_image
 
   environment = {
-    DJANGO_SETTINGS_MODULE                                   = "archivematica.MCPClient.settings.common"
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                      = var.rds_username
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                  = var.rds_password
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                      = var.rds_host
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                      = var.rds_port
-    ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                  = "MCP"
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER = "${local.gearmand_hostname}:4730"
-    ARCHIVEMATICA_MCPCLIENT_WORKERS                          = 5
-    ARCHIVEMATICA_MCPCLIENT_MAX_TASKS_PER_CHILD              = 1
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER          = "${local.clamav_hostname}:3310"
-    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND  = "clamdscanner"
+    DJANGO_SETTINGS_MODULE                                        = "archivematica.MCPClient.settings.common"
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_USER                           = var.rds_username
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PASSWORD                       = var.rds_password
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_HOST                           = var.rds_host
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_PORT                           = var.rds_port
+    ARCHIVEMATICA_MCPCLIENT_CLIENT_DATABASE                       = "MCP"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_MCPARCHIVEMATICASERVER      = "${local.gearmand_hostname}:4730"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_PROMETHEUS_BIND_ADDRESS     = "0.0.0.0"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_PROMETHEUS_BIND_PORT        = "9100"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_PROMETHEUS_DETAILED_METRICS = false
+    ARCHIVEMATICA_MCPCLIENT_WORKERS                               = 5
+    ARCHIVEMATICA_MCPCLIENT_MAX_TASKS_PER_CHILD                   = 1
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_SERVER               = "${local.clamav_hostname}:3310"
+    ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_CLAMAV_CLIENT_BACKEND       = "clamdscanner"
 
     # This causes MCP client to stream files to ClamAV, rather than passing
     # it a path.  This means ClamAV doesn't need access to the shared
@@ -284,7 +292,8 @@ module "storage_service" {
     # Multiple workers allow the dashboard to continue to serve web requests while
     # large downloads are in progress (these will occupy a whole worker process)
     # See https://github.com/wellcometrust/platform/issues/3954
-    SS_GUNICORN_WORKERS = 4
+    SS_GUNICORN_WORKERS   = 4
+    SS_PROMETHEUS_ENABLED = "true"
 
     # Send the session cookie when Azure redirects back to the OIDC callback.
     # Require an admin to create OIDC users before their first login.

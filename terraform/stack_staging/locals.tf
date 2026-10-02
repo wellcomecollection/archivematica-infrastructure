@@ -12,6 +12,7 @@ locals {
     am_storage_service = local.infra_state["ecr_storage_service_repo_url"]
     clamavd            = local.infra_state["ecr_clamavd_repo_url"]
     nginx              = local.infra_state["ecr_nginx_repo_url"]
+    observability      = local.infra_state["ecr_observability_repo_url"]
   }
 
   ecr_image_tags = {
@@ -21,5 +22,10 @@ locals {
     am_storage_service = "b39daf5d9c4afb290719df0ca6f61a6109e34377-145e1f91faebc8506031d470246bff6c51888214"
     clamavd            = "5e40a69bcf4381fe11428324d487fdbb9c828b43"
     nginx              = "120f7da2bd3a1377974ae1f5523711694d1ba11c"
+  }
+
+  ecr_image_digests = {
+    # Published from commit 9dc96bfa06f74f810d414a17d3ec6810a0cb861d.
+    observability = "sha256:8688bdf92eafc066793ece4a3f53c50ce2180d72de3bbe80ed6f1650f0c630c8"
   }
 }

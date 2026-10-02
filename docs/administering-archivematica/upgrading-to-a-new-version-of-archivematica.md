@@ -2,6 +2,7 @@
 
 We build our Archivematica images from pinned upstream revisions with Wellcome overlay files applied on top.
 The image tags selected for deployment are recorded in the `ecr_image_tags` values for the [staging](https://github.com/wellcomecollection/archivematica-infrastructure/blob/main/terraform/stack_staging/locals.tf) and [production](https://github.com/wellcomecollection/archivematica-infrastructure/blob/main/terraform/stack_prod/locals.tf) stacks.
+The observability collector uses an immutable digest in `ecr_image_digests` in the same files; see the [monitoring instructions](../debugging-archivematica/monitoring.md#enable-or-disable-collection) for its upgrade process.
 These Terraform values describe the desired configuration, so verify the live ECS service task definitions before relying on them as a record of what is running.
 
 An upgrade involves these stages:

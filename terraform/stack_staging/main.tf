@@ -3,6 +3,10 @@ module "stack" {
 
   namespace = "staging"
 
+  observability_collector_image = "${local.ecr_repo_urls["observability"]}@${local.ecr_image_digests["observability"]}"
+
+  observability_enabled = var.observability_enabled
+
   rds_username = data.terraform_remote_state.critical.outputs.rds_username
   rds_password = data.terraform_remote_state.critical.outputs.rds_password
   rds_host     = data.terraform_remote_state.critical.outputs.rds_host
