@@ -31,6 +31,15 @@ pushd $(mktemp -d)
   echo "*** Building the Docker image"
   docker build --tag "archivematica-storage-service" .
 
+  echo "*** Checking running-task metrics after worker exit"
+  docker run --rm --network none --read-only --cap-drop ALL \
+    --tmpfs /tmp:rw,nosuid,nodev,noexec,size=16m,mode=1777 \
+    --env PYTHONDONTWRITEBYTECODE=1 \
+    --volume "$ROOT/archivematica-apps/archivematica-storage-service/test_metrics.py:/test_metrics.py:ro" \
+    --entrypoint python archivematica-storage-service \
+    /test_metrics.py --source /src \
+    --gunicorn-config /etc/archivematica/storage-service.gunicorn-config.py
+
   echo "*** Pushing to ECR"
 
   IMAGE_TAG="$UPSTREAM_COMMIT-$OVERLAY_COMMIT"

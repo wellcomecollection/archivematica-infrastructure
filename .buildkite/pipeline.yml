@@ -44,6 +44,15 @@ steps:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
 
+  - label: ":docker: observability"
+    commands:
+      - "./.buildkite/scripts/build_docker_image.sh archivematica-observability"
+      - "bash .buildkite/scripts/run_observability_tests.sh"
+      - "./.buildkite/scripts/publish_docker_image.sh archivematica-observability"
+    plugins:
+      - wellcomecollection/aws-assume-role#v0.2.2:
+          role: "arn:aws:iam::299497370133:role/workflow-ci"
+
   - label: ":docker: clamavd"
     commands:
       - "./.buildkite/scripts/build_docker_image.sh clamavd"

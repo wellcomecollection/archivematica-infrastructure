@@ -1,5 +1,11 @@
 variable "namespace" {}
 
+variable "observability_enabled" {
+  description = "Collect application, host and enhanced ECS metrics and lifecycle events. Retained logs and dashboards are independent of this switch."
+  type        = bool
+  default     = false
+}
+
 variable "rds_username" {}
 variable "rds_password" {}
 variable "rds_host" {}
@@ -67,4 +73,9 @@ variable "turn_off_outside_office_hours" {
 variable "container_host_ami" {
   description = "The AMI to use for the container host"
   type        = string
+}
+
+variable "observability_collector_image" {
+  type    = string
+  default = null
 }

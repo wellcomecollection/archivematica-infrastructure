@@ -3,6 +3,10 @@ module "stack" {
 
   namespace = "prod"
 
+  observability_collector_image = "${local.ecr_repo_urls["observability"]}@${local.ecr_image_digests["observability"]}"
+
+  observability_enabled = var.observability_enabled
+
   # Temporary disable Archivematica turn off to allow for big transfers
   turn_off_outside_office_hours = false
 
