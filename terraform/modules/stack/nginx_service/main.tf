@@ -9,6 +9,8 @@ locals {
 module "service" {
   source = "../base"
 
+  depends_on = [aws_alb_listener_rule.deny_metrics]
+
   cluster_arn = var.cluster_arn
 
   container_definitions = [
@@ -133,7 +135,28 @@ resource "aws_alb_target_group" "ecs_service" {
 }
 
 
+# Metrics are scraped directly on the private task address. Do not expose the
+# unauthenticated Django metrics route through the application load balancer.
+resource "aws_alb_listener_rule" "deny_metrics" {
+  listener_arn = var.load_balancer_https_listener_arn
+  priority     = var.name == "storage-service" ? 90 : 190
+  action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      status_code  = "404"
+    }
+  }
+  condition {
+    host_header { values = [var.hostname] }
+  }
+  condition {
+    path_pattern { values = ["/metrics", "/metrics/*"] }
+  }
+}
+
 resource "aws_alb_listener_rule" "https" {
+  priority     = var.name == "storage-service" ? 100 : 200
   listener_arn = var.load_balancer_https_listener_arn
 
   action {
