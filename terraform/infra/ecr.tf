@@ -24,6 +24,7 @@ resource "aws_ecr_repository" "services" {
     "archivematica-dashboard",
     "archivematica-storage-service",
     "archivematica-nginx",
+    "archivematica-observability",
     "clamavd"
   ])
 
