@@ -22,6 +22,10 @@ output "ecr_nginx_repo_url" {
   value = aws_ecr_repository.services["archivematica-nginx"].repository_url
 }
 
+output "ecr_observability_repo_url" {
+  value = aws_ecr_repository.services["archivematica-observability"].repository_url
+}
+
 output "ecr_clamavd_repo_url" {
   value = aws_ecr_repository.services["clamavd"].repository_url
 }
