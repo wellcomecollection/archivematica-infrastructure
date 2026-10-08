@@ -23,7 +23,7 @@ docker save --output "$SBOM_DIR/image.tar" "$IMAGE"
 docker run --rm \
   --mount "type=bind,src=$SBOM_DIR/image.tar,dst=/image.tar,readonly" \
   "$TRIVY_IMAGE" image --input /image.tar \
-  --format cyclonedx --timeout 15m > "$SBOM_DIR/$SERVICE_ID.cdx.json"
+  --format cyclonedx --no-progress --timeout 15m > "$SBOM_DIR/$SERVICE_ID.cdx.json"
 
 cd "$SBOM_DIR"
 buildkite-agent artifact upload "$SERVICE_ID.cdx.json"
