@@ -1,12 +1,3 @@
-data "aws_ami" "container_host_ami" {
-  most_recent = true
-  owners      = ["self"]
-  filter {
-    name   = "name"
-    values = ["weco-amzn2-ecs-optimised-hvm-x86_64*"]
-  }
-}
-
 module "stack" {
   source = "../modules/stack"
 
@@ -55,7 +46,8 @@ module "stack" {
   service_egress_security_group_id = data.terraform_remote_state.workflow.outputs.service_egress_security_group_id
   service_lb_security_group_id     = data.terraform_remote_state.workflow.outputs.service_lb_security_group_id
 
-  container_host_ami = data.aws_ami.container_host_ami.image_id
+  # Pinned to staging's AL2023 image so both environments run the same host OS.
+  container_host_ami = "ami-0eafe05b6c8ffd11d"
 
   lambda_error_alarm_arn = local.lambda_error_alarm_arn
 
