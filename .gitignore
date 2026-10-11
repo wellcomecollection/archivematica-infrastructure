@@ -91,6 +91,7 @@ ipython_config.py
 # pyenv
 .python-version
 !/.python-version
+!/archivematica-apps/archivematica-observability/.python-version
 
 # celery beat schedule file
 celerybeat-schedule
