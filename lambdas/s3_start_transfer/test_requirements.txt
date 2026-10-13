@@ -29,7 +29,7 @@ jmespath==1.1.0
     #   botocore
 markupsafe==3.0.3
     # via werkzeug
-moto==5.2.2
+moto[s3]==5.2.2
     # via -r test_requirements.in
 packaging==26.3
     # via pytest
@@ -59,7 +59,7 @@ s3transfer==0.19.2
     # via boto3
 six==1.17.0
     # via python-dateutil
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   botocore
     #   requests
