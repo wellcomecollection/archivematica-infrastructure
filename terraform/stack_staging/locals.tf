@@ -16,11 +16,11 @@ locals {
   }
 
   ecr_image_tags = {
-    dashboard  = "cbc6cfde909f19b45992250429d1b89a799fdc7c-145e1f91faebc8506031d470246bff6c51888214"
-    mcp_client = "cbc6cfde909f19b45992250429d1b89a799fdc7c-145e1f91faebc8506031d470246bff6c51888214"
-    mcp_server = "cbc6cfde909f19b45992250429d1b89a799fdc7c-145e1f91faebc8506031d470246bff6c51888214"
-    # Built with overlay commit 66558f1af840eae64e608d08315c412ab5f07a72.
-    am_storage_service = "b39daf5d9c4afb290719df0ca6f61a6109e34377-66558f1af840eae64e608d08315c412ab5f07a72"
+    dashboard  = "beaa1c69fad60f7825c15648914e619052360a48-5449fed838674d45290ac4995ec3f8d5e2b000ea"
+    mcp_client = "beaa1c69fad60f7825c15648914e619052360a48-5449fed838674d45290ac4995ec3f8d5e2b000ea"
+    mcp_server = "beaa1c69fad60f7825c15648914e619052360a48-5449fed838674d45290ac4995ec3f8d5e2b000ea"
+    # Built with overlay commit 5449fed838674d45290ac4995ec3f8d5e2b000ea.
+    am_storage_service = "aa0797d93d1fc4e48803d6d2546cb85c5ebebceb-5449fed838674d45290ac4995ec3f8d5e2b000ea"
     clamavd            = "5e40a69bcf4381fe11428324d487fdbb9c828b43"
     nginx              = "120f7da2bd3a1377974ae1f5523711694d1ba11c"
   }
