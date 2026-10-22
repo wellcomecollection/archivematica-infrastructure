@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM ghcr.io/astral-sh/uv:0.13.0@sha256:cdc6093146eb3ff6a40107b38f008b789e050e77ad87865e381d9917da55a168 AS uv
-FROM otel/opentelemetry-collector-contrib:0.161.0 AS otel
+FROM ghcr.io/astral-sh/uv:0.13.5@sha256:32a7bb39b496babbd997b0a39a4d66c126bdaf5661b302bf6f06abda8deca6ff AS uv
+FROM otel/opentelemetry-collector-contrib:0.163.2@sha256:7f22d2a6748110ffb6a59bc0df448bccbf501cdb667d610ede4c61d3863d5849 AS otel
 
 FROM debian:trixie-slim AS base
 COPY --from=uv /uv /usr/local/bin/uv
@@ -14,7 +14,7 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
-    && uv python install 3.15.0
+    && uv python install 3.15.1
 ENV UV_PYTHON_DOWNLOADS=0
 WORKDIR /app
 
