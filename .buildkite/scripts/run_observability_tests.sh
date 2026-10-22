@@ -4,8 +4,8 @@ set -euo pipefail
 ROOT=$(git rev-parse --show-toplevel)
 SOURCE_COMMIT=$(git log -1 --pretty=format:"%H" archivematica-apps/archivematica-observability)
 IMAGE=${1:-archivematica-observability:$SOURCE_COMMIT}
-TERRAFORM_IMAGE="public.ecr.aws/hashicorp/terraform:1.16.4"
-TERRAFORM_DIGEST="sha256:985cdc6c1d9b0a65b83377f666efd2f740b47f02ac55be1ced3d18f7d3b0e829"
+TERRAFORM_IMAGE="public.ecr.aws/hashicorp/terraform:1.17.0"
+TERRAFORM_DIGEST="sha256:4d1b496a256f2989bccdb04b9104a4ede97234b10fba90259e173e905ec4fb58"
 
 # Render the production definition in isolation from AWS resources and state.
 # Keep the temporary files under ROOT so Docker can mount them on macOS too.
