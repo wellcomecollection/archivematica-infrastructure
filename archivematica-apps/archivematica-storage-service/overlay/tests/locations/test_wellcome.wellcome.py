@@ -48,7 +48,7 @@ def create_storage_service_response(status):
 
 @mock_aws
 class WellcomeTestBase(TestCase):
-    fixture_files = ["base.json", "wellcome.json"]
+    fixture_files = ["wellcome.json"]
     fixtures = [os.path.join(FIXTURES_DIR, f) for f in fixture_files]
 
     def setUp(self):

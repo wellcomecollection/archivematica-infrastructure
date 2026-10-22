@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name="archivematica-storage-service"
 description="Django based webapp for managing storage in an Archivematica installation"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
   {name = "Artefactual Systems Inc.", email = "info@artefactual.com"},
 ]
@@ -82,7 +82,7 @@ issues = "https://github.com/archivematica/Issues/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include=["archivematica.storage_service*"]
+include=["archivematica*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "archivematica.storage_service.storage_service.__version__"}
@@ -166,7 +166,9 @@ module = [
     "tests.administration.test_users",
     "tests.common.test_compression",
     "tests.conftest",
+    "tests.factories",
     "tests.integration.*",
+    "tests.locations.conftest",
     "tests.locations.test_reingest",
     "tests.storage_service.test_helpers",
     "tests.storage_service.test_oidc",
