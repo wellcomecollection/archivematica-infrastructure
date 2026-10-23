@@ -31,6 +31,7 @@ SERVICES=(
   archivematica-mcp-server
   archivematica-storage-service
   archivematica-nginx
+  archivematica-observability
   clamavd
 )
 
