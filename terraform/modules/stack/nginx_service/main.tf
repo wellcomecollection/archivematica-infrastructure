@@ -155,8 +155,15 @@ resource "aws_alb_listener_rule" "deny_metrics" {
   }
 }
 
+locals {
+  # A rule allows five condition values, and the host header takes one.
+  source_ip_chunks = chunklist(sort(distinct(var.source_ips)), 4)
+}
+
 resource "aws_alb_listener_rule" "https" {
-  priority     = var.name == "storage-service" ? 100 : 200
+  count = length(local.source_ip_chunks)
+
+  priority     = (var.name == "storage-service" ? 100 : 200) + count.index
   listener_arn = var.load_balancer_https_listener_arn
 
   action {
@@ -169,4 +176,15 @@ resource "aws_alb_listener_rule" "https" {
       values = [var.hostname]
     }
   }
+
+  condition {
+    source_ip {
+      values = local.source_ip_chunks[count.index]
+    }
+  }
+}
+
+moved {
+  from = aws_alb_listener_rule.https
+  to   = aws_alb_listener_rule.https[0]
 }

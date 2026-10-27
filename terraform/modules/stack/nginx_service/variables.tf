@@ -79,3 +79,8 @@ variable "vpc_id" {
 variable "hostname" {
   type = string
 }
+
+variable "source_ips" {
+  type    = list(string)
+  default = ["0.0.0.0/0"]
+}

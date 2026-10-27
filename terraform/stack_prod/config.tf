@@ -22,7 +22,13 @@ data "aws_ssm_parameter" "oidc_client_id" {
   name = "/archivematica/config/prod/oidc_client_id"
 }
 
+# Shared by prod and staging: the Wellcome office and VPN egress ranges.
+data "aws_ssm_parameter" "alb_source_ips" {
+  name = "/archivematica/config/prod/alb_source_ips"
+}
+
 locals {
+  alb_source_ips            = split(",", nonsensitive(data.aws_ssm_parameter.alb_source_ips.value))
   archivematica_username    = data.aws_ssm_parameter.archivematica_username.value
   archivematica_api_key     = data.aws_ssm_parameter.archivematica_api_key.value
   archivematica_ss_username = data.aws_ssm_parameter.archivematica_ss_username.value

@@ -47,6 +47,8 @@ module "stack" {
   service_egress_security_group_id = data.terraform_remote_state.workflow.outputs.service_egress_security_group_id
   service_lb_security_group_id     = data.terraform_remote_state.workflow.outputs.service_lb_security_group_id
 
+  alb_source_ips = local.alb_source_ips
+
   # Pin the deployed image so AMI upgrades require an explicit change and do
   # not replace the container host during an unrelated Terraform apply.
   container_host_ami = "ami-0eafe05b6c8ffd11d"

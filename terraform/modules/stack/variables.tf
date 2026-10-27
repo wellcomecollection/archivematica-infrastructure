@@ -60,6 +60,11 @@ variable "interservice_security_group_id" {}
 variable "service_egress_security_group_id" {}
 variable "service_lb_security_group_id" {}
 
+variable "alb_source_ips" {
+  description = "CIDRs allowed to reach the dashboard and storage service load balancers"
+  type        = list(string)
+}
+
 variable "lambda_error_alarm_arn" {}
 
 variable "azure_tenant_id" {}
