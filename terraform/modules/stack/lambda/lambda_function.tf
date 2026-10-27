@@ -33,6 +33,8 @@ module "lambda_function" {
   dead_letter_config = {
     target_arn = aws_sqs_queue.lambda_dlq.arn
   }
+
+  vpc_config = var.vpc_config
 }
 
 resource "aws_cloudwatch_metric_alarm" "lambda_alarm" {

@@ -258,6 +258,7 @@ module "storage_service" {
   name      = "storage-service"
 
   hostname         = var.storage_service_hostname
+  source_ips       = local.alb_source_ips
   healthcheck_path = "/login/"
 
   # When the storage service is doing a CPU-intensive task (for example,
@@ -353,6 +354,7 @@ module "dashboard_service" {
   name      = "dashboard"
 
   hostname         = var.dashboard_hostname
+  source_ips       = local.alb_source_ips
   healthcheck_path = "/administration/accounts/login/"
 
   cpu    = local.dashboard_cpu

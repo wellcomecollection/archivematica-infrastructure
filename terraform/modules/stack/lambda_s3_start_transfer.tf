@@ -17,6 +17,12 @@ module "s3_start_transfer_lambda" {
   }
 
   timeout = 120
+
+  # Egress via the NAT gateways, which are on the load balancer allowlist.
+  vpc_config = {
+    security_group_ids = [var.service_egress_security_group_id]
+    subnet_ids         = var.network_private_subnets
+  }
 }
 
 resource "aws_lambda_permission" "allow_lambda" {

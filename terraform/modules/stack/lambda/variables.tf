@@ -32,3 +32,11 @@ variable "memory_size" {
   type    = number
   default = 128
 }
+
+variable "vpc_config" {
+  type = object({
+    security_group_ids = set(string)
+    subnet_ids         = set(string)
+  })
+  default = null
+}
