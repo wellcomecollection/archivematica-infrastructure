@@ -16,6 +16,9 @@ module "lb_dashboard" {
   # allow Archivematica time to prepare large AIP files for download.
   # If nginx is sending back 499 responses, this may not be high enough.
   idle_timeout = 3600
+
+  # The bucket policy must exist before the ALB can enable logging.
+  access_logs_bucket = aws_s3_bucket_policy.alb_access_logs.bucket
 }
 
 module "lb_storage_service" {
@@ -36,4 +39,7 @@ module "lb_storage_service" {
   # Archivematica time to prepare large AIP files for download.
   # If nginx is sending back 499 responses, this may not be high enough.
   idle_timeout = 3600
+
+  # The bucket policy must exist before the ALB can enable logging.
+  access_logs_bucket = aws_s3_bucket_policy.alb_access_logs.bucket
 }

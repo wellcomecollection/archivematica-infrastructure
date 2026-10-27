@@ -11,3 +11,5 @@ variable "service_lb_security_group_ids" {
 }
 
 variable "idle_timeout" {}
+
+variable "access_logs_bucket" {}
