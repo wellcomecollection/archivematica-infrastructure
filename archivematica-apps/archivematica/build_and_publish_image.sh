@@ -38,7 +38,8 @@ pushd $(mktemp -d)
   echo "*** Building the Docker image"
   cd hack
 
-  docker-compose build "archivematica-$SERVICE"
+  # Not docker-compose: the agent's wrapper adds --compatibility, which names the image am_archivematica-* on Compose 5.
+  docker compose build "archivematica-$SERVICE"
 
   echo "*** Pushing to ECR"
 
