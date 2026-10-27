@@ -8,6 +8,12 @@ resource "aws_alb" "load_balancer" {
     [aws_security_group.external_lb_security_group.id]
   )
   idle_timeout = var.idle_timeout
+
+  access_logs {
+    enabled = true
+    bucket  = var.access_logs_bucket
+    prefix  = var.name
+  }
 }
 
 resource "aws_alb_listener" "https" {
