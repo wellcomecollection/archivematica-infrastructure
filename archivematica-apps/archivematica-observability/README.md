@@ -2,8 +2,9 @@
 
 The collector discovers ECS application tasks, scrapes Prometheus metrics and
 sends them to CloudWatch through OpenTelemetry, alongside host and cgroup
-measurements. It uses Python 3.15 and uv 0.13.5 with locked dependencies. See
-the [operator guide] for interpreting the dashboard and controlling collection
+measurements. It uses Python 3.15 and builds locked dependencies with uv. The
+runtime contains neither uv nor pip and starts Python directly. See the
+[operator guide] for interpreting the dashboard and controlling collection
 costs.
 
 ## Build and test
