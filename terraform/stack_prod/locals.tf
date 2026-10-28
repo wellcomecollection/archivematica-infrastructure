@@ -16,17 +16,16 @@ locals {
   }
 
   ecr_image_tags = {
-    dashboard  = "beaa1c69fad60f7825c15648914e619052360a48-5449fed838674d45290ac4995ec3f8d5e2b000ea"
-    mcp_client = "beaa1c69fad60f7825c15648914e619052360a48-5449fed838674d45290ac4995ec3f8d5e2b000ea"
-    mcp_server = "beaa1c69fad60f7825c15648914e619052360a48-5449fed838674d45290ac4995ec3f8d5e2b000ea"
-    # Built with overlay commit 5449fed838674d45290ac4995ec3f8d5e2b000ea.
-    am_storage_service = "aa0797d93d1fc4e48803d6d2546cb85c5ebebceb-5449fed838674d45290ac4995ec3f8d5e2b000ea"
-    clamavd            = "5e40a69bcf4381fe11428324d487fdbb9c828b43"
+    dashboard          = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-193d709de5f62bcfadc4c8eef17ab8b278e12f73"
+    mcp_client         = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-193d709de5f62bcfadc4c8eef17ab8b278e12f73"
+    mcp_server         = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-193d709de5f62bcfadc4c8eef17ab8b278e12f73"
+    am_storage_service = "0332eed8c25707ccf48b2b3dfc5fae68db39ba27-193d709de5f62bcfadc4c8eef17ab8b278e12f73"
+    clamavd            = "bad6aebe18f7462f0bcf8d2c5804fd0643a27dbc"
     nginx              = "120f7da2bd3a1377974ae1f5523711694d1ba11c"
   }
 
   ecr_image_digests = {
-    # Published from commit 66558f1af840eae64e608d08315c412ab5f07a72.
-    observability = "sha256:8fdb10d617a71aea71dea7683235849f59af32078421f20788095b7fc1325e7c"
+    # Published from commit 7d0a10c6ad847b8d4fafdb623f18a89caa12a2cb.
+    observability = "sha256:afa756ba0f628a49f81581033e57a802f736da2d87ba1071a1b72c3a2d9aca20"
   }
 }
