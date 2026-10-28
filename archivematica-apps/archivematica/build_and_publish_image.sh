@@ -9,9 +9,9 @@ then
   exit 1
 fi
 
-# Pin the qa/1.x tip as of 2026-10-22.
+# Pin the qa/1.x tip as of 2026-10-28.
 # Use the SHA so later branch changes do not alter this build.
-UPSTREAM_COMMIT=beaa1c69fad60f7825c15648914e619052360a48
+UPSTREAM_COMMIT=aa2fc87f50ffffde4cc26728cf45c9c58bdb5238
 SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)

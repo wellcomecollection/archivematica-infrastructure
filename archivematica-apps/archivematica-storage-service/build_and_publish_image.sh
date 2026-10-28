@@ -3,9 +3,9 @@
 set -o errexit
 set -o nounset
 
-# Pin the qa/0.x tip as of 2026-10-22.
+# Pin the qa/0.x tip as of 2026-10-28.
 # Use the SHA so later branch changes do not alter this build.
-UPSTREAM_COMMIT=aa0797d93d1fc4e48803d6d2546cb85c5ebebceb
+UPSTREAM_COMMIT=0332eed8c25707ccf48b2b3dfc5fae68db39ba27
 
 ROOT=$(git rev-parse --show-toplevel)
 OVERLAY_COMMIT=$(git log -1 --pretty=format:"%H" "$ROOT"/archivematica-apps/archivematica-storage-service)
