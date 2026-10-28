@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # Base images for the Archivematica app containers. A bump PR is the signal that
+  # upstream has shipped a fix; the image still has to be rebuilt and deployed.
+  - package-ecosystem: docker
+    directories:
+      - /archivematica-apps/archivematica-nginx
+      - /archivematica-apps/archivematica-observability
+      - /archivematica-apps/clamavd
+    schedule:
+      interval: weekly
+    groups:
+      base-images:
+        patterns: ["*"]
