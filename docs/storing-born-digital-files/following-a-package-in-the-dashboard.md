@@ -5,7 +5,10 @@ The Archivematica dashboard is a web app that allows you to monitor the progress
 * prod is [https://archivematica.wellcomecollection.org/](https://archivematica.wellcomecollection.org/)
 * staging is [https://archivematica-stage.wellcomecollection.org/](https://archivematica-stage.wellcomecollection.org/)
 
-If you have access to Archivematica, you should be able to log in using your Azure AD credentials. If not, ask in the #wc-preservation channel in Slack for help logging in.
+Connect through an allowed network, such as an allowlisted shared VPN, before opening the dashboard.
+See [Network access to Archivematica] if you need access or receive a 404 before reaching the login page.
+Once connected, use your Azure AD credentials and an authorised application account.
+Ask in the #wc-preservation channel in Slack for help logging in.
 
 This is what it looks like:
 
@@ -16,3 +19,5 @@ A new transfer package will start in the **Transfer** tab, and go through variou
 In the Ingest tab, it goes through more processing steps, and eventually gets to **Store AIP**. This is the step where the package gets uploaded to the Wellcome storage service; if this step completes successfully, then the package has been correctly stored.
 
 \[The terms SIP and AIP come from [the OAIS model](https://en.wikipedia.org/wiki/Open\_Archival\_Information\_System).]
+
+[Network access to Archivematica]: ../administering-archivematica/network-access.md
