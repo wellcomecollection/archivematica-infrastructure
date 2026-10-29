@@ -31,6 +31,8 @@
 
 ## Administering Archivematica
 
+* [Network access to Archivematica](administering-archivematica/network-access.md)
+* [Internal URLs between Archivematica and Storage Service](administering-archivematica/internal-service-urls.md)
 * [Bootstrapping a new Archivematica stack](administering-archivematica/bootstrapping.md)
 * [User management](administering-archivematica/user-management/README.md)
   * [How to add or remove users](administering-archivematica/user-management/add-or-remove-users.md)

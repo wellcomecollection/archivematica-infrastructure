@@ -150,6 +150,9 @@ docker exec -it $(docker ps | grep storage-service | grep app | awk '{print $1}'
 
 Create a dashboard user:
 
+Use the environment's internal Storage Service base URL for `SS_INTERNAL_URL`, as listed in [Internal URLs between Archivematica and Storage Service](internal-service-urls.md).
+Keep `DASHBOARD_HOSTNAME` as the public HTTPS dashboard URL for `--site-url`.
+
 ```
 docker exec -it $(docker ps | grep dashboard | grep app | awk '{print $1}') \
     python -m archivematica.dashboard.manage install \
@@ -159,11 +162,14 @@ docker exec -it $(docker ps | grep dashboard | grep app | awk '{print $1}') \
     --org-name="wellcome" \
     --org-id="wellcome" \
     --api-key="API_KEY" \
-    --ss-url="SS_HOSTNAME" \
+    --ss-url="SS_INTERNAL_URL" \
     --ss-user="admin" \
     --ss-api-key="SS_API_KEY" \
     --site-url="DASHBOARD_HOSTNAME"
 ```
+
+After registration, edit the new pipeline in the Storage Service and set **Remote name** to the environment's internal dashboard base URL.
+The installer initially copies the public Site URL into this field; see the [internal URL configuration and verification steps](internal-service-urls.md).
 
 ## 7. Connect to the Wellcome Archival Storage <a href="#step_6" id="step_6"></a>
 
