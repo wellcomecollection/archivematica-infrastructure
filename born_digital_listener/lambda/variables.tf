@@ -22,3 +22,8 @@ variable "alarm_topic_arn" {
 variable "environment" {
   type = map(string)
 }
+
+variable "timeout" {
+  type    = number
+  default = 3
+}
