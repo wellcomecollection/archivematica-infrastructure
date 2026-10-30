@@ -14,7 +14,7 @@ resource "aws_lambda_function" "lambda_function" {
   handler = var.handler
 
   role    = aws_iam_role.iam_role.arn
-  runtime = "python3.9"
+  runtime = "python3.13"
   timeout = var.timeout
 
   environment {
