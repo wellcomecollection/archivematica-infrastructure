@@ -1,6 +1,9 @@
 module "log_router_container" {
   source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v3.15.3"
   namespace = var.service_name
+
+  # aws-for-fluent-bit 3.5.5 (wellcomecollection/platform-infrastructure#612)
+  container_tag = "e0fd0a21b26600e07ca0748bd64819f058d5e40c"
 }
 
 module "log_router_container_secrets_permissions" {
