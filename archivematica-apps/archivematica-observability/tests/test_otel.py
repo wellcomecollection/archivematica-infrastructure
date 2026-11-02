@@ -205,9 +205,9 @@ def test_prometheus_exports_meet_cloudwatch_requirements(
     )
     exporter = config["exporters"]["otlphttp"]
     exporter.pop("auth")
-    exporter[
-        "metrics_endpoint"
-    ] = f"http://127.0.0.1:{destination.server_port}/v1/metrics"
+    exporter["metrics_endpoint"] = (
+        f"http://127.0.0.1:{destination.server_port}/v1/metrics"
+    )
     config["processors"]["batch"]["timeout"] = "1s"
     config["service"]["pipelines"]["metrics"]["receivers"] = ["prometheus"]
     path = tmp_path / "config.json"
@@ -369,9 +369,9 @@ def test_host_filesystem_usage(tmp_path, otel_config, endpoints):
     config["service"]["pipelines"]["metrics"]["receivers"] = ["hostmetrics"]
     exporter = config["exporters"]["otlphttp"]
     exporter.pop("auth")
-    exporter[
-        "metrics_endpoint"
-    ] = f"http://127.0.0.1:{destination.server_port}/v1/metrics"
+    exporter["metrics_endpoint"] = (
+        f"http://127.0.0.1:{destination.server_port}/v1/metrics"
+    )
     config["processors"]["batch"]["timeout"] = "1s"
     path = tmp_path / "config.json"
     path.write_text(json.dumps(config))

@@ -345,8 +345,7 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,In copyright,disseminate,Op
     )
     def test_grant_details_require_an_act(self, grant_column, value):
         rights_metadata = (
-            f"file,basis,{grant_column}\n"
-            f"objects/reports/summary.pdf,policy,{value}\n"
+            f"file,basis,{grant_column}\nobjects/reports/summary.pdf,policy,{value}\n"
         )
 
         with pytest.raises(VerificationFailure, match="incomplete grant information"):
@@ -720,9 +719,7 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,In copyright,disseminate,Op
 
     def test_csv_parser_errors_are_verification_failures(self):
         rights_metadata = (
-            "file,basis,note\n"
-            "objects/reports/summary.pdf,policy,"
-            f"{'a' * 131_073}\n"
+            f"file,basis,note\nobjects/reports/summary.pdf,policy,{'a' * 131_073}\n"
         )
 
         with pytest.raises(
@@ -801,7 +798,7 @@ objects/reports/summary.pdf,copyright,copyrighted,GB,In copyright,disseminate,Op
             ("", "Your rights.csv is empty."),
             ("file,basis\n", "Your rights.csv has no rights information."),
             (
-                "file,basis,basis\n" "objects/reports/summary.pdf,policy,policy\n",
+                "file,basis,basis\nobjects/reports/summary.pdf,policy,policy\n",
                 "Your rights.csv has duplicate column headings: basis.",
             ),
             (

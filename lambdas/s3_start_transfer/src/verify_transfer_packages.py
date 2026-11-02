@@ -405,7 +405,7 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
     if duplicate_columns:
         raise VerificationFailure(
             f"""
-            Your rights.csv has duplicate column headings: {', '.join(sorted(duplicate_columns))}.
+            Your rights.csv has duplicate column headings: {", ".join(sorted(duplicate_columns))}.
 
             Each column heading may only appear once.
             """
@@ -416,7 +416,7 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
     if unexpected_columns:
         raise VerificationFailure(
             f"""
-            Your rights.csv has unsupported column headings: {', '.join(sorted(unexpected_columns))}.
+            Your rights.csv has unsupported column headings: {", ".join(sorted(unexpected_columns))}.
 
             See the transfer-package documentation for the supported columns.
             """
@@ -426,7 +426,7 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
     if missing_columns:
         raise VerificationFailure(
             f"""
-            Your rights.csv is missing mandatory column headings: {', '.join(sorted(missing_columns))}.
+            Your rights.csv is missing mandatory column headings: {", ".join(sorted(missing_columns))}.
 
             Add the missing columns, then upload a new transfer package.
             """
@@ -467,7 +467,7 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
                 headings.
 
                 Add an empty value for every unused trailing column.
-                Missing values: {', '.join(missing_values)}.
+                Missing values: {", ".join(missing_values)}.
                 """
             )
 
@@ -486,7 +486,7 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
             raise VerificationFailure(
                 f"""
                 Line {line_number} of your rights.csv has an invalid file value:
-                {row['file']}.
+                {row["file"]}.
 
                 The file path must begin with 'objects/'.
                 """
@@ -523,9 +523,9 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
         if basis not in RIGHTS_CSV_ALLOWED_BASES:
             raise VerificationFailure(
                 f"""
-                Line {line_number} of your rights.csv has an unsupported basis: {row['basis']}.
+                Line {line_number} of your rights.csv has an unsupported basis: {row["basis"]}.
 
-                The basis must be one of: {', '.join(sorted(RIGHTS_CSV_ALLOWED_BASES))}.
+                The basis must be one of: {", ".join(sorted(RIGHTS_CSV_ALLOWED_BASES))}.
                 """
             )
 
@@ -545,9 +545,9 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
             raise VerificationFailure(
                 f"""
                 Line {line_number} of your rights.csv has an unsupported note
-                value for the '{basis}' basis: {row.get('note', '')}.
+                value for the '{basis}' basis: {row.get("note", "")}.
 
-                The value must be one of: {', '.join(sorted(allowed_notes))}.
+                The value must be one of: {", ".join(sorted(allowed_notes))}.
                 """
             )
 
@@ -560,7 +560,7 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
             raise VerificationFailure(
                 f"""
                 Line {line_number} of your rights.csv has fields that do not apply
-                to the '{basis}' basis: {', '.join(sorted(unsupported_fields))}.
+                to the '{basis}' basis: {", ".join(sorted(unsupported_fields))}.
 
                 Remove those values, then upload a new transfer package.
                 """
@@ -635,9 +635,9 @@ def _verify_rights_csv_reader_is_valid(csv_reader, file_listing):
             raise VerificationFailure(
                 f"""
                 Line {line_number} of your rights.csv has an unsupported
-                grant_restriction value: {row['grant_restriction']}.
+                grant_restriction value: {row["grant_restriction"]}.
 
-                The value must be one of: {', '.join(sorted(RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS))}.
+                The value must be one of: {", ".join(sorted(RIGHTS_CSV_ALLOWED_GRANT_RESTRICTIONS))}.
                 """
             )
 
@@ -740,7 +740,7 @@ def verify_metadata_csv_has_dc_identifier(metadata):
             WRONG:
 
                 filename,dc.identifier
-                {metadata_row['filename']!r},LE/MON
+                {metadata_row["filename"]!r},LE/MON
 
             RIGHT:
 
@@ -752,7 +752,7 @@ def verify_metadata_csv_has_dc_identifier(metadata):
 
     if not metadata_row["dc.identifier"]:
         raise VerificationFailure(
-            f"""
+            """
             You have supplied an empty value in the 'dc.identifier' field of
             your metadata.csv.
 
@@ -853,7 +853,7 @@ def verify_metadata_csv_has_accession_fields(metadata):
             WRONG:
 
                 filename,collection_reference,accession_number
-                {metadata_row['filename']!r},LEMON,1
+                {metadata_row["filename"]!r},LEMON,1
 
             RIGHT:
 
@@ -865,7 +865,7 @@ def verify_metadata_csv_has_accession_fields(metadata):
 
     if not metadata_row["accession_number"] or not metadata_row["collection_reference"]:
         raise VerificationFailure(
-            f"""
+            """
             You have supplied an empty value in the 'accession_number' or
             'collection_reference' fields of your metadata.csv.
 

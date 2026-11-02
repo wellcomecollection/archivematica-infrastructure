@@ -29,7 +29,7 @@ def main(event, _):
     upload_bucket = os.environ["UPLOAD_BUCKET"]
 
     zip_bytes = create_test_package()
-    print(f"Created test transfer package")
+    print("Created test transfer package")
 
     upload_key = "born-digital/test_package.zip"
 
