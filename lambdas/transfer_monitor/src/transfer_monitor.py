@@ -172,7 +172,7 @@ def post_to_slack(*, webhook_url, results, days_to_check, environment):
                     "type": "mrkdwn",
                     "text": f"{warning_emoji} *These packages didn’t get stored successfully:*\n"
                     + "\n".join(
-                        f'- {p["Key"]} (`{p["Tags"]["Archivematica-TransferId"]}`)'
+                        f"- {p['Key']} (`{p['Tags']['Archivematica-TransferId']}`)"
                         for p in failed_packages
                     ),
                 },
@@ -188,7 +188,7 @@ def post_to_slack(*, webhook_url, results, days_to_check, environment):
                 "text": {
                     "type": "mrkdwn",
                     "text": "These packages were stored successfully:\n"
-                    + "\n".join(f'- {p["Key"]}' for p in succeeded_packages),
+                    + "\n".join(f"- {p['Key']}" for p in succeeded_packages),
                 },
             }
         )
