@@ -18,7 +18,7 @@ aws ecr get-login-password \
 # Where the image came from, so a vulnerability finding on it can link to the commit
 # that built it. Read here, before moving into the upstream checkout; the labels name
 # this repository, which holds the overlay, while the Dockerfile is upstream's.
-SOURCE_REPOSITORY=$(git config --get remote.origin.url | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##')
+SOURCE_REPOSITORY=$(git config --get remote.origin.url | sed -E 's#^.*github\.com(:[0-9]+)?[:/]##; s#\.git$##')
 SOURCE_REVISION=$(git rev-parse HEAD)
 
 pushd $(mktemp -d)
