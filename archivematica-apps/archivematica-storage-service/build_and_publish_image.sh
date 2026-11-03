@@ -15,6 +15,12 @@ aws ecr get-login-password \
     --username AWS \
     --password-stdin 299497370133.dkr.ecr.eu-west-1.amazonaws.com
 
+# Where the image came from, so a vulnerability finding on it can link to the commit
+# that built it. Read here, before moving into the upstream checkout; the labels name
+# this repository, which holds the overlay, while the Dockerfile is upstream's.
+SOURCE_REPOSITORY=$(git config --get remote.origin.url | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##')
+SOURCE_REVISION=$(git rev-parse HEAD)
+
 pushd $(mktemp -d)
 
   echo "*** Checking out the core Artefactual repository"
@@ -29,7 +35,11 @@ pushd $(mktemp -d)
   git status
 
   echo "*** Building the Docker image"
-  docker build --tag "archivematica-storage-service" .
+  docker build --tag "archivematica-storage-service" \
+    --label "org.opencontainers.image.source=https://github.com/$SOURCE_REPOSITORY" \
+    --label "org.opencontainers.image.revision=$SOURCE_REVISION" \
+    --label "org.wellcomecollection.dockerfile=archivematica-apps/archivematica-storage-service (upstream Dockerfile at $UPSTREAM_COMMIT)" \
+    .
 
   echo "*** Checking running-task metrics after worker exit"
   docker run --rm --network none --read-only --cap-drop ALL \
