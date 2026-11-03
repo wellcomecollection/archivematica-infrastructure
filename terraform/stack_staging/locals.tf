@@ -20,8 +20,8 @@ locals {
     mcp_client         = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-193d709de5f62bcfadc4c8eef17ab8b278e12f73"
     mcp_server         = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-193d709de5f62bcfadc4c8eef17ab8b278e12f73"
     am_storage_service = "0332eed8c25707ccf48b2b3dfc5fae68db39ba27-193d709de5f62bcfadc4c8eef17ab8b278e12f73"
-    clamavd            = "bad6aebe18f7462f0bcf8d2c5804fd0643a27dbc"
-    nginx              = "120f7da2bd3a1377974ae1f5523711694d1ba11c"
+    clamavd            = "f997f9c0b75c01a33e0b733c8f3eaf2c57605543"
+    nginx              = "f997f9c0b75c01a33e0b733c8f3eaf2c57605543"
   }
 
   ecr_image_digests = {
