@@ -1,6 +1,8 @@
 steps:
-  - command: .buildkite/scripts/run_autoformat.py
-    label: "run autoformatting"
+  - commands:
+      - .buildkite/scripts/format_check.sh
+      - .buildkite/scripts/run_linting.sh
+    label: "format check and lint"
 
   - wait
 
