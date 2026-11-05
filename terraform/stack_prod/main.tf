@@ -53,7 +53,7 @@ module "stack" {
   alb_source_ips = local.alb_source_ips
 
   # Pinned to staging's AL2023 image so both environments run the same host OS.
-  container_host_ami = "ami-0eafe05b6c8ffd11d"
+  container_host_ami = "ami-0ab297d242d83ff30"
 
   lambda_error_alarm_arn = local.lambda_error_alarm_arn
 

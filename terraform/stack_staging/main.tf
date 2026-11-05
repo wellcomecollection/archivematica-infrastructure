@@ -51,7 +51,7 @@ module "stack" {
 
   # Pin the deployed image so AMI upgrades require an explicit change and do
   # not replace the container host during an unrelated Terraform apply.
-  container_host_ami = "ami-0eafe05b6c8ffd11d"
+  container_host_ami = "ami-0ab297d242d83ff30"
 
   lambda_error_alarm_arn = local.lambda_error_alarm_arn
 
