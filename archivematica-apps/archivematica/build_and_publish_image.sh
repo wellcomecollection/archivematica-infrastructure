@@ -16,6 +16,13 @@ SERVICE="$1"
 
 ROOT=$(git rev-parse --show-toplevel)
 OVERLAY_COMMIT=$(git log -1 --pretty=format:"%H" "$ROOT"/archivematica-apps/archivematica)
+IMAGE_TAG="$UPSTREAM_COMMIT-$OVERLAY_COMMIT"
+
+PUBLISHED=$("$ROOT/.buildkite/scripts/image_published.sh" "weco/archivematica-$SERVICE" "$IMAGE_TAG")
+if [[ "$PUBLISHED" == yes ]]; then
+  echo "*** weco/archivematica-$SERVICE:$IMAGE_TAG is already published; not building it again"
+  exit 0
+fi
 
 aws ecr get-login-password \
 | docker login \
@@ -43,7 +50,6 @@ pushd $(mktemp -d)
 
   echo "*** Pushing to ECR"
 
-  IMAGE_TAG="$UPSTREAM_COMMIT-$OVERLAY_COMMIT"
   ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-$SERVICE:$IMAGE_TAG"
   docker tag "am-archivematica-$SERVICE" "$ECR_IMAGE_TAG"
 

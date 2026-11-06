@@ -9,6 +9,13 @@ UPSTREAM_COMMIT=0332eed8c25707ccf48b2b3dfc5fae68db39ba27
 
 ROOT=$(git rev-parse --show-toplevel)
 OVERLAY_COMMIT=$(git log -1 --pretty=format:"%H" "$ROOT"/archivematica-apps/archivematica-storage-service)
+IMAGE_TAG="$UPSTREAM_COMMIT-$OVERLAY_COMMIT"
+
+PUBLISHED=$("$ROOT/.buildkite/scripts/image_published.sh" weco/archivematica-storage-service "$IMAGE_TAG")
+if [[ "$PUBLISHED" == yes ]]; then
+  echo "*** weco/archivematica-storage-service:$IMAGE_TAG is already published; not building it again"
+  exit 0
+fi
 
 aws ecr get-login-password \
 | docker login \
@@ -19,7 +26,7 @@ aws ecr get-login-password \
 # that built it. Read here, before moving into the upstream checkout; the labels name
 # this repository, which holds the overlay, while the Dockerfile is upstream's.
 SOURCE_REPOSITORY=$(git config --get remote.origin.url | sed -E 's#^.*github\.com(:[0-9]+)?[:/]##; s#\.git$##')
-SOURCE_REVISION=$(git rev-parse HEAD)
+SOURCE_REVISION="$OVERLAY_COMMIT"
 
 pushd $(mktemp -d)
 
@@ -52,7 +59,6 @@ pushd $(mktemp -d)
 
   echo "*** Pushing to ECR"
 
-  IMAGE_TAG="$UPSTREAM_COMMIT-$OVERLAY_COMMIT"
   ECR_IMAGE_TAG="299497370133.dkr.ecr.eu-west-1.amazonaws.com/weco/archivematica-storage-service:$IMAGE_TAG"
   docker tag "archivematica-storage-service" "$ECR_IMAGE_TAG"
 
