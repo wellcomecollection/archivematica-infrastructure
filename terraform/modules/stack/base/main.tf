@@ -1,9 +1,12 @@
+data "aws_ssm_parameter" "fluentbit_tag" {
+  name = "/platform/sidecars/fluentbit/${var.sidecar_tier}"
+}
+
 module "log_router_container" {
   source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v3.15.3"
   namespace = var.service_name
 
-  # aws-for-fluent-bit 3.5.5 (wellcomecollection/platform-infrastructure#624)
-  container_tag = "0b9948b83bfb68e4481ed988f15ede80239e4879"
+  container_tag = coalesce(var.fluentbit_tag_override, data.aws_ssm_parameter.fluentbit_tag.insecure_value)
 }
 
 module "log_router_container_secrets_permissions" {
