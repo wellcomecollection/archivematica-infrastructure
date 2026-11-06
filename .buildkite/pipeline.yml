@@ -14,26 +14,36 @@ steps:
 
   - wait
 
+  # Each image step is serialised across builds, so a second build for the same immutable tag
+  # sees it published and skips the push rather than failing on it.
   - label: ":docker: dashboard"
     command: archivematica-apps/archivematica/build_and_publish_image.sh dashboard
+    concurrency: 1
+    concurrency_group: archivematica-infrastructure/image-archivematica-dashboard
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
 
   - label: ":docker: MCP client"
     command: archivematica-apps/archivematica/build_and_publish_image.sh mcp-client
+    concurrency: 1
+    concurrency_group: archivematica-infrastructure/image-archivematica-mcp-client
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
 
   - label: ":docker: MCP server"
     command: archivematica-apps/archivematica/build_and_publish_image.sh mcp-server
+    concurrency: 1
+    concurrency_group: archivematica-infrastructure/image-archivematica-mcp-server
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
 
   - label: ":docker: Archivematica storage service"
     command: archivematica-apps/archivematica-storage-service/build_and_publish_image.sh
+    concurrency: 1
+    concurrency_group: archivematica-infrastructure/image-archivematica-storage-service
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
@@ -42,6 +52,8 @@ steps:
     commands:
       - "./.buildkite/scripts/build_docker_image.sh archivematica-nginx"
       - "./.buildkite/scripts/publish_docker_image.sh archivematica-nginx"
+    concurrency: 1
+    concurrency_group: archivematica-infrastructure/image-archivematica-nginx
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
@@ -51,6 +63,8 @@ steps:
       - "./.buildkite/scripts/build_docker_image.sh archivematica-observability"
       - "bash .buildkite/scripts/run_observability_tests.sh"
       - "./.buildkite/scripts/publish_docker_image.sh archivematica-observability"
+    concurrency: 1
+    concurrency_group: archivematica-infrastructure/image-archivematica-observability
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"
@@ -59,6 +73,8 @@ steps:
     commands:
       - "./.buildkite/scripts/build_docker_image.sh clamavd"
       - "./.buildkite/scripts/publish_docker_image.sh clamavd"
+    concurrency: 1
+    concurrency_group: archivematica-infrastructure/image-clamavd
     plugins:
       - wellcomecollection/aws-assume-role#v0.2.2:
           role: "arn:aws:iam::299497370133:role/workflow-ci"

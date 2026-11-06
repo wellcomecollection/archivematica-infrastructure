@@ -82,6 +82,10 @@ resource "aws_ecr_repository" "services" {
   ])
 
   name = "weco/${each.key}"
+
+  # A tag names the commit that defines its image, so it must never move: a moved tag lets the
+  # lifecycle rules expire the digest a running task was started from.
+  image_tag_mutability = "IMMUTABLE"
 }
 
 resource "aws_ecr_lifecycle_policy" "only_keep_the_last_100_images" {
