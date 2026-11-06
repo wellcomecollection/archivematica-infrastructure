@@ -27,6 +27,7 @@ module "service" {
   ]
 
   service_name = local.full_name
+  sidecar_tier = var.namespace == "prod" ? "prod" : "stage"
 
   subnets = var.network_private_subnets
 
