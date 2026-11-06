@@ -14,6 +14,7 @@ IMAGE_TAG="$UPSTREAM_COMMIT-$OVERLAY_COMMIT"
 PUBLISHED=$("$ROOT/.buildkite/scripts/image_published.sh" weco/archivematica-storage-service "$IMAGE_TAG")
 if [[ "$PUBLISHED" == yes ]]; then
   echo "*** weco/archivematica-storage-service:$IMAGE_TAG is already published; not building it again"
+  bash "$ROOT/.buildkite/scripts/sbom_for_published_image.sh" weco/archivematica-storage-service "$IMAGE_TAG" archivematica-storage-service
   exit 0
 fi
 

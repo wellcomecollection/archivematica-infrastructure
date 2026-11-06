@@ -20,6 +20,7 @@ aws ecr get-login-password \
 PUBLISHED=$("$ROOT/.buildkite/scripts/image_published.sh" "weco/$SERVICE_ID" "$SOURCE_COMMIT")
 if [[ "$PUBLISHED" == yes ]]; then
   echo "*** weco/$SERVICE_ID:$SOURCE_COMMIT is already published; not pushing it again"
+  bash "$ROOT/.buildkite/scripts/sbom_for_published_image.sh" "weco/$SERVICE_ID" "$SOURCE_COMMIT" "$SERVICE_ID"
   exit 0
 fi
 
