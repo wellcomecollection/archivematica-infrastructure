@@ -25,7 +25,7 @@ locals {
   }
 
   ecr_image_digests = {
-    # Published from commit 7d0a10c6ad847b8d4fafdb623f18a89caa12a2cb.
-    observability = "sha256:afa756ba0f628a49f81581033e57a802f736da2d87ba1071a1b72c3a2d9aca20"
+    # Published from commit a1c5b53d205cc91c68abb4aa29d4531936395d77.
+    observability = "sha256:a8c9b375b327a7f62a6a00c2a893382846f803a5712f9acc33b17b3c102e4437"
   }
 }
