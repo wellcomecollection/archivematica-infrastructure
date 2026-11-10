@@ -10,3 +10,5 @@ metadata:
     github.com/project-slug: wellcomecollection/archivematica-infrastructure
 spec:
   owner: team:default/digital-platform
+  # Built and run with Artefactual, who hear about findings with us (ADR 0039 in wellcometrust/backplane).
+  vendors: [team:default/artefactual]
