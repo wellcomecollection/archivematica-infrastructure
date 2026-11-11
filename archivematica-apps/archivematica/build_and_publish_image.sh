@@ -47,7 +47,8 @@ pushd $(mktemp -d)
   cd hack
 
   # Not docker-compose: the agent's wrapper adds --compatibility, which names the image am_archivematica-* on Compose 5.
-  docker compose build "archivematica-$SERVICE"
+  # --pull and --no-cache so each new tag picks up the current base image and apt security updates.
+  docker compose build --pull --no-cache "archivematica-$SERVICE"
 
   echo "*** Pushing to ECR"
 
