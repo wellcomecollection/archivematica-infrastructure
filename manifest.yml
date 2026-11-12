@@ -12,3 +12,99 @@ spec:
   owner: team:default/digital-platform
   # Built and run with Artefactual, who hear about findings with us (ADR 0039 in wellcometrust/backplane).
   vendors: [team:default/artefactual]
+---
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: archivematica-dashboard
+  title: Archivematica dashboard
+  description: Web UI for running and reviewing Archivematica transfers, on ECS
+spec:
+  type: website
+  owner: team:default/digital-platform
+  lifecycle: production
+  system: system:archivematica-infrastructure
+---
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: archivematica-storage-service
+  title: Archivematica storage service
+  description: Archivematica service that stores AIPs and manages storage locations, on ECS
+spec:
+  type: service
+  owner: team:default/digital-platform
+  lifecycle: production
+  system: system:archivematica-infrastructure
+---
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: archivematica-mcp-server
+  title: Archivematica MCP server
+  description: Archivematica workflow server that schedules processing jobs, on ECS
+spec:
+  type: pipeline
+  owner: team:default/digital-platform
+  lifecycle: production
+  system: system:archivematica-infrastructure
+---
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: archivematica-mcp-client
+  title: Archivematica MCP client
+  description: Archivematica workers that run the processing jobs, on ECS
+spec:
+  type: pipeline
+  owner: team:default/digital-platform
+  lifecycle: production
+  system: system:archivematica-infrastructure
+---
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: archivematica-clamav
+  title: Archivematica ClamAV
+  description: ClamAV daemon that virus-scans files during processing, on ECS
+spec:
+  type: service
+  owner: team:default/digital-platform
+  lifecycle: production
+  system: system:archivematica-infrastructure
+---
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: archivematica-s3-start-transfer
+  title: Archivematica S3 start transfer
+  description: Lambda that checks packages uploaded to the transfer source bucket and starts transfers
+spec:
+  type: pipeline
+  owner: team:default/digital-platform
+  lifecycle: production
+  system: system:archivematica-infrastructure
+---
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: archivematica-transfer-monitor
+  title: Archivematica transfer monitor
+  description: Weekly Lambda that reports transfer outcomes to Slack and cleans up the transfer source bucket
+spec:
+  type: pipeline
+  owner: team:default/digital-platform
+  lifecycle: production
+  system: system:archivematica-infrastructure
+---
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: born-digital-listener
+  title: Born digital listener
+  description: Lambda that forwards notifications of newly stored born-digital bags to IIIF Builder
+spec:
+  type: pipeline
+  owner: team:default/digital-platform
+  lifecycle: production
+  system: system:archivematica-infrastructure
