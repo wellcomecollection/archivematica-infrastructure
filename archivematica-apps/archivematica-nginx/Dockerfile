@@ -1,4 +1,4 @@
-FROM nginx:1.30.6-alpine
+FROM nginx:1.31.8-alpine
 
 # Picks up Alpine security fixes published after the nginx image was built. Image tags
 # are immutable and come from the last commit in this folder, so picking up new fixes
