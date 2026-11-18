@@ -51,6 +51,13 @@ resource "aws_cloudwatch_metric_alarm" "lambda_alarm" {
     FunctionName = var.name
   }
 
-  alarm_description = "This metric monitors lambda errors for function: ${var.name}"
+  alarm_description = "[component=${var.alarm_component} severity=${var.alarm_severity}] This metric monitors lambda errors for function: ${var.name}"
   alarm_actions     = [var.alarm_topic_arn]
+
+  // Tags and description prefix from the alert routing ADR (wellcomecollection/docs adr/alert_routing.md)
+  tags = {
+    "backplane:component"     = var.alarm_component
+    "github.com/project-slug" = "wellcomecollection/archivematica-infrastructure"
+    severity                  = var.alarm_severity
+  }
 }

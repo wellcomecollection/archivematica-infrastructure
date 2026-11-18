@@ -11,6 +11,8 @@ module "lambda" {
   }
 
   alarm_topic_arn = var.lambda_error_alarm_arn
+  alarm_component = "born-digital-listener"
+  alarm_severity  = var.environment == "prod" ? "medium" : "low"
 }
 
 resource "aws_lambda_permission" "allow_sns_to_trigger_lambda" {
@@ -37,19 +39,27 @@ module "output_sns_topic" {
 }
 
 module "output_sqs_queue" {
-  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.2.1"
+  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.6.0"
   queue_name = "born-digital-notifications-${var.environment}"
   topic_arns = [module.output_sns_topic.arn]
 
   alarm_topic_arn = var.dlq_alarm_arn
+
+  alarm_component    = "born-digital-listener"
+  alarm_repository   = "wellcomecollection/archivematica-infrastructure"
+  dlq_alarm_severity = var.environment == "prod" ? "medium" : "low"
 }
 
 module "output_sqs_queue_digirati" {
-  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.2.1"
+  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.6.0"
   queue_name = "born-digital-notifications-${var.environment}"
   topic_arns = [module.output_sns_topic.arn]
 
   alarm_topic_arn = var.dlq_alarm_arn
+
+  alarm_component    = "born-digital-listener"
+  alarm_repository   = "wellcomecollection/archivematica-infrastructure"
+  dlq_alarm_severity = var.environment == "prod" ? "medium" : "low"
 
   providers = {
     aws = aws.digirati
