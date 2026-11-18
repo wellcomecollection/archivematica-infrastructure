@@ -43,7 +43,8 @@ pushd $(mktemp -d)
   git status
 
   echo "*** Building the Docker image"
-  docker build --tag "archivematica-storage-service" \
+  # --pull and --no-cache so each new tag picks up the current base image and apt security updates.
+  docker build --pull --no-cache --tag "archivematica-storage-service" \
     --label "org.opencontainers.image.source=https://github.com/$SOURCE_REPOSITORY" \
     --label "org.opencontainers.image.revision=$SOURCE_REVISION" \
     --label "org.wellcomecollection.dockerfile=archivematica-apps/archivematica-storage-service (upstream Dockerfile at $UPSTREAM_COMMIT)" \
