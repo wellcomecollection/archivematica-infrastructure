@@ -6,6 +6,8 @@ module "transfer_monitor_lambda" {
   description     = "Report on the state of Archivematica transfers (${var.namespace})"
   name            = "archivematica-transfer_monitor-${var.namespace}"
   alarm_topic_arn = var.lambda_error_alarm_arn
+  alarm_component = "archivematica-transfer-monitor"
+  alarm_severity  = var.namespace == "prod" ? "medium" : "low"
 
   memory_size = 1024
 

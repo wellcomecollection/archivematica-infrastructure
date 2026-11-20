@@ -19,6 +19,21 @@ variable "alarm_topic_arn" {
   type        = string
 }
 
+variable "alarm_component" {
+  description = "Backplane Component name (metadata.name in manifest.yml) for the error alarm"
+  type        = string
+}
+
+variable "alarm_severity" {
+  description = "Severity of the error alarm: high, medium or low"
+  type        = string
+
+  validation {
+    condition     = contains(["high", "medium", "low"], var.alarm_severity)
+    error_message = "alarm_severity must be high, medium or low."
+  }
+}
+
 variable "environment" {
   type = map(string)
 }
