@@ -6,6 +6,8 @@ module "s3_start_transfer_lambda" {
   description     = "Trigger that starts new Archivematica transfers from an upload to ${var.transfer_source_bucket_name}"
   name            = "archivematica-s3_start_transfer-${var.namespace}"
   alarm_topic_arn = var.lambda_error_alarm_arn
+  alarm_component = "archivematica-s3-start-transfer"
+  alarm_severity  = var.namespace == "prod" ? "medium" : "low"
 
   environment = {
     "ARCHIVEMATICA_URL"         = "https://${module.dashboard_service.hostname}"

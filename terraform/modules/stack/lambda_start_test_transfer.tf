@@ -6,6 +6,9 @@ module "start_test_transfer_lambda" {
   description     = "Send a test transfer package to Archivematica"
   name            = "archivematica-start_test_transfer-${var.namespace}"
   alarm_topic_arn = var.lambda_error_alarm_arn
+  # No Component of its own: it exercises the start-transfer path.
+  alarm_component = "archivematica-s3-start-transfer"
+  alarm_severity  = var.namespace == "prod" ? "medium" : "low"
 
   environment = {
     "UPLOAD_BUCKET" = var.transfer_source_bucket_name
