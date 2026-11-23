@@ -1,0 +1,3 @@
+# Changing this file gives the storage service a new image tag,
+# and the no-cache build picks up the current base image and apt security updates.
+2026-11-23: linux-libc-dev 7.0.0-44.44 (CVE-2026-99153, CVE-2026-99154)
