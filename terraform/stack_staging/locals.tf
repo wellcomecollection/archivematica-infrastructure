@@ -16,12 +16,12 @@ locals {
   }
 
   ecr_image_tags = {
-    dashboard          = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-7fd9be03418f0c7fd53bdd7a0e6f65098db157de"
-    mcp_client         = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-7fd9be03418f0c7fd53bdd7a0e6f65098db157de"
-    mcp_server         = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-7fd9be03418f0c7fd53bdd7a0e6f65098db157de"
-    am_storage_service = "0332eed8c25707ccf48b2b3dfc5fae68db39ba27-659443209922c534e23e6b3114b87291166d54f4"
+    dashboard          = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-0bd493650463d226907cae595331f67ae5194a87"
+    mcp_client         = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-0bd493650463d226907cae595331f67ae5194a87"
+    mcp_server         = "aa2fc87f50ffffde4cc26728cf45c9c58bdb5238-0bd493650463d226907cae595331f67ae5194a87"
+    am_storage_service = "0332eed8c25707ccf48b2b3dfc5fae68db39ba27-0bd493650463d226907cae595331f67ae5194a87"
     clamavd            = "f997f9c0b75c01a33e0b733c8f3eaf2c57605543"
-    nginx              = "0edcf0a26153c380b6026e4784bccbd052774573"
+    nginx              = "e0553c75ae582ae3aa50638e800d04532ed19467"
   }
 
   ecr_image_digests = {
