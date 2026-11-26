@@ -1,3 +1,4 @@
 # Changing this file gives the dashboard, MCP client and MCP server a new image tag,
 # and the no-cache build picks up the current base image and apt security updates.
 2026-11-20: linux-libc-dev 7.0.0-44.44 (CVE-2026-99153, CVE-2026-99154)
+2026-11-26: libxrender 0.9.12-1ubuntu0.26.04.1 (CVE-2016-7949, CVE-2016-7950)
