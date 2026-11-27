@@ -36,6 +36,15 @@ spec:
   owner: team:default/digital-platform
   lifecycle: production
   system: system:archivematica-infrastructure
+  dependsOn:
+    - ref: component:storage-ingests-service
+      description: Creates an ingest for each AIP
+    - ref: component:storage-bags-api
+      description: Chooses create or update, and fetches bags back
+    - resource:api-wellcomecollection-org-cloudfront
+    - ref: resource:storage-replica-primary
+      type: data
+      description: Reads bags back
 ---
 apiVersion: backplane/v1
 kind: Component
@@ -84,6 +93,9 @@ spec:
   owner: team:default/digital-platform
   lifecycle: production
   system: system:archivematica-infrastructure
+  dependsOn:
+    - component:archivematica-dashboard
+    - component:archivematica-storage-service
 ---
 apiVersion: backplane/v1
 kind: Component
@@ -108,3 +120,7 @@ spec:
   owner: team:default/digital-platform
   lifecycle: production
   system: system:archivematica-infrastructure
+  dependsOn:
+    - ref: component:storage-bag-register
+      type: data
+      description: Registered-bag notifications
